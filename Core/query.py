@@ -6,7 +6,7 @@ data = queryStationsAdvanced()
 print(type(data))
 print(json.dumps(data, indent=4))
 
-path = "home/raspifm/raspifm"
+path = "/home/raspifm/raspifm"
 if not (os.path.exists(path) and os.path.isdir(path)):
    os.makedirs(path)
 
