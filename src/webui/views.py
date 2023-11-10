@@ -1,6 +1,7 @@
-
 from flask import render_template
 from . import app
+from src.core.radiobrowserapi import stationapi
+import json
 
 @app.route("/")
 def home():
@@ -12,5 +13,6 @@ def favorites():
 
 @app.route("/stationsearch")
 def stationsearch():
-    return render_template("stationsearch.html")
+    data = stationapi.query_stations_advanced()
+    return render_template("stationsearch.html", stations=json.loads(data))
 

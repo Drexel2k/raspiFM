@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% set active_page = 2 %}
+
+{% block title %}
+Home
+{% endblock %}
+{% block content %}
+<h1>Station Search</h1>
+<div class="table-responsive">
+    <table class="table">
+      {% for station in stations %}
+        <tr>
+          <td>{{station.stationuuid}}</td>
+          <td>{{station.name}}</td>
+          <td>{{station.url}}</td>
+          <td>{{station.homepage}}</td>
+          <td>{{station.languagecodes}}</td>
+          </tr>
+      {% endfor %}
+    </table>
+</div>
+{% endblock %}
