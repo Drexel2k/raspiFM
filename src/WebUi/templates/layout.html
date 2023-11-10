@@ -1,3 +1,5 @@
+{% set active_page = active_page|default(0) -%}
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -11,9 +13,19 @@
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
-    <div class="navbar">
-        <a href="{{ url_for('home') }}" class="navbar-brand">Home</a>
-    </div>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">ICON TBD</a>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link {{ 'active' if active_page == 0 }}" href="{{ url_for('home') }}">Home{% if active_page == 0 %} <span class="sr-only">(current)</span>{% endif %}</a>
+          <a class="nav-item nav-link {{ 'active' if active_page == 1 }}" href="{{ url_for('favorites') }}">Favorites{% if active_page == 1 %} <span class="sr-only">(current)</span>{% endif %}</a>
+          <a class="nav-item nav-link {{ 'active' if active_page == 2 }}" href="{{ url_for('stationsearch') }}">Station Search{% if active_page == 2 %} <span class="sr-only">(current)</span>{% endif %}</a>
+        </div>
+      </div>
+    </nav>
 
     <div class="body-content">
         {% block content %}
