@@ -2,7 +2,7 @@
 Internetradio on Raspberry Pi
 
 # IDE Setup / Build instructions
-1. Install Visual Studio Code with Python Extension
+1. Install Visual Studio Code with Python Extension and Git
 2. Command Palette -> Git: Clone -> Clone from Github -> Enter Url -> Enter
 3. After clone, in the dialog confirm to open the folder
 4. Command Palette -> Python: Create Environment

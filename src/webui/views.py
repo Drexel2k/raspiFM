@@ -1,7 +1,8 @@
 from flask import render_template
 from . import app
-from src.core.radiobrowserapi import stationapi
-import json
+from ..core.raspifmcore import RaspiFM
+
+core = RaspiFM()
 
 @app.route("/")
 def home():
@@ -13,6 +14,6 @@ def favorites():
 
 @app.route("/stationsearch")
 def stationsearch():
-    data = stationapi.query_stations_advanced()
-    return render_template("stationsearch.html", stations=json.loads(data))
+    tester = core.get_stations("1live","DE", "clicks", "true")
+    return render_template("stationsearch.html", stations=tester)
 
