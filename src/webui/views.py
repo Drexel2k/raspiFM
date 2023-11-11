@@ -14,6 +14,7 @@ def favorites():
 
 @app.route("/stationsearch")
 def stationsearch():
-    tester = core.get_stations("1live","DE", "clicks", "true")
+    tester = core.get_stations("1live","DE", "clicks", "false")
     return render_template("stationsearch.html", stations=tester)
 
+6

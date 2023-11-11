@@ -1,11 +1,11 @@
+from .json.jsonserialzer import JsonSerializer
 from .business.RadioStation import RadioStation
 from .radiobrowserapi import stationapi
 
 class RaspiFM:
-    __slots__ = ["jsonserialize"]
-
     def __init__(self):
-        pass
+        # Initialize Serializer
+        JsonSerializer("home/raspifm/raspifm")
 
     def get_Favorites(self):
         raise NotImplementedError
