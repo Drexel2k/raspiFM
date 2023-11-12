@@ -5,23 +5,21 @@ from ..core.raspifmcore import RaspiFM
 core = RaspiFM()
 
 @app.route("/")
-def home():
+def home() -> render_template:
     return render_template("home.html")
 
 @app.route("/favorites")
-def favorites():
+def favorites() -> render_template:
     return render_template("favorites.html")
 
 @app.route("/stationsearch")
-def stationsearch():
+def stationsearch() -> render_template:
     args = request.args
-    if args:
-        if not args["name"]:
-            return render_template("stationsearch.html")
-   
-        return render_template("stationsearch.html", stations=core.get_stations(args["name"],args["country"], args["order"], True), args=args)
-    else:
-        return render_template("stationsearch.html")
-
     
-    #return render_template("stationsearch.html")
+    if args and args["name"]:
+        return render_template("stationsearch.html",
+                               stations=core.get_stations(args["name"],args["country"], args["order"], True), 
+                               countries=core.get_countries(),
+                               args=args)
+    else:
+        return render_template("stationsearch.html", countries=core.get_countries())

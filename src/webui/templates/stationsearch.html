@@ -25,8 +25,9 @@
             <div class="row">
               <div class="col-sm-3">
                 <select name="country" class="form-control col">
-                  <option {% if args and args["country"] and args["country"]=="DE" %}selected{% endif %}>DE</option>
-                  <option {% if args and args["country"] and args["country"]=="US" %}selected{% endif %}>US</option>
+                  {% for country in countries.countrylist %}
+                    <option {% if args and args["country"] and args["country"]==country %}selected{% endif %}>{{country}}</option>
+                  {% endfor %}
                 </select>
               </div>
               <div class="col-sm-3">
