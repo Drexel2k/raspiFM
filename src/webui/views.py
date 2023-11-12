@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request
 from . import app
 from ..core.raspifmcore import RaspiFM
 
@@ -14,7 +14,14 @@ def favorites():
 
 @app.route("/stationsearch")
 def stationsearch():
-    tester = core.get_stations("1live","DE", "clicks", "false")
-    return render_template("stationsearch.html", stations=tester)
+    args = request.args
+    if args:
+        if not args["name"]:
+            return render_template("stationsearch.html")
+   
+        return render_template("stationsearch.html", stations=core.get_stations(args["name"],args["country"], args["order"], True), args=args)
+    else:
+        return render_template("stationsearch.html")
 
-6
+    
+    #return render_template("stationsearch.html")
