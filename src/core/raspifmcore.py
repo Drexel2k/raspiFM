@@ -7,7 +7,10 @@ from .business.CountryList import CountryList
 from .radiobrowserapi import stationapi
 from .radiobrowserapi.data.RadioStationApi import RadioStationApi
 from .radiobrowserapi import listapi
-from.raspifmsettings import serialization_directory
+from .business.CountryList import CountryList
+from .business.LanguageList import LanguageList
+from .radiobrowserapi.data.LanguageApi import LanguageApi
+from .raspifmsettings import serialization_directory
 
 
 class RaspiFM:
@@ -31,10 +34,20 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if (not countrylist or countrylist.lastupdate + sevendays < datetime.now()):
-            countrylist = CountryList(list(map(lambda countrylistdict: countrylistdict["iso_3166_1"], listapi.query_countrylist())))
+            countrylist = CountryList({country["name"]:country["iso_3166_1"] for country in listapi.query_countrylist()})
             JsonSerializer().serialize_countrylist(countrylist)
 
         return countrylist
+    
+    def get_languages(self) -> CountryList:
+        languagelist = JsonDeserializer().get_languagelist()
+
+        sevendays = timedelta(days=7)
+        if (not languagelist or languagelist.lastupdate + sevendays < datetime.now()):
+            languagelist = LanguageList({language["name"]:language["iso_639"] for language in  listapi.query_languagelist()})
+            JsonSerializer().serialize_languagelist(languagelist)
+
+        return languagelist
 
 
 

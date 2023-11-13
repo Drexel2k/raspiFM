@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from .CountryListSerialization import CountryListDecoder
+from .LanguageListSerialization import LanguageListDecoder
 from ..business.CountryList import CountryList
 
 class JsonDeserializer():
@@ -26,11 +27,19 @@ class JsonDeserializer():
         return json.loads(jsonstring)
     
     def get_countrylist(self) -> CountryList:
-        d1 = Path(self.__path, "cache/countrylist.json")
         if Path(self.__path, "cache/countrylist.json").exists():
             with open(Path(self.__path, "cache/countrylist.json"), "r") as infile:
                 jsonstring = infile.read()
                 if jsonstring:
                     return json.loads(jsonstring, cls=CountryListDecoder)
+            
+            return None
+        
+    def get_languagelist(self) -> LanguageList:
+        if Path(self.__path, "cache/languagelist.json").exists():
+            with open(Path(self.__path, "cache/languagelist.json"), "r") as infile:
+                jsonstring = infile.read()
+                if jsonstring:
+                    return json.loads(jsonstring, cls=LanguageListDecoder)
             
             return None

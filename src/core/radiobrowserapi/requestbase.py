@@ -43,12 +43,7 @@ def get_radiobrowser_post_request_data(endpoint: str, param: dict) -> bytes:
     random.shuffle(servers)
 
     for server_base in servers:
-
         uri = server_base + endpoint
-
-        try:
-            data = do_radiobrowser_post_request_get_data(uri, param)
-            return data
-        except Exception as e:
-            pass
+        return do_radiobrowser_post_request_get_data(uri, param)
+    
     return b""

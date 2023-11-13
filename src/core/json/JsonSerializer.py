@@ -2,7 +2,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from .CountryListSerialization import CountryListEncoder
+from .LanguageListSerialization import LanguageListEncoder
 from ..business.CountryList import CountryList
+from ..business.LanguageList import LanguageList
 
 class JsonSerializer():
     __slots__ = ["__path"]
@@ -24,3 +26,7 @@ class JsonSerializer():
     def serialize_countrylist(self, countrylist: CountryList) -> None:
         with open(Path(self.__path, "cache/countrylist.json"), "w+") as outfile:
             outfile.write(json.dumps(countrylist, cls=CountryListEncoder , indent=4))
+
+    def serialize_languagelist(self, languagelist: LanguageList) -> None:
+        with open(Path(self.__path, "cache/languagelist.json"), "w+") as outfile:
+            outfile.write(json.dumps(languagelist, cls=LanguageListEncoder , indent=4))

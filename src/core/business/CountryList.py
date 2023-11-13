@@ -3,7 +3,7 @@ from datetime import datetime
 class CountryList:
     __slots__ = ["__lastupdate", "__countrylist"]
     __lastupdate:datetime
-    __countrylist:list
+    __countrylist:dict
 
     @property
     def lastupdate(self):
@@ -13,7 +13,7 @@ class CountryList:
     def countrylist(self):
         return self.__countrylist
 
-    def __init__(self, countrylist:list, lastupdate:datetime=datetime.now()):
+    def __init__(self, countrylist:dict, lastupdate:datetime=datetime.now()):
         self.__lastupdate = lastupdate
         self.__countrylist = countrylist
 
