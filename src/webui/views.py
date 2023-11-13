@@ -17,8 +17,10 @@ def stationsearch() -> render_template:
     args = request.args
     
     if args and args["name"]:
+        #prevlink = 
+        #nextlink=
         return render_template("stationsearch.html",
-                               stations=core.get_stations(args["name"],args["country"], args["order"], True), 
+                               stations=core.get_stations(args["name"], args["country"], args["orderby"].lower(), False if args["order"] == "ASC" else True), 
                                countries=core.get_countries(),
                                args=args)
     else:

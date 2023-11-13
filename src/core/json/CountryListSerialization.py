@@ -10,4 +10,4 @@ class CountryListDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
     def object_hook(self, dct):
-        return CountryList(dct['countrylist'], datetime.fromisoformat(dct['lastupdate']))
+        return CountryList(dct["countrylist"], datetime.fromisoformat(dct["lastupdate"]))
