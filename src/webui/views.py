@@ -1,6 +1,7 @@
 from flask import render_template, request
 from . import app
 from ..core.raspifmcore import RaspiFM
+from ..core import raspifmsettings
 
 core = RaspiFM()
 
@@ -15,16 +16,37 @@ def favorites() -> render_template:
 @app.route("/stationsearch")
 def stationsearch() -> render_template:
     args = request.args
-    
-    if args and args["name"]:
+
+    countries = core.get_countries()
+    languages = languages=core.get_languages()
+
+    if args:
         #prevlink = 
         #nextlink=
+
+        name = args["name"]
+        if(country==""):
+            country=None
+
+        country = args["country"]
+        if(country=="nofilter"):
+            country=None
+
+        language = args["lang"]
+        if(language=="nofilter"):
+            language=None
+
+        stations = core.get_stations(name, country, language, args["orderby"], False if args["order"] == "asc" else True)
+
         return render_template("stationsearch.html",
-                               stations=core.get_stations(args["name"], args["country"], args["orderby"].lower(), False if args["order"] == "ASC" else True), 
-                               countries=core.get_countries(),
-                               languages=core.get_languages(),
+                               stations=stations, 
+                               countries=countries,
+                               languages=languages,
                                args=args)
     else:
+        args = { "country": raspifmsettings.defaulcountry, "lang" : raspifmsettings.defaultlanguage}
+
         return render_template("stationsearch.html",
-                               countries=core.get_countries(),
-                               languages=core.get_languages(),)
+                               countries=countries,
+                               languages=languages,
+                               args=args)

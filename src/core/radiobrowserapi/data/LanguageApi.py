@@ -9,7 +9,7 @@ class LanguageApi:
         return self.__name
     
     @property
-    def iso_3166_1(self):
+    def iso_639(self):
         return self.__iso_639
     
     @property

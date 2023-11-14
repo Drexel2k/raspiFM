@@ -15,7 +15,8 @@ class LanguageList:
 
     def __init__(self, languagelist:dict, lastupdate:datetime=datetime.now()):
         self.__lastupdate = lastupdate
-        self.__languagelist = languagelist
+        self.__languagelist = dict(sorted(languagelist.items()))
+
 
 
 

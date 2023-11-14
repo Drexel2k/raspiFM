@@ -3,6 +3,8 @@ import sys
 import ctypes
 
 serialization_directory = os.path.expanduser('~/raspifm')
+defaultlanguage="111"
+defaulcountry="DE"
 
 # Windows directory support is only for developing on windows machines
 if(sys.platform == "win32"):

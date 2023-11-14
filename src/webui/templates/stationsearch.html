@@ -9,58 +9,95 @@
   <hr/>
   <form action="{{ url_for('stationsearch') }}" method="GET">
     <div class="row mb-2">
-      <div class="col-xxl-6" style="width: 660px;">
+      <div class="col-xxl-6" style="width: 660px;"><!--left half-->
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6"><!-- 1st 4th-->
             <div class="row">
-              <div class="col-sm-6">
-                <label for="txname" class="form-label"><small>order by</small></label>
+              <div class="col-sm-6"><!-- 1st 8th-->
+                <label for="txname" class="form-label"><small>name</small></label>
                 <input type="text" id="txname" name="name" class="form-control" placeholder="Station Name" value="{{ args and args["name"]|default("") }}">
               </div>
-              <div class="col-sm-6">
+              <div class="col-sm-6"><!-- 2nd 8th-->
                 <label for="slorderby" class="form-label"><small>order by</small></label>
                 <select name="orderby" id="slorderby" class="form-control">
-                    <option {% if args and args["orderby"] and args["orderby"]=="NAME" %}selected{% endif %}>NAME</option>
-                    <option {% if args and args["orderby"] and args["orderby"]=="VOTES" %}selected{% endif %}>VOTES</option>
-                    <option {% if args and args["orderby"] and args["orderby"]=="CLICKTREND" %}selected{% endif %}>CLICKTREND</option>
-                    <option {% if args and args["orderby"] and args["orderby"]=="CLICKCOUNT" %}selected{% endif %}>CLICKCOUNT</option>
+                    <option {% if args and args["orderby"] and args["orderby"]=="NAME" %}selected{% endif %} value="name">NAME</option>
+                    <option {% if args and args["orderby"] and args["orderby"]=="VOTES" %}selected{% endif %} value="votes">VOTES</option>
+                    <option {% if args and args["orderby"] and args["orderby"]=="CLICKTREND" %}selected{% endif %} value="clicktrend">CLICKTREND</option>
+                    <option {% if args and args["orderby"] and args["orderby"]=="CLICKCOUNT" %}selected{% endif %} value="clickcount">CLICKS</option>
                 </select>
               </div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6"><!-- 2nd 4th-->
             <div class="row">
-              <div class="col-sm-3">
+              <div class="col-sm-6"><!-- 3rd 8th-->
                 <label for="slcountry" class="form-label"><small></small>country</small></label>
                 <select name="country" id="slcountry" class="form-control">
-                  {% for country in countries.countrylist %}
+                  <option {% if args and args["country"] and args["country"]=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
+                  {% for countryname, countrycode in countries.countrylist.items() %}
                     {% if args and args["country"] %}
-                      <option {% if args and args["country"] and args["country"]==country %}selected{% endif %}>{{country}}</option>
+                      <option {% if args and args["country"] and args["country"]==countrycode %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
                     {% else %}
-                      <option {% if "DE"==country %}selected{% endif %}>{{country}}</option>
+                      <option {% if "DE"==country %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
                     {% endif %}
                   {% endfor %}
                 </select>
               </div>
-              <div class="col-sm-3">
-                <label for="slorder" class="form-label"><small>order</small></label>
-                <select name="order" id="slorder" class="form-control">
-                  <option {% if args and args["order"] and args["order"]=="ASC" %}selected{% endif %}>ASC</option>
-                  <option {% if args and args["order"] and args["order"]=="DSC" %}selected{% endif %}>DSC</option>
+              <div class="col-sm-6"><!-- 4th 8th-->
+                <label for="sllang" class="form-label"><small></small>language</small></label>
+                <select name="lang" id="sllang" class="form-control">
+                  <option {% if args and args["lang"] and args["lang"]=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
+                  {% for languagename, languacecode in languages.languagelist.items() %}
+                    {% if args and args["lang"] %}
+                      <option {% if args and args["lang"] and args["lang"]==languagename %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
+                    {% else %}
+                      <option {% if "de"==language %}selected{% endif %}>{{languagename}}</option>
+                    {% endif %}
+                  {% endfor %}
                 </select>
               </div>
-              <div class="col d-flex align-items-end">
-                <button type="submit" class="btn btn-secondary  align-bottom">SEARCH</button>
-              </div>
-
             </div>
+            
           </div>
           <div class="col">
 
           </div>
         </div>
       </div>
-      <div class="col-xxl-6" style="width: 660px;min-height: 10px;">
+      <div class="col-xxl-6" style="width: 660px;min-height: 10px;"><!--right half-->
+        <div class="row">
+          <div class="col-md-6"><!-- 3st 4th-->
+            <div class="row">
+              <div class="col-sm-6"><!-- 5st 8th-->
+                <div class="row">
+                  <div class="col-sm-6"><!-- 9th 16th-->
+                    <label for="slorder" class="form-label"><small>order</small></label>
+                    <select name="order" id="slorder" class="form-control">
+                      <option {% if args and args["order"] and args["order"]=="ASC" %}selected{% endif %} value="asc">ASC</option>
+                      <option {% if args and args["order"] and args["order"]=="DSC" %}selected{% endif %} value="desc">DSC</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 d-flex align-items-end"><!-- 6nd 8th-->
+                <button type="submit" class="btn btn-secondary  align-bottom">SEARCH</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6"><!-- 4th 4th-->
+            <div class="row">
+              <div class="col-sm-6"><!-- 7th 8th-->
+                
+              </div>
+              <div class="col-sm-6"><!-- 8th 8th-->
+                
+              </div>
+            </div>
+            
+          </div>
+          <div class="col">
+
+          </div>
       </div>
     </div>
 
@@ -88,7 +125,7 @@
             <th scope="col" style="width:10%;">name</th>
             <th scope="col" style="width:30%;">url</th>
             <th scope="col" style="width:20%;;">homepage</th>
-            <th scope="col" style="width:10%;">language-codes</th>
+            <th scope="col" style="width:20%;">infos*</th>
             <th scope="col" style="width:10%;">tags | countrycode | votes | codec | bitrate | clickcount | clicktrend</th>
           </tr>
         </thead>
@@ -99,8 +136,32 @@
             <td>{{station.name}}</td>
             <td>{{station.url}}</td>
             <td>{{station.homepage}}</td>
-            <td>{{station.languagecodes}}</td>
-            <td>{{station.tags}} | {{station.countrycode}} | {{station.votes}} | {{station.codec}} | {{station.bitrate}} | {{station.clickcount}} | {{station.clicktrend}}</td>
+            <td>
+              {% if station.votes %}
+                <span class="badge text-bg-primary">votes: {{station.votes}}</span>
+              {% endif %}
+              {% if station.clickcount %}
+              <span class="badge text-bg-primary">clicks: {{station.clickcount}}</span>
+              {% endif %}
+              {% if station.clicktrend %}
+                <span class="badge text-bg-primary">trend: {{station.clicktrend}}</span>
+              {% endif %}
+              {% if station.languagecodes %}
+               <span class="badge text-bg-primary">langs: {{station.languagecodes}}</span>
+              {% endif %}
+              {% if station.tags %}
+                <span class="badge text-bg-primary">tags: {{station.tags}}</span>
+              {% endif %}
+              {% if station.countrycode %}
+                <span class="badge text-bg-primary">countries: {{station.countrycode}}</span>
+              {% endif %}
+              {% if station.codec %}
+                <span class="badge text-bg-primary">codec: {{station.codec}}</span>
+              {% endif %}
+              {% if station.bitrate %}
+                <span class="badge text-bg-primary">bits: {{station.bitrate}}</span>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
         </tbody>

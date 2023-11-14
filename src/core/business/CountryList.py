@@ -15,7 +15,7 @@ class CountryList:
 
     def __init__(self, countrylist:dict, lastupdate:datetime=datetime.now()):
         self.__lastupdate = lastupdate
-        self.__countrylist = countrylist
+        self.__countrylist = dict(sorted(countrylist.items()))
 
 
 
