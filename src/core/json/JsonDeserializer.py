@@ -4,7 +4,10 @@ from pathlib import Path
 
 from .CountryListSerialization import CountryListDecoder
 from .LanguageListSerialization import LanguageListDecoder
+from .TagListSerialization import TagListDecoder
 from ..business.CountryList import CountryList
+from ..business.LanguageList import LanguageList
+from ..business.TagList import TagList
 
 class JsonDeserializer():
     __slots__ = ["__path"]
@@ -41,5 +44,14 @@ class JsonDeserializer():
                 jsonstring = infile.read()
                 if jsonstring:
                     return json.loads(jsonstring, cls=LanguageListDecoder)
+            
+            return None
+
+    def get_taglist(self) -> TagList:
+        if Path(self.__path, "cache/taglist.json").exists():
+            with open(Path(self.__path, "cache/taglist.json"), "r") as infile:
+                jsonstring = infile.read()
+                if jsonstring:
+                    return json.loads(jsonstring, cls=TagListDecoder)
             
             return None

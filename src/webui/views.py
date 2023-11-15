@@ -18,7 +18,8 @@ def stationsearch() -> render_template:
     args = request.args
 
     countries = core.get_countries()
-    languages = languages=core.get_languages()
+    languages = core.get_languages()
+    tags = core.get_tags()
 
     if args:
         #prevlink = 

@@ -9,7 +9,7 @@ from .radiobrowserapi.data.RadioStationApi import RadioStationApi
 from .radiobrowserapi import listapi
 from .business.CountryList import CountryList
 from .business.LanguageList import LanguageList
-from .radiobrowserapi.data.LanguageApi import LanguageApi
+from .business.TagList import TagList
 from .raspifmsettings import serialization_directory
 
 
@@ -35,7 +35,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if (not countrylist or countrylist.lastupdate + sevendays < datetime.now()):
             countrylistapi = listapi.query_countrylist()
-            countrylist = CountryList({ country["name"] : country["iso_3166_1"] for country in countrylistapi})
+            countrylist = CountryList({ country["name"] : country["iso_3166_1"] for country in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
 
         return countrylist
@@ -46,10 +46,22 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if (not languagelist or languagelist.lastupdate + sevendays < datetime.now()):
             languagelistapi = listapi.query_languagelist()
-            languagelist = LanguageList({ language["name"] : language["iso_639"] for language in languagelistapi})
+            languagelist = LanguageList({ language["name"] : language["iso_639"] for language in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
 
         return languagelist
+    
+    def get_tags(self) -> TagList:
+        taglist = JsonDeserializer().get_taglist()
+
+        sevendays = timedelta(days=7)
+        if (not taglist or taglist.lastupdate + sevendays < datetime.now()):
+            taglistapi = listapi.query_taglist()
+            taglist = TagList([ tag["name"] for tag in taglistapi ])
+            JsonSerializer().serialize_taglist(taglist)
+
+        return taglist
+
 
 
 
