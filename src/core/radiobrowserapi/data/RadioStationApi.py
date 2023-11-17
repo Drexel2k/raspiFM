@@ -19,51 +19,51 @@ class RadioStationApi:
         return self.__stationuuid
     
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
     
     @property
-    def url(self):
+    def url(self) -> str:
         return self.__url
     
     @property
-    def homepage(self):
+    def homepage(self) -> str:
         return self.__homepage
     
     @property
-    def favicon(self):
+    def favicon(self) -> str:
         return self.__favicon
     
     @property
-    def tags(self):
+    def tags(self) -> str:
         return self.__tags
     
     @property
-    def countrycode(self):
+    def countrycode(self) -> str:
         return self.__countrycode
     
     @property
-    def languagecodes(self):
+    def languagecodes(self) -> str:
         return self.__languagecodes
     
     @property
-    def votes(self):
+    def votes(self) -> int:
         return self.__votes
     
     @property
-    def codec(self):
+    def codec(self) -> str:
         return self.__codec
     
     @property
-    def bitrate(self):
+    def bitrate(self) -> int:
         return self.__bitrate
     
     @property
-    def clickcount(self):
+    def clickcount(self) -> int:
         return self.__clickcount
     
     @property
-    def clicktrend(self):
+    def clicktrend(self) -> int:
         return self.__clicktrend
 
     def __init__(self, apidict:dict):

@@ -5,15 +5,15 @@ class LanguageApi:
     __stationcount:int
     
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
     
     @property
-    def iso_639(self):
+    def iso_639(self) -> str:
         return self.__iso_639
     
     @property
-    def stationcount(self):
+    def stationcount(self) -> int:
         return self.__stationcount
 
     def __init__(self, apidict:dict):

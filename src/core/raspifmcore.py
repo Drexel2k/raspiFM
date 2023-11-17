@@ -25,9 +25,9 @@ class RaspiFM:
     def add_station_to_favorites(self, favoriteList, station):
         raise NotImplementedError
     
-    def get_stations(self, name:str, country:str, language:str, orderby:str, reverse:bool) -> list:
+    def get_stations(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
-                   stationapi.query_stations_advanced(name, country, language, orderby, reverse)))
+                   stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse)))
     
     def get_countries(self) -> CountryList:
         countrylist = JsonDeserializer().get_countrylist()
@@ -51,7 +51,7 @@ class RaspiFM:
 
         return languagelist
     
-    def get_tags(self) -> TagList:
+    def get_tags(self, filter:str=None) -> TagList:
         taglist = JsonDeserializer().get_taglist()
 
         sevendays = timedelta(days=7)
@@ -60,6 +60,9 @@ class RaspiFM:
             taglist = TagList([ tag["name"] for tag in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
+        if filter:
+            taglist.filter(filter)
+            
         return taglist
 
 

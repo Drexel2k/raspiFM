@@ -6,11 +6,11 @@ class CountryList:
     __countrylist:dict
 
     @property
-    def lastupdate(self):
+    def lastupdate(self) -> datetime:
         return self.__lastupdate
     
     @property
-    def countrylist(self):
+    def countrylist(self) -> dict:
         return self.__countrylist
 
     def __init__(self, countrylist:dict, lastupdate:datetime=datetime.now()):

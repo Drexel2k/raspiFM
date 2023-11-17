@@ -1,0 +1,7 @@
+{%- if tags.taglist -%}
+ <ul class="list-unstyled">
+ {%- for tag in tags.taglist -%}
+  <li>{{tag}}</li>
+ {%- endfor -%}
+</ul>
+{%- endif -%}

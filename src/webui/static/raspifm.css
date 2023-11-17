@@ -1,3 +1,77 @@
 .bg-raspicolor {
     background-color: #CD2355;
 }
+
+.bg-color-light, .tagres ul li:hover {
+  background-color: #C2DBFE;
+}
+
+@media (min-width: 576px) {
+    .max-width-200-sm { max-width: 200px; }
+  }
+  
+  @media (min-width: 768px) {
+    .max-width-200-md { max-width: 200px; }
+  }
+  
+  @media (min-width: 992px) {
+    .max-width-200-lg { max-width: 200px; }
+  }
+  
+  @media (min-width: 1200px) {
+    .max-width-200-xl { max-width: 200px; }
+  }
+  
+  @media (min-width: 1400px) {
+    .max-width-200-xxl { max-width: 200px; }
+  }
+
+  
+  .tag-input { 
+    border: 1px solid #DEE2E6; 
+    border-radius: 8px; 
+} 
+
+.tag-input input { 
+  border: 0px; 
+  margin: 0px;
+} 
+
+.tag-input ul { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0;
+    padding: 0px; 
+} 
+
+.tag-input li { 
+    display: inline-block; 
+    background-color: #f2f2f2; 
+    color: #333; 
+    border-radius: 8px; 
+    padding: 3px 10px; 
+    margin-right: 5px; 
+    margin-bottom: 5px; 
+} 
+
+.tag-input .deletebtn { 
+    background-color: transparent; 
+    border: none; 
+    color: #999; 
+    cursor: pointer; 
+    margin-left: 5px; 
+} 
+
+.tagres {
+  background-color: white;
+  position: absolute;
+  top: 30;
+  left: 0;
+  z-index: 10;
+  border: 1px solid #DEE2E6; 
+  border-radius: 5px;
+  padding: 5px;
+  display:none;
+  overflow-y:scroll;
+  max-height:300px;
+}

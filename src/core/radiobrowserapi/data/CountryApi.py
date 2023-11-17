@@ -5,15 +5,15 @@ class CountryApi:
     __stationcount:int
     
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
     
     @property
-    def iso_3166_1(self):
+    def iso_3166_1(self) -> str:
         return self.__iso_3166_1
     
     @property
-    def stationcount(self):
+    def stationcount(self) -> int:
         return self.__stationcount
 
     def __init__(self, apidict:dict):

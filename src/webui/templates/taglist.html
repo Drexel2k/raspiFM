@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% set active_page = 3 %}
+
+{% block title %}
+Tag List
+{% endblock %}
+{% block content %}
+<h1>Tag List</h1>
+{%- if tags.taglist -%}
+ {%- for tag in tags.taglist -%}
+ <span class="badge text-bg-primary m-1">{{tag}}</span>
+ {%- endfor -%}
+{%- endif -%}
+{% endblock %}

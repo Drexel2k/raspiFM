@@ -6,11 +6,11 @@ class LanguageList:
     __languagelist:dict
 
     @property
-    def lastupdate(self):
+    def lastupdate(self) -> datetime:
         return self.__lastupdate
     
     @property
-    def languagelist(self):
+    def languagelist(self) -> dict:
         return self.__languagelist
 
     def __init__(self, languagelist:dict, lastupdate:datetime=datetime.now()):

@@ -7,23 +7,23 @@ class RadioStation:
     __homepage:str
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
     
     @property
-    def uuid(self):
+    def uuid(self) -> str:
         return self.__uuid
     
     @property
-    def url(self):
+    def url(self) -> str:
         return self.__url
     
     @property
-    def languacecodes(self):
+    def languacecodes(self) -> str:
         return self.__languagecodes
     
     @property
-    def homepage(self):
+    def homepage(self) -> str:
         return self.__homepage
 
     def __init__(self, uuid:str, name:str, url:str, languagecodes:str, homepage:str):
