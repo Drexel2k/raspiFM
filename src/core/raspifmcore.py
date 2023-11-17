@@ -25,9 +25,9 @@ class RaspiFM:
     def add_station_to_favorites(self, favoriteList, station):
         raise NotImplementedError
     
-    def get_stations(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool) -> list:
+    def get_stations(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
-                   stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse)))
+                   stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
     
     def get_countries(self) -> CountryList:
         countrylist = JsonDeserializer().get_countrylist()

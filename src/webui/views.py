@@ -24,38 +24,60 @@ def stationsearch() -> render_template:
         #prevlink = 
         #nextlink=
 
-        name = args["name"]
-        if(name==""):
-            name=None
+        name = None
+        if("name" in args and not args["name"].isspace()):
+            name=args["name"]
 
-        country = args["country"]
-        if(country=="nofilter"):
-            country=None
-
-        language = args["lang"]
-        if(language=="nofilter"):
-            language=None
+        country = None
+        if("country" in args and not args["country"].isspace() and not args["country"]=="nofilter"):
+            country=args["country"]
         
-        tags = args["tags"]
-        if(not tags):
-            tags=None
+        language = None
+        if("lang" in args and not args["lang"].isspace() and not args["lang"]=="nofilter"):
+            language=args["lang"]
 
-        tags = tags.split(",")
+        tags = []
+        if("tags" in args and not args["tags"].isspace()):
+            tags = args["tags"].split(",")
 
-        stations = core.get_stations(name, country, language, tags, args["orderby"], False if args["order"] == "asc" else True)
+        page=1
+        if("page" in args and not args["page"].isspace()):
+            page=int(args["page"])
+
+        pagelast = page - 1
+        if(pagelast < 1):
+            pagelast = 1
+        
+        pagenext= page + 1
+
+        stations = core.get_stations(name, country, language, tags, args["orderby"], False if args["order"] == "asc" else True, page)
 
         return render_template("stationsearch.html",
                                stations=stations, 
                                countries=countries,
                                languages=languages,
-                               args=args)
+                               orderby=args["orderby"],
+                               order=args["order"],
+                               selectedname=name,
+                               selectedcountry=country,
+                               selectedlang=language,
+                               selectedtags=tags,
+                               pagelast=pagelast,
+                               pagenext=pagenext
+                               )
     else:
-        args = { "country": raspifmsettings.defaulcountry, "lang" : raspifmsettings.defaultlanguage}
-
         return render_template("stationsearch.html",
                                countries=countries,
                                languages=languages,
-                               args=args)
+                               orderby="name",
+                               order="asc",
+                               selectedname=None,
+                               selectedcountry=raspifmsettings.defaulcountry,
+                               selectedlang=raspifmsettings.defaultlanguage,
+                               selectedtags=[],
+                               pagelast=1,
+                               pagenext=2
+                               )
     
 @app.route("/taglist")
 def taglist() -> render_template:
