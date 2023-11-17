@@ -17,6 +17,7 @@
       <div class="d-sm-inline-block">
         <label for="slcountry" class="form-label"><small>country</small></label>
         <select name="country" id="slcountry" class="form-control max-width-200-sm">
+          <option {% if args and args["country"] and args["country"]=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for countryname, countrycode in countries.countrylist.items() %}
               <option {% if args["country"] and args["country"]==countrycode %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
           {% endfor %}
@@ -26,6 +27,7 @@
       <div class="d-sm-inline-block">
         <label for="sllang" class="form-label"><small>language</small></label>
         <select name="lang" id="sllang" class="form-control max-width-200-sm">
+          <option {% if args and args["lang"] and args["lang"]=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for languagename, languacecode in languages.languagelist.items() %}
               <option {% if args["lang"] and args["lang"]==languagename %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
           {% endfor %}
@@ -114,9 +116,6 @@
               {% if station.languagecodes %}
                <span class="badge text-bg-primary text-wrap">langs: {{station.languagecodes}}</span>
               {% endif %}
-              {% if station.tags %}
-                <span class="badge text-bg-primary text-wrap">tags: {{station.tags}}</span>
-              {% endif %}
               {% if station.countrycode %}
                 <span class="badge text-bg-primary text-wrap">countries: {{station.countrycode}}</span>
               {% endif %}
@@ -125,6 +124,9 @@
               {% endif %}
               {% if station.bitrate %}
                 <span class="badge text-bg-primary text-wrap">bits: {{station.bitrate}}</span>
+              {% endif %}
+              {% if station.tags %}
+                <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.tags)}}</span>
               {% endif %}
             </td>
           </tr>

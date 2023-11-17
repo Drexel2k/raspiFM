@@ -5,7 +5,7 @@ class RadioStationApi:
     __url:str
     __homepage:str
     __favicon:str
-    __tags:str
+    __tags:list
     __countrycode:str
     __languagecodes:str
     __votes:int
@@ -35,7 +35,7 @@ class RadioStationApi:
         return self.__favicon
     
     @property
-    def tags(self) -> str:
+    def tags(self) -> list:
         return self.__tags
     
     @property
@@ -71,5 +71,8 @@ class RadioStationApi:
             dictkey = slot[1][2:]
             if(not(dictkey in apidict)):
                raise TypeError(f"{dictkey} key not found in radio station api response dictionary.")
-            self.__setattr__(f"_RadioStationApi{slot[1]}", apidict[dictkey])
+            if(dictkey != "tags"):
+                self.__setattr__(f"_RadioStationApi{slot[1]}", apidict[dictkey])
+            else:
+                self.__setattr__(f"_RadioStationApi{slot[1]}", apidict[dictkey].split(","))
 
