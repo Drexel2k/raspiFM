@@ -75,3 +75,7 @@
   overflow-y:scroll;
   max-height:300px;
 }
+
+.fav {
+  width: 5em;
+  }

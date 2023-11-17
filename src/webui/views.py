@@ -25,23 +25,24 @@ def stationsearch() -> render_template:
         #nextlink=
 
         name = None
-        if("name" in args and not args["name"].isspace()):
+        if("name" in args and args["name"] and not args["name"].isspace()):
             name=args["name"]
 
         country = None
-        if("country" in args and not args["country"].isspace() and not args["country"]=="nofilter"):
+        if("country" in args and args["country"] and not args["country"].isspace() and not args["country"]=="nofilter"):
             country=args["country"]
         
         language = None
-        if("lang" in args and not args["lang"].isspace() and not args["lang"]=="nofilter"):
+        if("lang" in args and args["lang"] and not args["lang"].isspace() and not args["lang"]=="nofilter"):
             language=args["lang"]
 
         tags = []
-        if("tags" in args and not args["tags"].isspace()):
+        if("tags" in args and  args["tags"] and not args["tags"].isspace()):
+            print(args["tags"].isspace())
             tags = args["tags"].split(",")
 
         page=1
-        if("page" in args and not args["page"].isspace()):
+        if("page" in args and args["page"] and not args["page"].isspace()):
             page=int(args["page"])
 
         pagelast = page - 1
