@@ -18,10 +18,16 @@ def favorites() -> render_template:
 def stationsearch() -> render_template:   
     args = request.args
 
+    stations = None
     countries = core.get_countries()
     languages = core.get_languages()
+    favorites = core.get_favorites()
+    defaultfavoritelist = favorites.getdefault()
 
     selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc" }
+
+    pagelast=1
+    pagenext=2
 
     if args:
         if("name" in args and not utils.str_isnullorwhitespace(args["name"])):
@@ -52,22 +58,15 @@ def stationsearch() -> render_template:
 
         stations = core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page)
 
-        return render_template("stationsearch.html",
+    return render_template("stationsearch.html",
                                stations=stations, 
                                countries=countries,
                                languages=languages,
                                selected=selected,
                                pagelast=pagelast,
-                               pagenext=pagenext
-                               )
-    else:
-        return render_template("stationsearch.html",
-                               countries=countries,
-                               languages=languages,
-                               selected=selected,
-                               pagelast=1,
-                               pagenext=2
-                               )
+                               pagenext=pagenext,
+                               favorites=favorites,
+                               defaultfavoritelist=defaultfavoritelist)
     
 @app.route("/taglist")
 def taglist() -> render_template:
@@ -80,3 +79,4 @@ def gettags() -> render_template:
     form = request.form
     taglist = core.get_tags(form["filter"])
     return render_template("gettags.html", tags=taglist)
+

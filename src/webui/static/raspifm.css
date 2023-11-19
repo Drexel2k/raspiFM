@@ -7,27 +7,26 @@
 }
 
 @media (min-width: 576px) {
-    .max-width-200-sm { max-width: 200px; }
-  }
-  
-  @media (min-width: 768px) {
-    .max-width-200-md { max-width: 200px; }
-  }
-  
-  @media (min-width: 992px) {
-    .max-width-200-lg { max-width: 200px; }
-  }
-  
-  @media (min-width: 1200px) {
-    .max-width-200-xl { max-width: 200px; }
-  }
-  
-  @media (min-width: 1400px) {
-    .max-width-200-xxl { max-width: 200px; }
-  }
+  .max-width-12-sm { max-width: 12em; }
+}
 
-  
-  .tag-input { 
+@media (min-width: 768px) {
+  .max-width-12-md { max-width: 12em; }
+}
+
+@media (min-width: 992px) {
+  .max-width-12-lg { max-width: 12em; }
+}
+
+@media (min-width: 1200px) {
+  .max-width-12-xl { max-width: 12em; }
+}
+
+@media (min-width: 1400px) {
+  .max-width-12-xxl { max-width: 12em; }
+}
+
+.tag-input { 
     border: 1px solid #DEE2E6; 
     border-radius: 8px; 
 } 
@@ -78,3 +77,8 @@
 .fav {
   width: 5em;
   }
+
+#slfavorites {
+  max-width: 200px;
+  min-width: 100px;
+}

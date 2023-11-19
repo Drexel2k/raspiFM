@@ -1,6 +1,7 @@
 
 from datetime import datetime
 from datetime import timedelta
+
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
 from .business.CountryList import CountryList
@@ -10,6 +11,8 @@ from .radiobrowserapi import listapi
 from .business.CountryList import CountryList
 from .business.LanguageList import LanguageList
 from .business.TagList import TagList
+from .business.Favorites import Favorites
+
 from .raspifmsettings import serialization_directory
 
 
@@ -19,8 +22,12 @@ class RaspiFM:
         JsonSerializer(serialization_directory)
         JsonDeserializer(serialization_directory)
 
-    def get_Favorites(self):
-        raise NotImplementedError
+    def get_favorites(self) -> dict:
+        favorites = JsonDeserializer().get_favorites()
+        if(not favorites):
+            favorites = Favorites()
+
+        return favorites
 
     def add_station_to_favorites(self, favoriteList, station):
         raise NotImplementedError

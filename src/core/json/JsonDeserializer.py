@@ -1,13 +1,13 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-
 from .CountryListSerialization import CountryListDecoder
 from .LanguageListSerialization import LanguageListDecoder
 from .TagListSerialization import TagListDecoder
 from ..business.CountryList import CountryList
 from ..business.LanguageList import LanguageList
 from ..business.TagList import TagList
+from ..business.Favorites import Favorites
 
 class JsonDeserializer():
     __slots__ = ["__path"]
@@ -36,7 +36,7 @@ class JsonDeserializer():
                 if jsonstring:
                     return json.loads(jsonstring, cls=CountryListDecoder)
             
-            return None
+        return None
         
     def get_languagelist(self) -> LanguageList:
         if Path(self.__path, "cache/languagelist.json").exists():
@@ -45,7 +45,7 @@ class JsonDeserializer():
                 if jsonstring:
                     return json.loads(jsonstring, cls=LanguageListDecoder)
             
-            return None
+        return None
 
     def get_taglist(self) -> TagList:
         if Path(self.__path, "cache/taglist.json").exists():
@@ -54,4 +54,13 @@ class JsonDeserializer():
                 if jsonstring:
                     return json.loads(jsonstring, cls=TagListDecoder)
             
-            return None
+        return None
+        
+    def get_favorites(self) -> Favorites:
+        if Path(self.__path, "favorites.json").exists():
+            with open(Path(self.__path, "favorites.json"), "r") as infile:
+                jsonstring = infile.read()
+                if jsonstring:
+                    return json.loads(jsonstring)
+            
+        return None
