@@ -2,6 +2,7 @@ from flask import render_template, request
 from . import app
 from ..core.raspifmcore import RaspiFM
 from ..core import raspifmsettings
+from ..utils import utils
 
 core = RaspiFM()
 
@@ -14,35 +15,33 @@ def favorites() -> render_template:
     return render_template("favorites.html")
 
 @app.route("/stationsearch")
-def stationsearch() -> render_template:
+def stationsearch() -> render_template:   
     args = request.args
 
     countries = core.get_countries()
     languages = core.get_languages()
 
+    selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc" }
+
     if args:
-        #prevlink = 
-        #nextlink=
+        if("name" in args and not utils.str_isnullorwhitespace(args["name"])):
+            selected["name"]=args["name"]
 
-        name = None
-        if("name" in args and args["name"] and not args["name"].isspace()):
-            name=args["name"]
-
-        country = None
-        if("country" in args and args["country"] and not args["country"].isspace() and not args["country"]=="nofilter"):
-            country=args["country"]
+        if("country" in args and not utils.str_isnullorwhitespace(args["country"]) and not args["country"]=="nofilter"):
+            selected["country"]=args["country"]
         
-        language = None
-        if("lang" in args and args["lang"] and not args["lang"].isspace() and not args["lang"]=="nofilter"):
-            language=args["lang"]
+        if("lang" in args and not utils.str_isnullorwhitespace(args["lang"]) and not args["lang"]=="nofilter"):
+            selected["language"]=args["lang"]
 
-        tags = []
-        if("tags" in args and  args["tags"] and not args["tags"].isspace()):
+        if("tags" in args and not utils.str_isnullorwhitespace(args["tags"])):
             print(args["tags"].isspace())
-            tags = args["tags"].split(",")
+            selected["tags"] = args["tags"].split(",")
+
+        selected["orderby"] = args["orderby"]
+        selected["order"] = args["order"]
 
         page=1
-        if("page" in args and args["page"] and not args["page"].isspace()):
+        if("page" in args and not utils.str_isnullorwhitespace(args["page"])):
             page=int(args["page"])
 
         pagelast = page - 1
@@ -51,18 +50,13 @@ def stationsearch() -> render_template:
         
         pagenext= page + 1
 
-        stations = core.get_stations(name, country, language, tags, args["orderby"], False if args["order"] == "asc" else True, page)
+        stations = core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page)
 
         return render_template("stationsearch.html",
                                stations=stations, 
                                countries=countries,
                                languages=languages,
-                               orderby=args["orderby"],
-                               order=args["order"],
-                               selectedname=name,
-                               selectedcountry=country,
-                               selectedlang=language,
-                               selectedtags=tags,
+                               selected=selected,
                                pagelast=pagelast,
                                pagenext=pagenext
                                )
@@ -70,12 +64,7 @@ def stationsearch() -> render_template:
         return render_template("stationsearch.html",
                                countries=countries,
                                languages=languages,
-                               orderby="name",
-                               order="asc",
-                               selectedname=None,
-                               selectedcountry=raspifmsettings.defaulcountry,
-                               selectedlang=raspifmsettings.defaultlanguage,
-                               selectedtags=[],
+                               selected=selected,
                                pagelast=1,
                                pagenext=2
                                )

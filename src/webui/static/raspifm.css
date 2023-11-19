@@ -65,8 +65,7 @@
 .tagres {
   background-color: white;
   position: absolute;
-  top: 30;
-  left: 0;
+  left: 90px;
   z-index: 10;
   border: 1px solid #DEE2E6; 
   border-radius: 5px;

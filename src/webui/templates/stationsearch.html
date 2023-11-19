@@ -10,7 +10,7 @@
     <div>
       <div class="d-sm-inline-block">
         <label for="txname" class="form-label"><small>name</small></label>
-        <input style="min-width:15em;" type="text" id="txname" name="name" class="form-control" placeholder="Enter station name to search" value="{{ selectedname|default("", true) }}">
+        <input style="min-width:15em;" type="text" id="txname" name="name" class="form-control" placeholder="Enter station name to search" value="{{ selected["name"]|default("", true) }}">
       </div>
 
       <div class="d-sm-inline-block">
@@ -18,7 +18,7 @@
         <select name="country" id="slcountry" class="form-control max-width-200-sm">
           <option {% if selectedcountry=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for countryname, countrycode in countries.countrylist.items() %}
-              <option {% if selectedcountry==countrycode %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
+              <option {% if selected["country"]==countrycode %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
           {% endfor %}
         </select>
       </div>
@@ -28,7 +28,7 @@
         <select name="lang" id="sllang" class="form-control max-width-200-sm">
           <option {% if selectedlang=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for languagename, languacecode in languages.languagelist.items() %}
-              <option {% if selectedlang==languagename %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
+              <option {% if selected["language"]==languagename %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
           {% endfor %}
         </select>
       </div>
@@ -36,29 +36,29 @@
       <div class="d-sm-inline-block">
         <label for="slorderby" class="form-label"><small>order by</small></label>
         <select name="orderby" id="slorderby" class="form-control">
-            <option {% if orderby=="name" %}selected{% endif %} value="name">NAME</option>
-            <option {% if orderby=="votes" %}selected{% endif %} value="votes">VOTES</option>
-            <option {% if orderby=="clicktrend" %}selected{% endif %} value="clicktrend">CLICKTREND</option>
-            <option {% if orderby=="clickcount" %}selected{% endif %} value="clickcount">CLICKS</option>
+            <option {% if selected["orderby"]=="name" %}selected{% endif %} value="name">NAME</option>
+            <option {% if selected["orderby"]=="votes" %}selected{% endif %} value="votes">VOTES</option>
+            <option {% if selected["orderby"]=="clicktrend" %}selected{% endif %} value="clicktrend">CLICKTREND</option>
+            <option {% if selected["orderby"]=="clickcount" %}selected{% endif %} value="clickcount">CLICKS</option>
         </select>
       </div>
 
       <div class="d-sm-inline-block">
         <label for="slorder" class="form-label"><small>order</small></label>
         <select name="order" id="slorder" class="form-control">
-          <option {% if order=="ASC" %}selected{% endif %} value="asc">ASC</option>
-          <option {% if order=="DSC" %}selected{% endif %} value="desc">DSC</option>
+          <option {% if selected["order"]=="ASC" %}selected{% endif %} value="asc">ASC</option>
+          <option {% if selected["order"]=="DSC" %}selected{% endif %} value="desc">DSC</option>
         </select>
       </div>
-      <div style="height:1em;"></div>
+      <div style="height:10px;"></div>
       <div>
         <div style="position:relative">
-          <input type="hidden" id="txtags" name="tags" value="{{",".join(selectedtags)}}">
+          <input type="hidden" id="txtags" name="tags" value="{{",".join(selected["tags"])}}">
           <label for="tagsearch1" class="form-label"><small>tags  (<a class="link-primary link-underline-opacity-25 link-underline-opacity-100-hover" href="{{ url_for("taglist") }}">list</a>)</small></label>
           <div class="tag-input"> 
             <ul id="tagdisplay1">
-              {% if selectedtags %}
-                {% for tag in selectedtags %}
+              {% if selected["tags"] %}
+                {% for tag in selected["tags"] %}
                   <li>{{tag}}<button class="deletebtn">X</button></li>
                 {% endfor %} 
               {% endif %}
@@ -67,7 +67,7 @@
           </div>
           <div id="tagres1" class="tagres"></div>
         </div>
-        <div style="height:1em;"></div>
+        <div style="height:10px;"></div>
           <div>
             <button type="submit" class="btn btn-secondary  align-bottom">SEARCH</button>
         </div>
