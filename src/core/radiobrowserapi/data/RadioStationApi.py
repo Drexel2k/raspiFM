@@ -1,8 +1,9 @@
 class RadioStationApi:
-    __slots__ = ["__stationuuid", "__name", "__url", "__homepage", "__favicon", "__tags", "__countrycode", "__languagecodes", "__votes", "__codec", "__bitrate", "__clickcount", "__clicktrend"]
+    __slots__ = ["__stationuuid", "__name", "__url", "__url_resolved", "__homepage", "__favicon", "__tags", "__countrycode", "__languagecodes", "__votes", "__codec", "__bitrate", "__clickcount", "__clicktrend"]
     __stationuuid:str
     __name:str
     __url:str
+    __url_resolved:str
     __homepage:str
     __favicon:str
     __tags:list
@@ -25,6 +26,10 @@ class RadioStationApi:
     @property
     def url(self) -> str:
         return self.__url
+    
+    @property
+    def url_resolved(self) -> str:
+        return self.__url_resolved
     
     @property
     def homepage(self) -> str:

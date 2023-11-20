@@ -1,13 +1,17 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+
 from .CountryListSerialization import CountryListDecoder
 from .LanguageListSerialization import LanguageListDecoder
 from .TagListSerialization import TagListDecoder
+from .FavoritesSerialization import FavoritesDecoder
+from .RadioStationsSerialization import RadioStationsDecoder
 from ..business.CountryList import CountryList
 from ..business.LanguageList import LanguageList
 from ..business.TagList import TagList
 from ..business.Favorites import Favorites
+from ..business.RadioStations import RadioStations
 
 class JsonDeserializer():
     __slots__ = ["__path"]
@@ -25,9 +29,6 @@ class JsonDeserializer():
     
     def __init(self, path:str):
         self.__path = path
-
-    def get_dict_from_response(self, jsonstring:str) -> dict:
-        return json.loads(jsonstring)
     
     def get_countrylist(self) -> CountryList:
         if Path(self.__path, "cache/countrylist.json").exists():
@@ -56,11 +57,26 @@ class JsonDeserializer():
             
         return None
         
-    def get_favorites(self) -> Favorites:
+    def get_favorites(self, stations:RadioStations) -> Favorites:
         if Path(self.__path, "favorites.json").exists():
             with open(Path(self.__path, "favorites.json"), "r") as infile:
                 jsonstring = infile.read()
                 if jsonstring:
-                    return json.loads(jsonstring)
+                    return json.loads(jsonstring, cls=FavoritesDecoder, stations=stations)
             
         return None
+    
+    def get_radiostations(self) -> RadioStations:
+        if Path(self.__path, "radiostations.json").exists():
+            with open(Path(self.__path, "radiostations.json"), "r") as infile:
+                jsonstring = infile.read()
+                if jsonstring:
+                    return json.loads(jsonstring, cls=RadioStationsDecoder)
+            
+        return None
+    
+    def get_dict_from_response(self, jsonstring:str) -> dict:
+        return json.loads(jsonstring)
+
+
+    

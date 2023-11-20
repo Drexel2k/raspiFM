@@ -13,9 +13,21 @@ class LanguageList:
     def languagelist(self) -> dict:
         return self.__languagelist
 
-    def __init__(self, languagelist:dict, lastupdate:datetime=datetime.now()):
-        self.__lastupdate = lastupdate
-        self.__languagelist = dict(sorted(languagelist.items()))
+    def __init__(self, languagelist:dict=None, serializationdata:dict=None):
+        if(serializationdata):
+            self.__languagelist = {}
+            for slot in enumerate(self.__slots__):
+                dictkey = slot[1][2:]
+                if(not(dictkey in serializationdata)):
+                    raise TypeError(f"{dictkey} key not found in LanguageList serialization data.")
+                
+                self.__setattr__(f"_LanguageList{slot[1]}", serializationdata[dictkey])
+        else:
+            if(not languagelist):
+                raise ValueError("languagelist must not be null for LanguageList.")
+
+            self.__lastupdate = datetime.now()
+            self.__languagelist = dict(sorted(languagelist.items()))
 
 
 

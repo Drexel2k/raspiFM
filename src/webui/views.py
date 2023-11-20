@@ -1,8 +1,11 @@
 from flask import render_template, request
+
 from . import app
+from uuid import UUID
 from ..core.raspifmcore import RaspiFM
 from ..core import raspifmsettings
 from ..utils import utils
+from .ViewProxies.RadioStationView import RadioStationView
 
 core = RaspiFM()
 
@@ -18,13 +21,13 @@ def favorites() -> render_template:
 def stationsearch() -> render_template:   
     args = request.args
 
-    stations = None
+    stations = []
     countries = core.get_countries()
     languages = core.get_languages()
-    favorites = core.get_favorites()
+    favorites = core.favorites
     defaultfavoritelist = favorites.getdefault()
 
-    selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc" }
+    selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":defaultfavoritelist }
 
     pagelast=1
     pagenext=2
@@ -40,15 +43,17 @@ def stationsearch() -> render_template:
             selected["language"]=args["lang"]
 
         if("tags" in args and not utils.str_isnullorwhitespace(args["tags"])):
-            print(args["tags"].isspace())
             selected["tags"] = args["tags"].split(",")
+
+        if("favoritelist" in args and not utils.str_isnullorwhitespace(args["favoritelist"])):
+            selected["favoritelist"] = favorites.getlist(UUID(args["favoritelist"]))
 
         selected["orderby"] = args["orderby"]
         selected["order"] = args["order"]
 
         page=1
         if("page" in args and not utils.str_isnullorwhitespace(args["page"])):
-            page=int(args["page"])
+            page=int(UUID(args["page"]))
 
         pagelast = page - 1
         if(pagelast < 1):
@@ -56,7 +61,11 @@ def stationsearch() -> render_template:
         
         pagenext= page + 1
 
-        stations = core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page)
+        for stationapi in core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
+            if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
+                stations.append(RadioStationView(stationapi, True))
+            else:
+                stations.append(RadioStationView(stationapi, False))
 
     return render_template("stationsearch.html",
                                stations=stations, 
@@ -79,4 +88,17 @@ def gettags() -> render_template:
     form = request.form
     taglist = core.get_tags(form["filter"])
     return render_template("gettags.html", tags=taglist)
+
+#ajax endpoint
+@app.route("/changefavorite", methods=["POST"])
+def changefavorite() -> None:
+    form = request.form
+    if(form["changetype"] == "add"):
+        core.add_station_to_favlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+
+    if(form["changetype"] == "remove"):
+        core.remove_station_from_favlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+
+    return "", 204
+    
 

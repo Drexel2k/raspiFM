@@ -1,8 +1,8 @@
 import socket
-import urllib
-import urllib.request
-import json
+from urllib import request
 import random
+from base64 import b64encode
+from ..json.JsonSerializer import JsonSerializer
 
 def get_radiobrowser_base_urls():
     hosts = []
@@ -23,16 +23,16 @@ def get_radiobrowser_base_urls():
     # add "https://" in front to make it an url
     return list(map(lambda x: "https://" + x, hosts))
 
-def do_radiobrowser_post_request_get_data(uri, param) -> bytes:
-    paramEncoded = None
-    if param != None:
-        paramEncoded = json.dumps(param).encode("utf-8")
+def do_radiobrowser_post_request_get_data(uri, params) -> bytes:
+    paramsEncoded = None
+    if params:
+        paramsEncoded = JsonSerializer().serialize_restparams(params)
 
-    req = urllib.request.Request(uri, paramEncoded)
+    req = request.Request(uri, paramsEncoded)
 
     req.add_header('User-Agent', 'raspiFM/0.0.1')
     req.add_header('Content-Type', 'application/json')
-    response = urllib.request.urlopen(req)
+    response = request.urlopen(req)
     data = response.read()
 
     response.close()
@@ -47,3 +47,7 @@ def get_radiobrowser_post_request_data(endpoint: str, param: dict) -> bytes:
         return do_radiobrowser_post_request_get_data(uri, param)
     
     return b""
+
+def get_urlbinary_contentasb64(url:str) -> str:
+    with request.urlopen(url) as response:
+        return b64encode(response.read()).decode("ASCII")
