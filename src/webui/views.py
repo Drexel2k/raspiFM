@@ -1,4 +1,4 @@
-from flask import render_template, request
+from flask import make_response, render_template, request
 
 from . import app
 from uuid import UUID
@@ -24,8 +24,7 @@ def stationsearch() -> render_template:
     stations = []
     countries = core.get_countries()
     languages = core.get_languages()
-    favorites = core.favorites
-    defaultfavoritelist = favorites.getdefault()
+    defaultfavoritelist = core.favorites.getdefault()
 
     selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":defaultfavoritelist }
 
@@ -46,7 +45,7 @@ def stationsearch() -> render_template:
             selected["tags"] = args["tags"].split(",")
 
         if("favoritelist" in args and not utils.str_isnullorwhitespace(args["favoritelist"])):
-            selected["favoritelist"] = favorites.getlist(UUID(args["favoritelist"]))
+            selected["favoritelist"] = core.favorites.getlist(UUID(args["favoritelist"]))
 
         selected["orderby"] = args["orderby"]
         selected["order"] = args["order"]
@@ -74,8 +73,7 @@ def stationsearch() -> render_template:
                                selected=selected,
                                pagelast=pagelast,
                                pagenext=pagenext,
-                               favorites=favorites,
-                               defaultfavoritelist=defaultfavoritelist)
+                               favorites=core.favorites)
     
 @app.route("/taglist")
 def taglist() -> render_template:
@@ -99,6 +97,16 @@ def changefavorite() -> None:
     if(form["changetype"] == "remove"):
         core.remove_station_from_favlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
-    return "", 204
-    
+    response = make_response("", 204)
+    response.mimetype = "application/json"
+    return response
 
+#ajax endpoint
+@app.route("/getfavoritelist", methods=["POST"])
+def getfavoritelist() -> render_template:
+    form = request.form
+    favoritlist = core.favorites.getlist(UUID(form["favlistuuid"]))
+    stationuuids = [station.uuid for station in favoritlist.stations]
+    response = make_response(core.get_serialzeduuids(stationuuids), 200)
+    response.mimetype = "application/json"
+    return response

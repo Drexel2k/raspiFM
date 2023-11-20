@@ -126,6 +126,7 @@ class RaspiFM:
             
         return taglist
 
-
+    def get_serialzeduuids(self, uuids:list) -> str:
+        return JsonSerializer().serialize_uuids(uuids)
 
 

@@ -54,3 +54,6 @@ class JsonSerializer():
 
     def serialize_restparams(self, params:dict) -> str:
         return json.dumps(params, cls=RestParamsEncoder).encode("utf-8")
+    
+    def serialize_uuids(self, uuids:list):
+        return json.dumps(uuids, default=str)

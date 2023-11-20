@@ -92,7 +92,29 @@ function initStationSearch()
 
     $("#slfavorites").on("change", function(e)
     {   
-        $(".page-link").attr('href', 'URL')
+        $("#txfavlist").val($("#slfavorites").val())
+        $.ajax(
+            {   url:"getfavoritelist",
+                method:"POST",
+                data:{favlistuuid:$("#slfavorites").val()},
+                success:function(data)
+                {
+                    let imgid
+                    $('img[id^="favimg-"]').each(function( index)
+                    {
+                        imgid=$(this).attr("id").substr(7)
+                        if(jQuery.inArray(imgid, data) > -1)
+                        {
+                            $(this).attr("src", $(this).attr("src").replace("star.svg", "star-fill.svg"));
+                        }
+                        else
+                        {
+                            $(this).attr("src", $(this).attr("src").replace("star-fill.svg", "star.svg"));
+                        }
+                    }); 
+                }
+            }
+        );
     });
 }
 
@@ -122,10 +144,3 @@ $('.fav-link').on("click", function(e)
         }
     );
 });
-
-function replaceUrlParam(url, param)
-{
-    url.replace(/param=([^&]+)/, function(_, oldval) {
-        return param= + (2*parseInt(oldval,10))
-   });
-}
