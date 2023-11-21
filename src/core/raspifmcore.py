@@ -60,9 +60,13 @@ class RaspiFM:
             station = RadioStation(radiostationapi.stationuuid,
                                    radiostationapi.name,
                                    radiostationapi.url_resolved,
+                                   radiostationapi.countrycode,
                                    radiostationapi.languagecodes,
                                    radiostationapi.homepage,
-                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi))
+                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi),
+                                   radiostationapi.codec,
+                                   radiostationapi.bitrate,
+                                   list(radiostationapi.tags),)
             
             self.radiostations.add_station(station)
             JsonSerializer().serialize_radiostations(self.radiostations)

@@ -63,14 +63,14 @@
                 {% endfor %} 
               {% endif %}
             </ul> 
-            <input type="text" id="tagsearch1" class="form-control" placeholder="Enter tag to search" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title=" All tags must match on a station when multiple tags are selected." /> 
+            <input type="text" id="tagsearch1" class="form-control" placeholder="Enter tag to search" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="All tags must match on a station when multiple tags are selected." /> 
           </div>
-          <div id="tagres1" class="tagres"></div>
-        </div>
-        <div style="height:10px;"></div>
-          <div>
-            <input type="hidden" id="txfavlist" name="favoritelist" value="{{ selected["favoritelist"].uuid|string }}">
-            <button type="submit" class="btn btn-secondary  align-bottom">SEARCH</button>
+        <div id="tagres1" class="tagres"></div>
+      </div>
+      <div style="height:10px;"></div>
+        <div>
+          <input type="hidden" id="txfavlist" name="favoritelist" value="{{ selected["favoritelist"].uuid|string }}">
+          <button type="submit" class="btn btn-primary  align-bottom">SEARCH</button>
         </div>
       </div>
     </div>  

@@ -82,3 +82,7 @@
   max-width: 200px;
   min-width: 100px;
 }
+
+.suppress-carot:after {
+   content: none;
+}

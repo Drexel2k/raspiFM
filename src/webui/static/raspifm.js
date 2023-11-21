@@ -1,8 +1,5 @@
 function initStationSearch()
 {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
     $("#tagdisplay1").click(function (e) 
     { 
         // If the clicked element has the class 'delete-button' 
@@ -118,6 +115,12 @@ function initStationSearch()
     });
 }
 
+function initToolTips()
+{
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+}
+
 $('.fav-link').on("click", function(e)
 {
     let changetype = $(this).attr("data-changetype")
@@ -144,3 +147,18 @@ $('.fav-link').on("click", function(e)
         }
     );
 });
+
+function playaudio(url)
+{
+    const myAudio = document.createElement("audio");
+    
+
+    if (myAudio.canPlayType("audio/mpeg")) {
+    myAudio.setAttribute("src", "audiofile.mp3");
+    } else if (myAudio.canPlayType("audio/ogg")) {
+    myAudio.setAttribute("src", "audiofile.ogg");
+    }
+
+    myAudio.currentTime = 5;
+    myAudio.play();
+}

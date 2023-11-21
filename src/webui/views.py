@@ -15,7 +15,11 @@ def home() -> render_template:
 
 @app.route("/favorites")
 def favorites() -> render_template:
-    return render_template("favorites.html")
+    selected = {"favoritelist":core.favorites.getdefault() }
+
+    return render_template("favorites.html",
+                           favorites=core.favorites,
+                           selected=selected)
 
 @app.route("/stationsearch")
 def stationsearch() -> render_template:   
@@ -24,9 +28,8 @@ def stationsearch() -> render_template:
     stations = []
     countries = core.get_countries()
     languages = core.get_languages()
-    defaultfavoritelist = core.favorites.getdefault()
 
-    selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":defaultfavoritelist }
+    selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.favorites.getdefault() }
 
     pagelast=1
     pagenext=2
@@ -61,19 +64,20 @@ def stationsearch() -> render_template:
         pagenext= page + 1
 
         for stationapi in core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
-            if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
-                stations.append(RadioStationView(stationapi, True))
-            else:
-                stations.append(RadioStationView(stationapi, False))
+            if(not stationapi.hls):
+                if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
+                    stations.append(RadioStationView(stationapi, True))
+                else:
+                    stations.append(RadioStationView(stationapi, False))
 
     return render_template("stationsearch.html",
                                stations=stations, 
                                countries=countries,
                                languages=languages,
+                               favorites=core.favorites,
                                selected=selected,
                                pagelast=pagelast,
-                               pagenext=pagenext,
-                               favorites=core.favorites)
+                               pagenext=pagenext)
     
 @app.route("/taglist")
 def taglist() -> render_template:
