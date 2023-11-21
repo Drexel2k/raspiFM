@@ -2,17 +2,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .CountryListSerialization import CountryListEncoder
-from .LanguageListSerialization import LanguageListEncoder
-from .FavoritesSerialization import FavoritesEncoder
-from .TagListSerialization import TagListEncoder
+from .JsonEncoder import CountryListEncoder
+from .JsonEncoder import LanguageListEncoder
+from .JsonEncoder import FavoritesEncoder
+from .JsonEncoder import TagListEncoder
 from ..business.CountryList import CountryList
 from ..business.LanguageList import LanguageList
 from ..business.TagList import TagList
 from ..business.Favorites import Favorites
 from ..business.RadioStations import RadioStations
-from .RestParamsSerialization import RestParamsEncoder
-from .RadioStationsSerialization import RadioStationsEncoder
+from .JsonEncoder import RestParamsEncoder
+from .JsonEncoder import RadioStationsEncoder
 
 
 class JsonSerializer():

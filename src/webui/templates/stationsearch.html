@@ -117,29 +117,29 @@
           <tr>
             <td class="align-middle"><img class="fav" src="{{station.radiostation.favicon}}" /></td>
             <td class="align-middle"><a class="link-primary" href="{{station.radiostation.homepage}}" target="_blank"><img src="{{url_for("static", filename="house-fill.svg")}}" width="50em" height="50em" /></a>  {{station.radiostation.name}}</td>
-            <td class="align-middle"><audio controls><source src="{{station.radiostation.url_resolved}}" type="audio/{{station.radiostation.codec}}"></audio></td>
+            <td class="align-middle"><audio controls style="width:100%"><source src="{{station.radiostation.url_resolved}}" type="audio/{{station.radiostation.codec}}"></audio></td>
 
             <td class="align-middle">
               {% if station.radiostation.votes %}
                 <span class="badge text-bg-primary text-wrap">votes: {{station.radiostation.votes}}</span>
               {% endif %}
               {% if station.radiostation.clickcount %}
-              <span class="badge text-bg-primary text-wrap">clicks: {{station.radiostation.clickcount}}</span>
+              <span class="badge text-bg-primary text-wrap mt-1">clicks: {{station.radiostation.clickcount}}</span>
               {% endif %}
               {% if station.radiostation.clicktrend %}
-                <span class="badge text-bg-primary text-wrap">trend: {{station.radiostation.clicktrend}}</span>
+                <span class="badge text-bg-primary text-wrap mt-1">trend: {{station.radiostation.clicktrend}}</span>
               {% endif %}
               {% if station.radiostation.languagecodes %}
-               <span class="badge text-bg-primary text-wrap">langs: {{station.radiostation.languagecodes}}</span>
+               <span class="badge text-bg-primary text-wrap mt-1">langs: {{station.radiostation.languagecodes}}</span>
               {% endif %}
               {% if station.radiostation.countrycode %}
-                <span class="badge text-bg-primary text-wrap">countries: {{station.radiostation.countrycode}}</span>
+                <span class="badge text-bg-primary text-wrap mt-1">countries: {{station.radiostation.countrycode}}</span>
               {% endif %}
               {% if station.radiostation.codec %}
-                <span class="badge text-bg-primary text-wrap">codec: {{station.radiostation.codec}}</span>
+                <span class="badge text-bg-primary text-wrap mt-1">codec: {{station.radiostation.codec}}</span>
               {% endif %}
               {% if station.radiostation.bitrate %}
-                <span class="badge text-bg-primary text-wrap">bits: {{station.radiostation.bitrate}}</span>
+                <span class="badge text-bg-primary text-wrap mt-1">bits: {{station.radiostation.bitrate}}</span>
               {% endif %}
               {% if station.radiostation.tags %}
                 <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.radiostation.tags)}}</span>

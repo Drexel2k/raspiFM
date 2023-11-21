@@ -2,11 +2,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .CountryListSerialization import CountryListDecoder
-from .LanguageListSerialization import LanguageListDecoder
-from .TagListSerialization import TagListDecoder
-from .FavoritesSerialization import FavoritesDecoder
-from .RadioStationsSerialization import RadioStationsDecoder
+from .JsonDecoder import CountryListDecoder
+from .JsonDecoder import LanguageListDecoder
+from .JsonDecoder import TagListDecoder
+from .JsonDecoder import FavoritesDecoder
+from .JsonDecoder import RadioStationsDecoder
 from ..business.CountryList import CountryList
 from ..business.LanguageList import LanguageList
 from ..business.TagList import TagList
@@ -77,6 +77,3 @@ class JsonDeserializer():
     
     def get_dict_from_response(self, jsonstring:str) -> dict:
         return json.loads(jsonstring)
-
-
-    
