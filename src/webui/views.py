@@ -23,12 +23,12 @@ def home() -> str:
 def favorites() -> str:
     try:
         favoritelists = []
-        for favoritelist in core.favorites.favoritelists:
+        for favoritelist in core.favorites_getlists():
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("favorites.html",
                                favoritelists=favoritelists,
-                               favoritelist=core.get_default_favoritelist())
+                               favoritelist=core.favorites_getdefaultlist())
     except BaseException as e:
         return get_errorresponse(e)
 
@@ -38,10 +38,10 @@ def stationsearch() -> str:
         args = request.args
 
         stations = []
-        countries = core.get_countries()
-        languages = core.get_languages()
+        countries = core.countries_get()
+        languages = core.languages_get()
 
-        selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.get_default_favoritelist() }
+        selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.favorites_getdefaultlist() }
 
         pagelast=1
         pagenext=2
@@ -60,14 +60,14 @@ def stationsearch() -> str:
                 selected["tags"] = args["tags"].split(",")
 
             if("favoritelist" in args and not utils.str_isnullorwhitespace(args["favoritelist"])):
-                selected["favoritelist"] = core.get_favoritelist(UUID(args["favoritelist"]))
+                selected["favoritelist"] = core.favorites_getlist(UUID(args["favoritelist"]))
 
             selected["orderby"] = args["orderby"]
             selected["order"] = args["order"]
 
             page=1
             if("page" in args and not utils.str_isnullorwhitespace(args["page"])):
-                page=int(UUID(args["page"]))
+                page=int(args["page"])
 
             pagelast = page - 1
             if(pagelast < 1):
@@ -75,7 +75,7 @@ def stationsearch() -> str:
             
             pagenext= page + 1
 
-            for stationapi in core.get_stations(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
+            for stationapi in core.stations_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
                 if(not stationapi.hls):
                     if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
                         stations.append(RadioStationView(stationapi, True))
@@ -83,7 +83,7 @@ def stationsearch() -> str:
                         stations.append(RadioStationView(stationapi, False))
             
         favoritelists = []
-        for favoritelist in core.favorites.favoritelists:
+        for favoritelist in core.favorites_getlists():
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("stationsearch.html",
@@ -100,7 +100,7 @@ def stationsearch() -> str:
 @app.route("/taglist")
 def taglist() -> str:
     try:
-        taglist = core.get_tags()
+        taglist = core.tags_get()
         return render_template("taglist.html", tags=taglist)
     except BaseException as e:
         return get_errorresponse(e)
@@ -111,7 +111,7 @@ def taglist() -> str:
 def gettags() -> str:
     try:
         form = request.form
-        taglist = core.get_tags(form["filter"])
+        taglist = core.tags_get(form["filter"])
         return render_template("gettags.html", tags=taglist)
     except BaseException as e:
         return get_errorresponse(e)
@@ -122,10 +122,10 @@ def changefavorite() -> Response:
     try:
         form = request.form
         if(form["changetype"] == "add"):
-            core.add_station_to_favlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+            core.favorites_add_stationtolist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         if(form["changetype"] == "remove"):
-            core.remove_station_from_favlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+            core.favorites_delete_stationfromlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         response = make_response("", 204)
         response.mimetype = "application/json"
@@ -138,7 +138,7 @@ def changefavorite() -> Response:
 def getfavoritelist() -> Response:
     try:
         form = request.form
-        favoritlist = core.get_favoritelist(UUID(form["favlistuuid"]))
+        favoritlist = core.favorites_getlist(UUID(form["favlistuuid"]))
         stationuuids = [station.uuid for station in favoritlist.stations]
 
         response = make_response(core.get_serialzeduuids(stationuuids), 200)
@@ -151,7 +151,7 @@ def getfavoritelist() -> Response:
 @app.route("/addfavoritelist", methods=["POST"])
 def addfavoritelist() -> Response:
     try:
-        favoritelist = core.add_favoritelist()
+        favoritelist = core.favorites_addlist()
 
         response = make_response(core.get_serialzeduuid(favoritelist.uuid), 200)
         response.mimetype = "application/json"
@@ -174,7 +174,7 @@ def changefavoritelist() -> Response:
 def removefavoritelist() -> Response:
     try:
         form = request.form
-        core.delete_favoritelist(UUID(form["favlistuuid"]))
+        core.favorites_deletelist(UUID(form["favlistuuid"]))
         response = make_response("", 204)
         response.mimetype = "application/json"
         return response
@@ -186,7 +186,7 @@ def removefavoritelist() -> Response:
 def getfavoritelistcontent() -> str:
     try:
         form = request.form
-        favoritelist=core.get_favoritelist(UUID(form["favlistuuid"]))
+        favoritelist=core.favorites_getlist(UUID(form["favlistuuid"]))
         return render_template("favoritelistcontent.html",
                                 favoritelist=favoritelist)
     except BaseException as e:

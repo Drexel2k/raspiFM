@@ -22,80 +22,42 @@ from .raspifmsettings import serialization_directory
 
 
 class RaspiFM:
-    __slots__ = ["__favorites", "__radiostations"]
-    __radiostations:RadioStations
-    __favorites:Favorites
+    __slots__ = ["__favorites_obj", "__radiostations_obj"]
+    __radiostations_obj:RadioStations
+    __favorites_obj:Favorites
 
     def __init__(self):
         # Initialize Serializer
         JsonSerializer(serialization_directory)
         JsonDeserializer(serialization_directory)
-        self.__radiostations = None
-        self.__favorites = None
+        self.__radiostations_obj = None
+        self.__favorites_obj = None
 
     @property
-    def radiostations(self) -> RadioStations:
-        if(not self.__radiostations):
+    def __radiostations(self) -> RadioStations:
+        if(not self.__radiostations_obj):
             stations = JsonDeserializer().get_radiostations()
             if(not stations):
                 stations = RadioStations()
-            self.__radiostations = stations
+            self.__radiostations_obj = stations
 
-        return self.__radiostations
+        return self.__radiostations_obj
     
     @property
-    def favorites(self) -> Favorites:
-        if(not self.__favorites):
-            favorites = JsonDeserializer().get_favorites(self.radiostations)
+    def __favorites(self) -> Favorites:
+        if(not self.__favorites_obj):
+            favorites = JsonDeserializer().get_favorites(self.__radiostations)
             if(not favorites):
                 favorites = Favorites()
-            self.__favorites = favorites
+            self.__favorites_obj = favorites
 
-        return self.__favorites
-
-    def add_station_to_favlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
-        station = self.radiostations.get_station(stationuuid)
-        
-        if not station:
-            radiostationapi = stationapi.query_station(stationuuid)
-            station = RadioStation(radiostationapi.stationuuid,
-                                   radiostationapi.name,
-                                   radiostationapi.url_resolved,
-                                   radiostationapi.countrycode,
-                                   radiostationapi.languagecodes,
-                                   radiostationapi.homepage,
-                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi),
-                                   radiostationapi.codec,
-                                   radiostationapi.bitrate,
-                                   list(radiostationapi.tags),)
-            
-            self.radiostations.add_station(station)
-            JsonSerializer().serialize_radiostations(self.radiostations)
-
-        self.favorites.getlist(favlistuuid).addstation(station)
-        JsonSerializer().serialize_favorites(self.favorites)
-
-    def remove_station_from_favlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
-        station = self.radiostations.get_station(stationuuid)
-
-        self.favorites.getlist(favlistuuid).removestation(station)
-        JsonSerializer().serialize_favorites(self.favorites)
-
-        deletestation = True
-        for favlist in self.favorites.favoritelists:
-            if station in favlist.stations:
-                deletestation = False
-                break
-
-        if(deletestation):
-            self.radiostations.remove_station(station)
-            JsonSerializer().serialize_radiostations(self.radiostations)
+        return self.__favorites_obj
     
-    def get_stations(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
+    def stations_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
                    stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
     
-    def get_countries(self) -> CountryList:
+    def countries_get(self) -> CountryList:
         countrylist = JsonDeserializer().get_countrylist()
 
         sevendays = timedelta(days=7)
@@ -106,7 +68,7 @@ class RaspiFM:
 
         return countrylist
     
-    def get_languages(self) -> CountryList:
+    def languages_get(self) -> CountryList:
         languagelist = JsonDeserializer().get_languagelist()
 
         sevendays = timedelta(days=7)
@@ -117,7 +79,7 @@ class RaspiFM:
 
         return languagelist
     
-    def get_tags(self, filter:str=None) -> TagList:
+    def tags_get(self, filter:str=None) -> TagList:
         taglist = JsonDeserializer().get_taglist()
 
         sevendays = timedelta(days=7)
@@ -131,21 +93,62 @@ class RaspiFM:
             
         return taglist
     
-    def add_favoritelist(self) -> FavoriteList:
-        favoritelist = self.favorites.add_favoritelist()
-        JsonSerializer().serialize_favorites(self.favorites)
+    def favorites_add_stationtolist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
+        station = self.__radiostations.get_station(stationuuid)
+        
+        if not station:
+            radiostationapi = stationapi.query_station(stationuuid)
+            station = RadioStation(radiostationapi.stationuuid,
+                                   radiostationapi.name,
+                                   radiostationapi.url_resolved,
+                                   radiostationapi.countrycode,
+                                   radiostationapi.languagecodes,
+                                   radiostationapi.homepage,
+                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi),
+                                   radiostationapi.codec,
+                                   radiostationapi.bitrate,
+                                   list(radiostationapi.tags))
+            
+            self.__radiostations.add_station(station)
+            JsonSerializer().serialize_radiostations(self.__radiostations)
+
+        self.__favorites.getlist(favlistuuid).addstation(station)
+        JsonSerializer().serialize_favorites(self.__favorites)
+
+    def favorites_delete_stationfromlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
+        station = self.__radiostations.get_station(stationuuid)
+
+        self.__favorites.getlist(favlistuuid).removestation(station)
+        JsonSerializer().serialize_favorites(self.__favorites)
+
+        deletestation = True
+        for favlist in self.__favorites.favoritelists:
+            if station in favlist.stations:
+                deletestation = False
+                break
+
+        if(deletestation):
+            self.__radiostations.remove_station(station)
+            JsonSerializer().serialize_radiostations(self.__radiostations)
+    
+    def favorites_getlists(self) -> tuple:
+        return self.__favorites.favoritelists
+    
+    def favorites_addlist(self) -> FavoriteList:
+        favoritelist = self.__favorites.add_favoritelist()
+        JsonSerializer().serialize_favorites(self.__favorites)
         return favoritelist
     
-    def delete_favoritelist(self, uuid:UUID) -> FavoriteList:
-        favoritelist = next((fl for fl  in self.favorites.favoritelists if fl.uuid == uuid), None)
+    def favorites_deletelist(self, uuid:UUID) -> FavoriteList:
+        favoritelist = next((fl for fl  in self.__favorites.favoritelists if fl.uuid == uuid), None)
         if(favoritelist):
             self.__favorites.delete_favoritelist(favoritelist)
-            JsonSerializer().serialize_favorites(self.favorites)
+            JsonSerializer().serialize_favorites(self.__favorites)
 
-    def get_default_favoritelist(self) -> FavoriteList:
+    def favorites_getdefaultlist(self) -> FavoriteList:
         return self.__favorites.getdefault()
     
-    def get_favoritelist(self, listuuid:UUID) -> FavoriteList:
+    def favorites_getlist(self, listuuid:UUID) -> FavoriteList:
         return self.__favorites.getlist(listuuid)
 
     def get_serialzeduuids(self, uuids:list) -> str:

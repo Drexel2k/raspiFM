@@ -44,7 +44,7 @@
         </thead>
         <tbody class="text-break table-group-divider">
         {% for station in favoritelist.stations %}
-          <tr>
+          <tr id="favrow-{{station.uuid|string}}">
             <td class="align-middle"><img class="fav" src="data:image/png;base64, {{station.faviconb64}}" /></td>
             <td class="align-middle"><a class="link-primary" href="{{station.homepage}}" target="_blank"><img src="{{url_for("static", filename="house-fill.svg")}}" width="50em" height="50em" /></a>  {{station.name}}</td>
             <td class="align-middle"><audio controls style="width:100%"><source src="{{station.url}}" type="audio/{{station.codec}}"></audio></td>
@@ -75,7 +75,7 @@
                 <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.tags)}}</span>
               {% endif %}
             </td>
-            <td class="align-middle"><a href="#" class="link-primary fav-link" data-changetype="remove" data-stationuuid="{{station.uuid|string}}"><img id="favimg-{{station.uuid|string}}" src="{{url_for("static", filename="star-fill.svg")}}" width="40em" height="40em" /></a></td>
+            <td class="align-middle"><a href="javascript:void(0);" class="link-primary fav-link" data-changetype="remove" data-stationuuid="{{station.uuid|string}}"><img id="favimg-{{station.uuid|string}}" src="{{url_for("static", filename="star-fill.svg")}}" width="40em" height="40em" /></a></td>
           </tr>
         {% endfor %}
         </tbody>

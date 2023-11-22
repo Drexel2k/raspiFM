@@ -141,7 +141,7 @@ function initFavListMgmt()
                     $('#slfavorites').append($('<option>',
                     {
                         value: data,
-                        text: ""
+                        text: "{no name}"
                     }));
 
                     $(`#slfavorites option[value=${data}]`).attr('selected', 'selected');
@@ -167,7 +167,7 @@ function initFavListMgmt()
                 success:function(data)
                 {
                     $("#favcontent").html(data);
-                    registerFavRemove();
+                    registerFavConfirmRemove();
                     registerFavLinks();
                     $("#confirmfavlistremovemodalContent").text(`Really delete favorite list "${favoritelistname}"?`);
                 },
@@ -226,17 +226,21 @@ function registerFavLinks(removetablerow = false)
     $('.fav-link').on("click", function(e)
     {
         let changetype = $(this).attr("data-changetype")
+        let stationuuid = $(this).attr("data-stationuuid")
 
         $.ajax(
             {   url:"changefavorite",
                 method:"POST",
-                data:{changetype:changetype, stationuuid:$(this).attr("data-stationuuid"), favlistuuid:$("#slfavorites").val()},
+                data:{changetype:changetype, stationuuid:stationuuid, favlistuuid:$("#slfavorites").val()},
                 context:$(this),
                 success:function(data)
                 {   
                     if(removetablerow)
                     {
-
+                        let row = $(`#favrow-${stationuuid}`);
+                        row.fadeOut(1000, function() {
+                            row.remove();
+                        });
                     }   
                     else
                     {
