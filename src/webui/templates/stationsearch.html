@@ -46,8 +46,8 @@
       <div class="d-sm-inline-block">
         <label for="slorder" class="form-label"><small>order</small></label>
         <select name="order" id="slorder" class="form-control">
-          <option {% if selected["order"]=="ASC" %}selected{% endif %} value="asc">ASC</option>
-          <option {% if selected["order"]=="DSC" %}selected{% endif %} value="desc">DSC</option>
+          <option {% if selected["order"]=="asc" %}selected{% endif %} value="asc">ASC</option>
+          <option {% if selected["order"]=="desc" %}selected{% endif %} value="desc">DSC</option>
         </select>
       </div>
       <div style="height:10px;"></div>
@@ -81,12 +81,12 @@
       <nav aria-label="Stations table navigation">
         <ul class="pagination">
           <li class="page-item">
-            <a class="page-link" href="{{ url_for("stationsearch",name=selectedname, country=selectedcountry, lang=selectedlang, tags=selectedtags, orderby=orderby, order=order, page=pagelast)  }}" aria-label="Previous">
+            <a class="page-link" href="{{ url_for("stationsearch",name=selected["name"], country=selected["country"], lang=selected["language"], tags=selected["tags"], orderby=selected["orderby"], order=selected["order"], page=pagelast)  }}" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="{{ url_for("stationsearch",name=selectedname, country=selectedcountry, lang=selectedlang, tags=selectedtags, orderby=orderby, order=order, page=pagenext)  }}" aria-label="Previous">
+            <a class="page-link" href="{{ url_for("stationsearch",name=selected["name"], country=selected["country"], lang=selected["language"], tags=selected["tags"], orderby=selected["orderby"], order=selected["order"], page=pagenext)  }}" aria-label="Previous">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
@@ -154,12 +154,12 @@
     <nav aria-label="Stations table navigation">
       <ul class="pagination">
         <li class="page-item">
-          <a class="page-link" href="{{ url_for("stationsearch",name=selectedname, country=selectedcountry, lang=selectedlang, tags=selectedtags, orderby=orderby, order=order, page=pagelast)  }}" aria-label="Previous">
+          <a class="page-link" href="{{ url_for("stationsearch",name=selected["name"], country=selected["country"], lang=selected["language"], tags=selected["tags"], orderby=selected["orderby"], order=selected["order"], page=pagelast)  }}" aria-label="Previous">
             <span aria-hidden="true">&laquo;</span>
           </a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="{{ url_for("stationsearch",name=selectedname, country=selectedcountry, lang=selectedlang, tags=selectedtags, orderby=orderby, order=order, page=pagenext)  }}" aria-label="Previous">
+          <a class="page-link" href="{{ url_for("stationsearch",name=selected["name"], country=selected["country"], lang=selected["language"], tags=selected["tags"], orderby=selected["orderby"], order=selected["order"], page=pagenext)  }}" aria-label="Previous">
             <span aria-hidden="true">&raquo;</span>
           </a>
         </li>

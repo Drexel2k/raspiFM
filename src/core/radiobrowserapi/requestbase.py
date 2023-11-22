@@ -49,5 +49,6 @@ def get_radiobrowser_post_request_data(endpoint: str, param: dict) -> bytes:
     return b""
 
 def get_urlbinary_contentasb64(url:str) -> str:
-    with request.urlopen(url) as response:
+    req = request.Request(url=url, headers={'User-Agent': 'Mozilla/5.0'})
+    with request.urlopen(req) as response:
         return b64encode(response.read()).decode("ASCII")
