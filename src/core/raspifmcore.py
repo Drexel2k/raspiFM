@@ -112,13 +112,13 @@ class RaspiFM:
             self.__radiostations.add_station(station)
             JsonSerializer().serialize_radiostations(self.__radiostations)
 
-        self.__favorites.getlist(favlistuuid).addstation(station)
+        self.__favorites.get_list(favlistuuid).addstation(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
     def favorites_delete_stationfromlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
         station = self.__radiostations.get_station(stationuuid)
 
-        self.__favorites.getlist(favlistuuid).removestation(station)
+        self.__favorites.get_list(favlistuuid).removestation(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
         deletestation = True
@@ -140,16 +140,25 @@ class RaspiFM:
         return favoritelist
     
     def favorites_deletelist(self, uuid:UUID) -> FavoriteList:
-        favoritelist = next((fl for fl  in self.__favorites.favoritelists if fl.uuid == uuid), None)
-        if(favoritelist):
-            self.__favorites.delete_favoritelist(favoritelist)
-            JsonSerializer().serialize_favorites(self.__favorites)
+        self.__favorites.delete_favoritelist(uuid)
+        JsonSerializer().serialize_favorites(self.__favorites)
 
     def favorites_getdefaultlist(self) -> FavoriteList:
-        return self.__favorites.getdefault()
+        return self.__favorites.get_default()
     
     def favorites_getlist(self, listuuid:UUID) -> FavoriteList:
-        return self.__favorites.getlist(listuuid)
+        return self.__favorites.get_list(listuuid)
+    
+    def favorites_changelistproperty(self, uuid:UUID, property:str, value:str):
+        if property == "isdefault":
+            self.__favorites.change_default(uuid, True if value.strip().lower() == "true" else False)
+        elif property == "name":
+            changelist = self.__favorites.get_list(uuid)
+            changelist.name = value
+        else: 
+            raise TypeError(f"Change of property \"{property}\" supported.")
+        
+        JsonSerializer().serialize_favorites(self.__favorites)
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)

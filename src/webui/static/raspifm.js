@@ -60,7 +60,7 @@ function initStationSearch()
 
                     $("#tagres1").show();
                 },
-                error:function(xhr, textStatus, errorThrown)
+                error:function(xhr)
                 {
                     $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
@@ -102,21 +102,23 @@ function initStationSearch()
                 data:{favlistuuid:$("#slfavorites").val()},
                 success:function(data)
                 {
-                    let imgid
+                    let stationuuid
                     $('img[id^="favimg-"]').each(function( index)
                     {
-                        imgid=$(this).attr("id").substr(7)
-                        if(jQuery.inArray(imgid, data) > -1)
+                        stationuuid=$(this).attr("id").substr(7)
+                        if(jQuery.inArray(stationuuid, data) > -1)
                         {
+                            $(`a[data-stationuuid="${stationuuid}"]`).attr("data-changetype", "remove");
                             $(this).attr("src", $(this).attr("src").replace("star.svg", "star-fill.svg"));
                         }
                         else
                         {
+                            $(`a[data-stationuuid="${stationuuid}"]`).attr("data-changetype", "add");
                             $(this).attr("src", $(this).attr("src").replace("star-fill.svg", "star.svg"));
                         }
                     }); 
                 },
-                error:function(xhr, textStatus, errorThrown)
+                error:function(xhr)
                 {
                     $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
@@ -144,10 +146,10 @@ function initFavListMgmt()
                         text: "{no name}"
                     }));
 
-                    $(`#slfavorites option[value=${data}]`).attr('selected', 'selected');
+                    $(`#slfavorites option[value=${data}]`).attr("selected", "selected");
                     $('#slfavorites').trigger("change");
                 },
-                error:function(xhr, textStatus, errorThrown)
+                error:function(xhr)
                 {
                     $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
@@ -167,11 +169,11 @@ function initFavListMgmt()
                 success:function(data)
                 {
                     $("#favcontent").html(data);
-                    registerFavConfirmRemove();
-                    registerFavLinks();
+                    registerFavListEditControls();
+                    registerFavLinks(true);
                     $("#confirmfavlistremovemodalContent").text(`Really delete favorite list "${favoritelistname}"?`);
                 },
-                error:function(xhr, textStatus, errorThrown)
+                error:function(xhr)
                 {
                     $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
@@ -181,11 +183,11 @@ function initFavListMgmt()
         );
     });
 
-    registerFavConfirmRemove();
+    registerFavListEditControls();
     registerFavLinks(true);
 }
 
-function registerFavConfirmRemove()
+function registerFavListEditControls()
 {
     $('#confirmfavlistremove').on("click", function(e)
     {
@@ -201,12 +203,68 @@ function registerFavConfirmRemove()
                     $(`#slfavorites option[value="${favlistuuidToDelete}"]`).remove();
                     $('#slfavorites').trigger("change");
                 },
-                error:function(xhr, textStatus, errorThrown)
+                error:function(xhr)
                 {
                     let errorvar = JSON.parse(xhr.responseText);
                     if(errorvar.errorNo == 1)
                     {
-                        $("#errortoastContent").text(`Last favorite list cannot be deleted.`); 
+                        $("#errortoastContent").text(errorvar.error[0]); 
+                    }
+                    else
+                    {
+                        $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    }
+
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+
+    $('#txname').on("keyup", function(e)
+    {
+        delay(function()
+        {
+            let newvalue=$("#txname").val()
+            $("#slfavorites option:selected").text(newvalue)
+            $.ajax(
+                {   url:"changefavoritelist",
+                    method:"POST",
+                    data:{favlistuuid:$("#slfavorites").val(),property:"name", value:newvalue},
+                    success:function(data)
+                    {
+    
+                    },
+                    error:function(xhr)
+                    {
+                        $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                        let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                        errortoast.show()
+                    }
+                }
+            );
+
+        }, 500 );
+    });
+
+    $('#chdefault').on("change", function(e)
+    {
+        $.ajax(
+            {   url:"changefavoritelist",
+                method:"POST",
+                data:{favlistuuid:$("#slfavorites").val(),property:"isdefault", value:$("#chdefault").prop("checked")},
+                success:function(data)
+                {
+
+                },
+                error:function(xhr)
+                {
+                    $("#chdefault").prop("checked", "checked")
+                    let errorvar = JSON.parse(xhr.responseText);
+                    if(errorvar.errorNo == 1)
+                    {
+                        $("#errortoastContent").text(errorvar.error[0]); 
                     }
                     else
                     {
@@ -277,3 +335,10 @@ function initToolTips()
     const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl))
 }
 
+let delay = (()=>{
+    let timer = 0;
+    return function(callback, ms){
+      clearTimeout (timer);
+      timer = setTimeout(callback, ms);
+    };
+  })();

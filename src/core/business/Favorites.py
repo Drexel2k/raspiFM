@@ -29,13 +29,38 @@ class Favorites:
         self.__favoritelists.append(favoritelist)
         return favoritelist
     
-    def delete_favoritelist(self, favoritelist:FavoriteList) -> None:
+    def delete_favoritelist(self, listuuid:UUID) -> None:
         if(len(self.__favoritelists) <= 1):
-            raise InvalidOperationException("Cannot remove last favorite list.")       
-        self.__favoritelists.remove(favoritelist)
+            raise InvalidOperationException("Cannot remove last favorite list.")
 
-    def getdefault(self) -> FavoriteList:
+        deletelist = self.get_list(listuuid)
+        if(deletelist):
+            if (deletelist.isdefault):
+                newdefaultlist = next(favlist for favlist in self.__favoritelists if favlist != deletelist)
+                newdefaultlist.isdefault = True
+
+            self.__favoritelists.remove(deletelist)
+
+    def get_default(self) -> FavoriteList:
         return next(favlist for favlist in self.__favoritelists if favlist.isdefault)
     
-    def getlist(self, listuuid:UUID) -> FavoriteList:
+    def get_list(self, listuuid:UUID) -> FavoriteList:
         return next((favlist for favlist in self.__favoritelists if favlist.uuid == listuuid), None)
+    
+    def change_default(self, listuuid:UUID, newdefaultstate:bool) -> None:
+        if(newdefaultstate):
+            newdefaultlist = self.get_list(listuuid)
+            if(newdefaultlist):
+                currentdefaultlist = self.get_default()
+                currentdefaultlist.isdefault = False
+                newdefaultlist.isdefault = True
+        else:
+            changelist = self.get_list(listuuid)
+            currentdefaultlist = self.get_default()
+            if(currentdefaultlist == changelist):
+                if(len(self.__favoritelists) <= 1):
+                    raise InvalidOperationException("Cannot remove default state from last favorite list.")
+                
+                newdefaultlist = next(favlist for favlist in self.__favoritelists if favlist != currentdefaultlist)
+                changelist.isdefault = False
+                newdefaultlist.isdefault = True

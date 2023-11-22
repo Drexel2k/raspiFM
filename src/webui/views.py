@@ -162,7 +162,9 @@ def addfavoritelist() -> Response:
 #ajax
 @app.route("/changefavoritelist", methods=["POST"])
 def changefavoritelist() -> Response:
-    try:  
+    try:
+        form = request.form
+        core.favorites_changelistproperty(UUID(form["favlistuuid"]), form["property"], form["value"])
         response = make_response("", 204)
         response.mimetype = "application/json"
         return response
