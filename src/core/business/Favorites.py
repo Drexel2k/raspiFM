@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from .RadioStation import RadioStation
 from .FavoriteList import FavoriteList
+from ..business.Exceptions import InvalidOperationException
 
 class Favorites:
     __slots__ = ["__favoritelists"]
@@ -23,6 +23,16 @@ class Favorites:
         else:
             self.__favoritelists = [FavoriteList("Default")]
             self.__favoritelists[0].isdefault = True
+
+    def add_favoritelist(self) -> FavoriteList:
+        favoritelist = FavoriteList()
+        self.__favoritelists.append(favoritelist)
+        return favoritelist
+    
+    def delete_favoritelist(self, favoritelist:FavoriteList) -> None:
+        if(len(self.__favoritelists) <= 1):
+            raise InvalidOperationException("Cannot remove last favorite list.")       
+        self.__favoritelists.remove(favoritelist)
 
     def getdefault(self) -> FavoriteList:
         return next(favlist for favlist in self.__favoritelists if favlist.isdefault)

@@ -59,6 +59,12 @@ function initStationSearch()
                     }
 
                     $("#tagres1").show();
+                },
+                error:function(xhr, textStatus, errorThrown)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
                 }
             });
         }
@@ -109,6 +115,149 @@ function initStationSearch()
                             $(this).attr("src", $(this).attr("src").replace("star-fill.svg", "star.svg"));
                         }
                     }); 
+                },
+                error:function(xhr, textStatus, errorThrown)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+
+    registerFavLinks();
+}
+
+function initFavListMgmt()
+{
+    $('#favlistadd').on("click", function(e)
+    {
+        $.ajax(
+            {   url:"addfavoritelist",
+                method:"POST",
+                success:function(data)
+                {         
+                    $('#slfavorites').append($('<option>',
+                    {
+                        value: data,
+                        text: ""
+                    }));
+
+                    $(`#slfavorites option[value=${data}]`).attr('selected', 'selected');
+                    $('#slfavorites').trigger("change");
+                },
+                error:function(xhr, textStatus, errorThrown)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+
+    $("#slfavorites").on("change", function(e)
+    {   
+        let favoritelistname = $("#slfavorites option:selected").text()
+        $.ajax(
+            {   url:"getfavoritelistcontent",
+                method:"POST",
+                data:{favlistuuid:$("#slfavorites").val()},
+                success:function(data)
+                {
+                    $("#favcontent").html(data);
+                    registerFavRemove();
+                    registerFavLinks();
+                    $("#confirmfavlistremovemodalContent").text(`Really delete favorite list "${favoritelistname}"?`);
+                },
+                error:function(xhr, textStatus, errorThrown)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+
+    registerFavConfirmRemove();
+    registerFavLinks(true);
+}
+
+function registerFavConfirmRemove()
+{
+    $('#confirmfavlistremove').on("click", function(e)
+    {
+        let confirmfavlistremovemodal = bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmfavlistremovemodal"));
+        confirmfavlistremovemodal.hide();
+        let favlistuuidToDelete = $("#slfavorites").val()
+        $.ajax(
+            {   url:"removefavoritelist",
+                method:"POST",
+                data:{favlistuuid:favlistuuidToDelete},
+                success:function(data)
+                {
+                    $(`#slfavorites option[value="${favlistuuidToDelete}"]`).remove();
+                    $('#slfavorites').trigger("change");
+                },
+                error:function(xhr, textStatus, errorThrown)
+                {
+                    let errorvar = JSON.parse(xhr.responseText);
+                    if(errorvar.errorNo == 1)
+                    {
+                        $("#errortoastContent").text(`Last favorite list cannot be deleted.`); 
+                    }
+                    else
+                    {
+                        $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    }
+
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+}
+
+function registerFavLinks(removetablerow = false)
+{
+    $('.fav-link').on("click", function(e)
+    {
+        let changetype = $(this).attr("data-changetype")
+
+        $.ajax(
+            {   url:"changefavorite",
+                method:"POST",
+                data:{changetype:changetype, stationuuid:$(this).attr("data-stationuuid"), favlistuuid:$("#slfavorites").val()},
+                context:$(this),
+                success:function(data)
+                {   
+                    if(removetablerow)
+                    {
+
+                    }   
+                    else
+                    {
+                        let img = $("img", this)  
+                        if(changetype=="add")
+                        {
+                            $(this).attr("data-changetype", "remove");
+                            img.attr("src", img.attr("src").replace("star.svg", "star-fill.svg"));
+                        }
+                        else
+                        {
+                            $(this).attr("data-changetype", "add");
+                            img.attr("src", img.attr("src").replace("star-fill.svg", "star.svg"));
+                        }
+                    }
+                },
+                error:function(xhr)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
                 }
             }
         );
@@ -119,46 +268,8 @@ function initToolTips()
 {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+    const toastElList = document.querySelectorAll(".toast")
+    const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl))
 }
 
-$('.fav-link').on("click", function(e)
-{
-    let changetype = $(this).attr("data-changetype")
-
-    $.ajax(
-        {   url:"changefavorite",
-            method:"POST",
-            data:{changetype:changetype, stationuuid:$(this).attr("data-stationuuid"), favlistuuid:$("#slfavorites").val()},
-            context:$(this),
-            success:function(data)
-            {         
-                let img = $("img", this)  
-                if(changetype=="add")
-                {
-                    $(this).attr("data-changetype", "remove");
-                    img.attr("src", img.attr("src").replace("star.svg", "star-fill.svg"));
-                }
-                else
-                {
-                    $(this).attr("data-changetype", "add");
-                    img.attr("src", img.attr("src").replace("star-fill.svg", "star.svg"));
-                }
-            }
-        }
-    );
-});
-
-function playaudio(url)
-{
-    const myAudio = document.createElement("audio");
-    
-
-    if (myAudio.canPlayType("audio/mpeg")) {
-    myAudio.setAttribute("src", "audiofile.mp3");
-    } else if (myAudio.canPlayType("audio/ogg")) {
-    myAudio.setAttribute("src", "audiofile.ogg");
-    }
-
-    myAudio.currentTime = 5;
-    myAudio.play();
-}

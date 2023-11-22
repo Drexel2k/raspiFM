@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+from uuid import UUID
 
 from .JsonEncoder import CountryListEncoder
 from .JsonEncoder import LanguageListEncoder
@@ -55,5 +56,11 @@ class JsonSerializer():
     def serialize_restparams(self, params:dict) -> str:
         return json.dumps(params, cls=RestParamsEncoder).encode("utf-8")
     
-    def serialize_uuids(self, uuids:list):
+    def serialize_uuids(self, uuids:list) -> str:
         return json.dumps(uuids, default=str)
+    
+    def serialize_uuid(self, uuid:UUID) -> str:
+        return json.dumps(uuid, default=str)
+    
+    def serialize_dict(self, dict:dict) -> str:
+        return json.dumps(dict)

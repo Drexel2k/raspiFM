@@ -73,6 +73,11 @@
   overflow-y:scroll;
   max-height:300px;
 }
+.customtoastcontainer {
+  position: absolute;
+  right: 0em;
+  z-index: 10;
+}
 
 .fav {
   width: 5em;

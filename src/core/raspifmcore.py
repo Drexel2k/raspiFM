@@ -15,6 +15,7 @@ from .business.TagList import TagList
 from .business.Favorites import Favorites
 from .business.RadioStations import RadioStations
 from .business.RadioStation import RadioStation
+from .business.FavoriteList import FavoriteList
 from ..utils import utils
 
 from .raspifmsettings import serialization_directory
@@ -129,8 +130,30 @@ class RaspiFM:
             taglist.filter(filter)
             
         return taglist
+    
+    def add_favoritelist(self) -> FavoriteList:
+        favoritelist = self.favorites.add_favoritelist()
+        JsonSerializer().serialize_favorites(self.favorites)
+        return favoritelist
+    
+    def delete_favoritelist(self, uuid:UUID) -> FavoriteList:
+        favoritelist = next((fl for fl  in self.favorites.favoritelists if fl.uuid == uuid), None)
+        if(favoritelist):
+            self.__favorites.delete_favoritelist(favoritelist)
+            JsonSerializer().serialize_favorites(self.favorites)
+
+    def get_default_favoritelist(self) -> FavoriteList:
+        return self.__favorites.getdefault()
+    
+    def get_favoritelist(self, listuuid:UUID) -> FavoriteList:
+        return self.__favorites.getlist(listuuid)
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)
-
+    
+    def get_serialzeduuid(self, uuid:UUID) -> str:
+        return JsonSerializer().serialize_uuids(uuid)
+    
+    def get_serialzeddict(self, dict:dict) -> str:
+        return JsonSerializer().serialize_dict(dict)
 

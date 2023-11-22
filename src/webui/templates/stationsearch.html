@@ -95,8 +95,8 @@
       <div class="mb-3 d-flex justify-content-end" style="width:25em">
         <label for="slfavorites" class="form-label mb-0 me-1 d-flex align-items-center"><small>favorite list for adding: </small></label>
         <select name="favorites" id="slfavorites" class="form-control max-width-12-sm d-inline">
-          {% for favoritelist in favorites.favoritelists %}
-          <option {% if favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.uuid|string }}" >{{favoritelist.name}}</option>
+          {% for favoritelist in favoritelists %}
+            <option {% if favoritelist.favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.favoritelist.uuid|string }}" >{{favoritelist.name}}</option>
           {% endfor %}
         </select>
       </div>
@@ -145,7 +145,7 @@
                 <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.radiostation.tags)}}</span>
               {% endif %}
             </td>
-            <td class="align-middle"><a href="#" class="link-primary fav-link" id="fava-{{station.radiostation.stationuuid|string}}" data-changetype="{% if station.isinfavoritelist %}remove{% else %}add{% endif %}" data-stationuuid="{{station.radiostation.stationuuid|string}}"><img id="favimg-{{station.radiostation.stationuuid|string}}" src="{% if station.isinfavoritelist %}{{url_for("static", filename="star-fill.svg")}}{% else %}{{url_for("static", filename="star.svg")}}{% endif %}" width="40em" height="40em" /></a></td>
+            <td class="align-middle"><a href="#" class="link-primary fav-link" data-changetype="{% if station.isinfavoritelist %}remove{% else %}add{% endif %}" data-stationuuid="{{station.radiostation.stationuuid|string}}"><img id="favimg-{{station.radiostation.stationuuid|string}}" src="{% if station.isinfavoritelist %}{{url_for("static", filename="star-fill.svg")}}{% else %}{{url_for("static", filename="star.svg")}}{% endif %}" width="40em" height="40em" /></a></td>
           </tr>
         {% endfor %}
         </tbody>

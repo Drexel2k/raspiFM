@@ -10,86 +10,21 @@ Favorites
   <div>
     <div class="mb-2">
       <div class="d-sm-inline-block">
-        <label for="slfavorites" class="form-label"><small>favorite list</small></label>
+        <label for="slfavorites" class="form-label"><small>select favorite list</small></label>
         <select name="favorites" id="slfavorites" class="form-control max-width-12-sm">
-            {% for favoritelist in favorites.favoritelists %}
-            <option {% if favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.uuid|string }}" >{{favoritelist.name}}</option>
+            {% for favoritelistinternal in favoritelists %}
+            <option {% if favoritelistinternal.favoritelist==favoritelist %}selected{% endif %} value="{{ favoritelistinternal.favoritelist.uuid|string }}" >{{favoritelistinternal.name}}</option>
             {% endfor %}
         </select>
         </div>
       <div class="btn-group">
-        <button class="btn btn-primary btn-sm mb-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Create new favorite list.">
+        <button class="btn btn-primary btn-sm mb-2" id="favlistadd" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Create new favorite list.">
           <img src="{{url_for("static", filename="plus.svg")}}" width="15em" height="15em" />
         </button>
     </div>
     <hr />
-    <div>
-      <div class="d-sm-inline-block mb-2">
-        <label for="txname" class="form-label"><small>name</small></label>
-        <input style="min-width:20em;" type="text" id="txname" name="name" class="form-control" placeholder="Enter favorite list name" value="{{ selected["favoritelist"].name|default("", true) }}">
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-primary btn-sm mb-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete favorite list.">
-          <img src="{{url_for("static", filename="x.svg")}}" width="15em" height="15em" />
-        </button>
-      </div>
-      <div class="form-check form-switch">
-        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-        <label class="form-check-label" for="flexSwitchCheckDefault">Default list</label>
-      </div>
-      {% if selected["favoritelist"].stations %}
-        <hr />
-        <div class="table-responsive">
-          <table id="stationstable" class="table table-striped table-hover">
-            <thead class="table-primary">
-              <tr>
-                <th scope="col" style="width:10%;">icon</th>
-                <th scope="col" style="width:20%;">name</th>
-                <th scope="col" style="width:20%;">play</th>
-                <th scope="col" style="width:35%;">infos</th>
-                <th scope="col" style="width:5%;">fav</th>
-              </tr>
-            </thead>
-            <tbody class="text-break table-group-divider">
-            {% for station in selected["favoritelist"].stations %}
-              <tr>
-                <td class="align-middle"><img class="fav" src="data:image/png;base64, {{station.faviconb64}}" /></td>
-                <td class="align-middle"><a class="link-primary" href="{{station.homepage}}" target="_blank"><img src="{{url_for("static", filename="house-fill.svg")}}" width="50em" height="50em" /></a>  {{station.name}}</td>
-                <td class="align-middle"><audio controls style="width:100%"><source src="{{station.url_resolved}}" type="audio/{{station.codec}}"></audio></td>
-
-                <td class="align-middle">
-                  {% if station.votes %}
-                    <span class="badge text-bg-primary text-wrap">votes: {{station.votes}}</span>
-                  {% endif %}
-                  {% if station.clickcount %}
-                  <span class="badge text-bg-primary text-wrap mt-1">clicks: {{station.clickcount}}</span>
-                  {% endif %}
-                  {% if station.clicktrend %}
-                    <span class="badge text-bg-primary text-wrap mt-1">trend: {{station.clicktrend}}</span>
-                  {% endif %}
-                  {% if station.languagecodes %}
-                  <span class="badge text-bg-primary text-wrap mt-1">langs: {{station.languagecodes}}</span>
-                  {% endif %}
-                  {% if station.countrycode %}
-                    <span class="badge text-bg-primary text-wrap mt-1">countries: {{station.countrycode}}</span>
-                  {% endif %}
-                  {% if station.codec %}
-                    <span class="badge text-bg-primary text-wrap mt-1">codec: {{station.codec}}</span>
-                  {% endif %}
-                  {% if station.bitrate %}
-                    <span class="badge text-bg-primary text-wrap mt-1">bits: {{station.bitrate}}</span>
-                  {% endif %}
-                  {% if station.tags %}
-                    <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.tags)}}</span>
-                  {% endif %}
-                </td>
-                <td class="align-middle"><a href="#" class="link-primary fav-link" id="fava-{{station.stationuuid|string}}" data-changetype="{% if station.isinfavoritelist %}remove{% else %}add{% endif %}" data-stationuuid="{{station.stationuuid|string}}"><img id="favimg-{{station.stationuuid|string}}" src="{% if station.isinfavoritelist %}{{url_for("static", filename="star-fill.svg")}}{% else %}{{url_for("static", filename="star.svg")}}{% endif %}" width="40em" height="40em" /></a></td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% endif %}
+    <div  id="favcontent">
+      {% include "favoritelistcontent.html" %}
     </div>
   </div>
 
