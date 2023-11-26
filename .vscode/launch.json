@@ -20,6 +20,13 @@
             ],
             "jinja": true,
             "justMyCode": true
+        },        
+        {
+            "name": "Python: TouchUI",
+            "type": "python",
+            "request": "launch",
+            "module": "src.touchui.raspifmtouchapp",
+            "justMyCode": true
         },
         {
             "name": "Python: Core Module",
