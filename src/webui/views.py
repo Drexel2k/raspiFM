@@ -41,7 +41,7 @@ def stationsearch() -> str:
         countries = core.countries_get()
         languages = core.languages_get()
 
-        selected = {"name":None, "country":raspifmsettings.defaulcountry, "language":raspifmsettings.defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.favorites_getdefaultlist() }
+        selected = {"name":None, "country":raspifmsettings.web_defaulcountry, "language":raspifmsettings.web_defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.favorites_getdefaultlist() }
 
         pagelast=1
         pagenext=2

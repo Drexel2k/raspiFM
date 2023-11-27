@@ -1,5 +1,3 @@
-import sys
-import ctypes
 from pathlib import Path
 from ..raspifmsettings import serialization_directory
 
