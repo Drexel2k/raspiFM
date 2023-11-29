@@ -18,7 +18,7 @@ from .JsonEncoder import RadioStationsEncoder
 
 class JsonSerializer():
     __slots__ = ["__path"]
-    __instance:JsonSerializer  = None
+    __instance:JsonSerializer = None
     __path:str
 
     def __new__(cls, *path):

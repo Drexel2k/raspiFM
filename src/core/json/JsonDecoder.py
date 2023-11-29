@@ -37,7 +37,7 @@ class FavoriteListDecoder(json.JSONDecoder):
             for stationuuid in obj["stations"]:
                 station = next((station for station in self.__radiostations.stationlist if station.uuid == UUID(stationuuid)), None)
                 if(not station):
-                    raise TypeError("Station in FavoriteList does not exist in Radiostatiosn.")
+                    raise TypeError("Station in FavoriteList does not exist in Radiostations.")
                 stations.append(station)
 
             obj["stations"] = stations

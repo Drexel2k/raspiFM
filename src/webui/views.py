@@ -10,8 +10,6 @@ from .ViewProxies.RadioStationView import RadioStationView
 from ..core.business.Exceptions import InvalidOperationException
 from .ViewProxies.FavoriteListView import FavoriteListView
 
-core = RaspiFM()
-
 @app.route("/")
 def home() -> str:
     try:
@@ -23,12 +21,13 @@ def home() -> str:
 def favorites() -> str:
     try:
         favoritelists = []
-        for favoritelist in core.favorites_getlists():
+        obj = RaspiFM()
+        for favoritelist in RaspiFM().favorites_getlists():
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("favorites.html",
                                favoritelists=favoritelists,
-                               favoritelist=core.favorites_getdefaultlist())
+                               favoritelist=RaspiFM().favorites_getdefaultlist())
     except BaseException as e:
         return get_errorresponse(e)
 
@@ -38,10 +37,10 @@ def stationsearch() -> str:
         args = request.args
 
         stations = []
-        countries = core.countries_get()
-        languages = core.languages_get()
+        countries = RaspiFM().countries_get()
+        languages = RaspiFM().languages_get()
 
-        selected = {"name":None, "country":raspifmsettings.web_defaulcountry, "language":raspifmsettings.web_defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":core.favorites_getdefaultlist() }
+        selected = {"name":None, "country":raspifmsettings.web_defaulcountry, "language":raspifmsettings.web_defaultlanguage, "tags":[], "orderby":"name", "order":"asc", "favoritelist":RaspiFM().favorites_getdefaultlist() }
 
         pagelast=1
         pagenext=2
@@ -60,7 +59,7 @@ def stationsearch() -> str:
                 selected["tags"] = args["tags"].split(",")
 
             if("favoritelist" in args and not utils.str_isnullorwhitespace(args["favoritelist"])):
-                selected["favoritelist"] = core.favorites_getlist(UUID(args["favoritelist"]))
+                selected["favoritelist"] = RaspiFM().favorites_getlist(UUID(args["favoritelist"]))
 
             selected["orderby"] = args["orderby"]
             selected["order"] = args["order"]
@@ -75,7 +74,7 @@ def stationsearch() -> str:
             
             pagenext= page + 1
 
-            for stationapi in core.stations_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
+            for stationapi in RaspiFM().stations_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
                 if(not stationapi.hls):
                     if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
                         stations.append(RadioStationView(stationapi, True))
@@ -83,7 +82,7 @@ def stationsearch() -> str:
                         stations.append(RadioStationView(stationapi, False))
             
         favoritelists = []
-        for favoritelist in core.favorites_getlists():
+        for favoritelist in RaspiFM().favorites_getlists():
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("stationsearch.html",
@@ -100,7 +99,7 @@ def stationsearch() -> str:
 @app.route("/taglist")
 def taglist() -> str:
     try:
-        taglist = core.tags_get()
+        taglist = RaspiFM().tags_get()
         return render_template("taglist.html", tags=taglist)
     except BaseException as e:
         return get_errorresponse(e)
@@ -122,10 +121,10 @@ def changefavorite() -> Response:
     try:
         form = request.form
         if(form["changetype"] == "add"):
-            core.favorites_add_stationtolist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+            RaspiFM().favorites_add_stationtolist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         if(form["changetype"] == "remove"):
-            core.favorites_delete_stationfromlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+            RaspiFM().favorites_delete_stationfromlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         response = make_response("", 204)
         response.mimetype = "application/json"
@@ -138,10 +137,10 @@ def changefavorite() -> Response:
 def getfavoritelist() -> Response:
     try:
         form = request.form
-        favoritlist = core.favorites_getlist(UUID(form["favlistuuid"]))
+        favoritlist = RaspiFM().favorites_getlist(UUID(form["favlistuuid"]))
         stationuuids = [station.uuid for station in favoritlist.stations]
 
-        response = make_response(core.get_serialzeduuids(stationuuids), 200)
+        response = make_response(RaspiFM().get_serialzeduuids(stationuuids), 200)
         response.mimetype = "application/json"
         return response
     except BaseException as e:
@@ -151,9 +150,9 @@ def getfavoritelist() -> Response:
 @app.route("/addfavoritelist", methods=["POST"])
 def addfavoritelist() -> Response:
     try:
-        favoritelist = core.favorites_addlist()
+        favoritelist = RaspiFM().favorites_addlist()
 
-        response = make_response(core.get_serialzeduuid(favoritelist.uuid), 200)
+        response = make_response(RaspiFM().get_serialzeduuid(favoritelist.uuid), 200)
         response.mimetype = "application/json"
         return response
     except BaseException as e:
@@ -164,7 +163,7 @@ def addfavoritelist() -> Response:
 def changefavoritelist() -> Response:
     try:
         form = request.form
-        core.favorites_changelistproperty(UUID(form["favlistuuid"]), form["property"], form["value"])
+        RaspiFM().favorites_changelistproperty(UUID(form["favlistuuid"]), form["property"], form["value"])
         response = make_response("", 204)
         response.mimetype = "application/json"
         return response
@@ -176,7 +175,7 @@ def changefavoritelist() -> Response:
 def removefavoritelist() -> Response:
     try:
         form = request.form
-        core.favorites_deletelist(UUID(form["favlistuuid"]))
+        RaspiFM().favorites_deletelist(UUID(form["favlistuuid"]))
         response = make_response("", 204)
         response.mimetype = "application/json"
         return response
@@ -188,7 +187,7 @@ def removefavoritelist() -> Response:
 def getfavoritelistcontent() -> str:
     try:
         form = request.form
-        favoritelist=core.favorites_getlist(UUID(form["favlistuuid"]))
+        favoritelist=RaspiFM().favorites_getlist(UUID(form["favlistuuid"]))
         return render_template("favoritelistcontent.html",
                                 favoritelist=favoritelist)
     except BaseException as e:
@@ -198,11 +197,11 @@ def get_errorresponse(e):
     traceback.print_exc() 
     if(isinstance(e, Exception)):
         if(isinstance(e, InvalidOperationException)):
-            response = make_response(core.get_serialzeddict({"errorNo": 1, "errorType": type(e).__name__, "error": e.args}), 400)
+            response = make_response(RaspiFM().get_serialzeddict({"errorNo": 1, "errorType": type(e).__name__, "error": e.args}), 400)
         else:
-            response = make_response(core.get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 400)
+            response = make_response(RaspiFM().get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 400)
     else:
-        response = make_response(core.get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
+        response = make_response(RaspiFM().get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
 
     response.mimetype = "application/json"
     return response

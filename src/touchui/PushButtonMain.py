@@ -1,12 +1,12 @@
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtCore import QSize
         
-class QPushButtonMain(QPushButton):
+class PushButtonMain(QPushButton):
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.resizeEvent = self.resized
    
-    def resized(self, event):
+    def resized(self, event) -> None:
         dimension = self.size().height()
         if self.size().width()  < dimension:
             dimension = self.size().width()

@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
@@ -23,10 +24,17 @@ from .raspifmsettings import serialization_directory
 
 class RaspiFM:
     __slots__ = ["__favorites_obj", "__radiostations_obj"]
+    __instance:RaspiFM = None
     __radiostations_obj:RadioStations
     __favorites_obj:Favorites
 
-    def __init__(self):
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = super(RaspiFM, cls).__new__(cls)
+            cls.__instance.__init()
+        return cls.__instance
+    
+    def __init(self):
         # Initialize Serializer
         JsonSerializer(serialization_directory)
         JsonDeserializer(serialization_directory)

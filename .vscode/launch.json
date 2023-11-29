@@ -25,7 +25,7 @@
             "name": "Python: TouchUI",
             "type": "python",
             "request": "launch",
-            "module": "src.touchui.raspifmtouchapp",
+            "module": "src.touchui",
             "justMyCode": true
         },
         {
