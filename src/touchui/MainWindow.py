@@ -8,16 +8,27 @@ from PyQt6.QtWidgets import QSizePolicy
 from .RadioWidget import RadioWidget
 from .PushButtonMain import PushButtonMain
 
+from PyQt6.QtWidgets import QScrollArea
+from PyQt6.QtCore import Qt
+
 class MainWindow(QMainWindow):
-    __slots__ = []
+    __slots__ = ["__mainwidget"]
+    __mainwidget:QWidget
+
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("raspiFM touch")
+
+        self.scroll = QScrollArea()
         
         main_layout_horizontal = QHBoxLayout()
         widget = QWidget()
+        self.__mainwidget = widget
+        widget.setFixedSize(500,500)
         widget.setLayout(main_layout_horizontal)
-        self.setCentralWidget(widget)
+
+        self.scroll.setWidget(widget)
+        self.setCentralWidget(self.scroll)
 
         left_layout_vertical = QVBoxLayout()
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
@@ -48,3 +59,6 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(sptfybutton)
         left_layout_vertical.addWidget(setbutton)
 
+    def resizeEvent(self, event):
+        QMainWindow.resizeEvent(self, event)
+        self.__mainwidget.setFixedSize(self.width(), self.height())

@@ -22,20 +22,21 @@ from .MarqueeLabel import MarqueeLabel
 from ..core.raspifmcore import RaspiFM
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__vlcgetmeta_enabled", "__playcontrolbutton", "__threadpool", "__infolabel"]
+    __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__vlcgetmeta_enabled", "__playcontrolbutton", "__threadpool", "__infolabel", "__volume"]
     __vlcinstance:vlc.Instance
     __vlcplayer: MediaPlayer
     __vlcmedia:vlc.Media
     __playcontrolbutton:QPushButton
-    __infolabel:QLabel
+    __infolabel:MarqueeLabel
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
+    __volume:int
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__threadpool = QThreadPool()
-        initialvolume = 50
 
+        self.__threadpool = QThreadPool()
+        self.__volume = 50
         main_layout_vertical = QVBoxLayout()
         self.setLayout(main_layout_vertical)
  
@@ -43,8 +44,10 @@ class RadioWidget(QWidget):
         main_layout_vertical.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
         self.__infolabel = MarqueeLabel()
-        self.__infolabel.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css.
-        main_layout_vertical.addWidget(self.__infolabel)
+        self.__infolabel.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
+        main_layout_vertical.addWidget(self.__infolabel, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        main_layout_vertical.addStretch()
 
         playcontrolbutton = QPushButton("Stop")
         playcontrolbutton.clicked.connect(self.playcontrol_clicked)
@@ -52,27 +55,17 @@ class RadioWidget(QWidget):
         self.__playcontrolbutton = playcontrolbutton
         main_layout_vertical.addWidget(playcontrolbutton, alignment = Qt.AlignmentFlag.AlignHCenter)
 
-        main_layout_vertical.addStretch()
-
         volslider = QSlider(Qt.Orientation.Horizontal)
         volslider.sliderMoved.connect(self.volslider_moved)
-        volslider.setValue(initialvolume)
+        volslider.setValue(self.__volume)
         main_layout_vertical.addWidget(volslider)
-
-        self.__vlcinstance = vlc.Instance()
-        self.__vlcplayer = self.__vlcinstance.media_player_new()
-        self.__vlcmedia = self.__vlcinstance.media_new(RaspiFM().favorites_getdefaultlist().stations[0].url)
-        self.__vlcplayer.set_media(self.__vlcmedia)
-        self.__vlcplayer.audio_set_volume(initialvolume)
-
-        self.__vlcplayer.play()
 
         qx = QPixmap()
         qx.loadFromData(base64.b64decode(RaspiFM().favorites_getdefaultlist().stations[0].faviconb64), "PNG")
         stationimagelabel.setPixmap(qx)
 
-        self.__vlcgetmeta_enabled = True
-        self.startmediagetter()
+        self.__vlcinstance = vlc.Instance()
+        self.play()
 
     def startmediagetter(self):
         mediametagetter = MediaMetaGetter(self.getmeta)
@@ -86,29 +79,40 @@ class RadioWidget(QWidget):
             self.__infolabel.setText(None)
             self.__playcontrolbutton.setText("Play")
         else:
-            self.__vlcplayer.play()
-            self.__vlcgetmeta_enabled = True
-            self.startmediagetter()
+            self.play()
             self.__playcontrolbutton.setText("Stop")
 
     def volslider_moved(self, value:int) -> None:
-       self.__vlcplayer.audio_set_volume(value)
+       self.__volume = value
+       self.__vlcplayer.audio_set_volume(self.__volume)
 
     def updateinfo(self, info:str):
         self.__infolabel.setText(info)
+
+    def play(self) -> None:
+        self.__vlcplayer = self.__vlcinstance.media_player_new()
+        self.__vlcmedia = self.__vlcinstance.media_new(RaspiFM().favorites_getdefaultlist().stations[0].url)
+        self.__vlcplayer.set_media(self.__vlcmedia)
+        self.__vlcplayer.audio_set_volume(self.__volume)
+        self.__vlcplayer.play()
+        self.__vlcgetmeta_enabled = True
+        self.startmediagetter()
 
     def getmeta(self, infocallback:pyqtSignal) -> None: 
         previnfo= ""
         sleep = 5
         while self.__vlcgetmeta_enabled:
             time.sleep(sleep)
-            print(sleep)
             if(sleep < 6):
                 sleep = sleep + 5
             info = self.__vlcmedia.get_meta(vlc.Meta.NowPlaying) # vlc.Meta 12: 'NowPlaying', see vlc.py class Meta(_Enum)
-            if info != previnfo:
+            if(self.__vlcplayer.is_playing() and info != previnfo):
                 infocallback.emit(info)
                 previnfo = info
+
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+        self.__infolabel.setMaximumWidth(self.width() - 20) 
 
 class MetaSignal(QObject):
     info = pyqtSignal(str)

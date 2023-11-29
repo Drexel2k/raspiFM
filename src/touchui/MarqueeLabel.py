@@ -17,7 +17,7 @@ class MarqueeLabel(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.__timer = QTimer(self)
         self.__timer.timeout.connect(self.update)
-        self.__speed = 1.5        
+        self.__speed = 1.5
 
     def resizeEvent(self, event):
         self.__timer.stop()
@@ -41,7 +41,8 @@ class MarqueeLabel(QLabel):
         self.setFixedHeight(self.fontMetrics().height())
 
     def checkScroll(self) -> None:
-        if(self.__textLength <  self.width()):
+        print(self.width())
+        if(self.__textLength <= self.width()):
             self.__timer.stop()
         else:
             self.__x = 70
