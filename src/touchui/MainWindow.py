@@ -46,5 +46,5 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(radiobutton)
         left_layout_vertical.addWidget(favbutton)
         left_layout_vertical.addWidget(sptfybutton)
-        left_layout_vertical.addWidget(setbutton)  
+        left_layout_vertical.addWidget(setbutton)
 

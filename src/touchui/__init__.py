@@ -9,6 +9,7 @@ app = QApplication([])
 apply_stylesheet(app, theme="dark_blue.xml")
 
 window = MainWindow()
+
 if(raspifmsettings.touch_startfullscreen):
     window.showFullScreen()
 else:
