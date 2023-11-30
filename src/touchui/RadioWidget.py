@@ -15,17 +15,13 @@ from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtWidgets import QLabel
 from PyQt6.QtWidgets import QSlider
 
-import vlc
-from vlc import MediaPlayer
-
+from..core.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel
-from ..core.raspifmcore import RaspiFM
+from ..core.RaspiFM import RaspiFM
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__vlcgetmeta_enabled", "__playcontrolbutton", "__threadpool", "__infolabel", "__volume"]
-    __vlcinstance:vlc.Instance
-    __vlcplayer: MediaPlayer
-    __vlcmedia:vlc.Media
+    __slots__ = ["__vlcgetmeta_enabled", "__playcontrolbutton", "__threadpool", "__infolabel", "__volume"]
+
     __playcontrolbutton:QPushButton
     __infolabel:MarqueeLabel
     __vlcgetmeta_enabled:bool
@@ -64,39 +60,32 @@ class RadioWidget(QWidget):
         qx.loadFromData(base64.b64decode(RaspiFM().favorites_getdefaultlist().stations[0].faviconb64), "PNG")
         stationimagelabel.setPixmap(qx)
 
-        self.__vlcinstance = vlc.Instance()
-        self.play()
+        Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
+        self.startmetagetter()
 
-    def startmediagetter(self):
+    def startmetagetter(self):
+        self.__vlcgetmeta_enabled = True
         mediametagetter = MediaMetaGetter(self.getmeta)
         mediametagetter.infocallback.info.connect(self.updateinfo)
         self.__threadpool.start(mediametagetter)
 
     def playcontrol_clicked(self) -> None:
-        if(self.__vlcplayer.is_playing()):
+        if(Vlc().isplaying()):
             self.__vlcgetmeta_enabled = False
-            self.__vlcplayer.stop()
+            Vlc().stop()
             self.__infolabel.setText(None)
             self.__playcontrolbutton.setText("Play")
         else:
-            self.play()
+            Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
             self.__playcontrolbutton.setText("Stop")
+            self.startmetagetter()
 
     def volslider_moved(self, value:int) -> None:
        self.__volume = value
-       self.__vlcplayer.audio_set_volume(self.__volume)
+       Vlc().setvolume(self.__volume)
 
     def updateinfo(self, info:str):
         self.__infolabel.setText(info)
-
-    def play(self) -> None:
-        self.__vlcplayer = self.__vlcinstance.media_player_new()
-        self.__vlcmedia = self.__vlcinstance.media_new(RaspiFM().favorites_getdefaultlist().stations[0].url)
-        self.__vlcplayer.set_media(self.__vlcmedia)
-        self.__vlcplayer.audio_set_volume(self.__volume)
-        self.__vlcplayer.play()
-        self.__vlcgetmeta_enabled = True
-        self.startmediagetter()
 
     def getmeta(self, infocallback:pyqtSignal) -> None: 
         previnfo= ""
@@ -105,14 +94,14 @@ class RadioWidget(QWidget):
             time.sleep(sleep)
             if(sleep < 6):
                 sleep = sleep + 5
-            info = self.__vlcmedia.get_meta(vlc.Meta.NowPlaying) # vlc.Meta 12: 'NowPlaying', see vlc.py class Meta(_Enum)
-            if(self.__vlcplayer.is_playing() and info != previnfo):
-                infocallback.emit(info)
-                previnfo = info
+                info = Vlc().getmeta()
+                if(Vlc().isplaying() and info != previnfo):
+                    infocallback.emit(info)
+                    previnfo = info
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
-        self.__infolabel.setMaximumWidth(self.width() - 20) 
+        self.__infolabel.setMaximumWidth(self.width() - 20)
 
 class MetaSignal(QObject):
     info = pyqtSignal(str)

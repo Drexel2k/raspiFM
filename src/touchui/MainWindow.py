@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QSizePolicy
 
+from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
 from .PushButtonMain import PushButtonMain
 
@@ -32,17 +33,21 @@ class MainWindow(QMainWindow):
 
         left_layout_vertical = QVBoxLayout()
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
-        main_layout_horizontal.addWidget(RadioWidget(), stretch=4)
+        radio = RadioWidget()
+        radio.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        main_layout_horizontal.addWidget(radio, stretch=4)
         
         radiobutton = PushButtonMain()
         radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         radioIcon = QIcon("src/webui/static/broadcast-pin-blue.svg")
         radiobutton.setIcon(radioIcon)
+        radiobutton.clicked.connect(self.radioclicked)
 
         favbutton = PushButtonMain()
         favbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         favIcon = QIcon("src/webui/static/star-blue.svg")
         favbutton.setIcon(favIcon)
+        favbutton.clicked.connect(self.favclicked)
 
         sptfybutton = PushButtonMain()
         sptfybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -62,3 +67,15 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         QMainWindow.resizeEvent(self, event)
         self.__mainwidget.setFixedSize(self.width(), self.height())
+
+    def radioclicked(self) -> None:
+        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
+             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget())
+             layoutitem.widget().close()
+
+    def favclicked(self) -> None:
+        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
+           layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget())
+           layoutitem.widget().setParent(None)
+           layoutitem.widget().close()
+           layoutitem.widget().deleteLater()

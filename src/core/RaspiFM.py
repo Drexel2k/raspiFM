@@ -35,7 +35,6 @@ class RaspiFM:
         return cls.__instance
     
     def __init(self):
-        # Initialize Serializer
         JsonSerializer(serialization_directory)
         JsonDeserializer(serialization_directory)
         self.__radiostations_obj = None

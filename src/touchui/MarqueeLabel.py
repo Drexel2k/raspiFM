@@ -41,7 +41,6 @@ class MarqueeLabel(QLabel):
         self.setFixedHeight(self.fontMetrics().height())
 
     def checkScroll(self) -> None:
-        print(self.width())
         if(self.__textLength <= self.width()):
             self.__timer.stop()
         else:
