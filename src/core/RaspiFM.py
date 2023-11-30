@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from datetime import timedelta
 from uuid import UUID
+from os import path
 
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
@@ -102,9 +103,10 @@ class RaspiFM:
     
     def favorites_add_stationtolist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
         station = self.__radiostations.get_station(stationuuid)
-        
+
         if not station:
             radiostationapi = stationapi.query_station(stationuuid)
+
             station = RadioStation(radiostationapi.stationuuid,
                                    radiostationapi.name,
                                    radiostationapi.url_resolved,
@@ -112,6 +114,7 @@ class RaspiFM:
                                    radiostationapi.languagecodes,
                                    radiostationapi.homepage,
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi),
+                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else path.splitext(radiostationapi.favicon)[1][1:],
                                    radiostationapi.codec,
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))

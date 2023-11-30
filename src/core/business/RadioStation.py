@@ -1,13 +1,14 @@
 from uuid import UUID
 
 class RadioStation:
-    __slots__ = ["__uuid", "__name", "__url", "__countrycode", "__languagecodes", "__homepage", "__faviconb64", "__codec", "__bitrate", "__tags"]
+    __slots__ = ["__uuid", "__name", "__url", "__countrycode", "__languagecodes", "__homepage", "__faviconb64", "__faviconextension", "__codec", "__bitrate", "__tags"]
     __uuid:UUID
     __name:str
     __url:str
     __languagecodes:str
     __homepage:str
     __faviconb64:str
+    __faviconextension:str
     __countrycode:str
     __codec:str
     __bitrate:int
@@ -39,6 +40,10 @@ class RadioStation:
     @property
     def faviconb64(self) -> str:
         return self.__faviconb64
+
+    @property
+    def faviconextension(self) -> str:
+        return self.__faviconextension
     
     @property
     def codec(self) -> str:
@@ -52,7 +57,7 @@ class RadioStation:
     def tags(self) -> list:
         return self.__tags
 
-    def __init__(self, uuid:str=None, name:str=None, url:str=None, countrycode:str=None, languagecodes:str=None, homepage:str=None, faviconb64:str=None, codec:str=None, bitrate:int=None, tags:list=None, serializationdata:dict=None):
+    def __init__(self, uuid:str=None, name:str=None, url:str=None, countrycode:str=None, languagecodes:str=None, homepage:str=None, faviconb64:str=None, faviconextension:str=None, codec:str=None, bitrate:int=None, tags:list=None, serializationdata:dict=None):
         if(serializationdata):
             for slot in enumerate(self.__slots__):
                 dictkey = slot[1][2:]
@@ -70,6 +75,7 @@ class RadioStation:
             self.__languagecodes = languagecodes
             self.__homepage = homepage
             self.__faviconb64 = faviconb64
+            self.__faviconextension = faviconextension
             self.__codec = codec
             self.__bitrate = bitrate
             self.__tags = tags

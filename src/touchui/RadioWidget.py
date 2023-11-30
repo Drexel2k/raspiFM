@@ -20,10 +20,10 @@ from .MarqueeLabel import MarqueeLabel
 from ..core.RaspiFM import RaspiFM
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcgetmeta_enabled", "__playcontrolbutton", "__threadpool", "__infolabel", "__volume"]
+    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_info", "__volume"]
 
-    __playcontrolbutton:QPushButton
-    __infolabel:MarqueeLabel
+    __btn_playcontrol:QPushButton
+    __lbl_nowplaying:MarqueeLabel
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
     __volume:int
@@ -37,18 +37,21 @@ class RadioWidget(QWidget):
         self.setLayout(main_layout_vertical)
  
         stationimagelabel = QLabel()
+        qx = QPixmap()
+        qx.loadFromData(base64.b64decode(RaspiFM().favorites_getdefaultlist().stations[0].faviconb64), "PNG")
+        stationimagelabel.setPixmap(qx)
         main_layout_vertical.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
-        self.__infolabel = MarqueeLabel()
-        self.__infolabel.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
-        main_layout_vertical.addWidget(self.__infolabel, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.__lbl_nowplaying = MarqueeLabel()
+        self.__lbl_nowplaying.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
+        main_layout_vertical.addWidget(self.__lbl_nowplaying, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         main_layout_vertical.addStretch()
 
         playcontrolbutton = QPushButton("Stop")
         playcontrolbutton.clicked.connect(self.playcontrol_clicked)
         playcontrolbutton.setFixedWidth(100)
-        self.__playcontrolbutton = playcontrolbutton
+        self.__btn_playcontrol = playcontrolbutton
         main_layout_vertical.addWidget(playcontrolbutton, alignment = Qt.AlignmentFlag.AlignHCenter)
 
         volslider = QSlider(Qt.Orientation.Horizontal)
@@ -56,11 +59,9 @@ class RadioWidget(QWidget):
         volslider.setValue(self.__volume)
         main_layout_vertical.addWidget(volslider)
 
-        qx = QPixmap()
-        qx.loadFromData(base64.b64decode(RaspiFM().favorites_getdefaultlist().stations[0].faviconb64), "PNG")
-        stationimagelabel.setPixmap(qx)
-
-        Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
+        if(not Vlc().isplaying):
+            Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
+        
         self.startmetagetter()
 
     def startmetagetter(self):
@@ -70,14 +71,14 @@ class RadioWidget(QWidget):
         self.__threadpool.start(mediametagetter)
 
     def playcontrol_clicked(self) -> None:
-        if(Vlc().isplaying()):
+        if(Vlc().isplaying):
             self.__vlcgetmeta_enabled = False
             Vlc().stop()
-            self.__infolabel.setText(None)
-            self.__playcontrolbutton.setText("Play")
+            self.__btn_playcontrol.setText(None)
+            self.__btn_playcontrol.setText("Play")
         else:
             Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
-            self.__playcontrolbutton.setText("Stop")
+            self.__btn_playcontrol.setText("Stop")
             self.startmetagetter()
 
     def volslider_moved(self, value:int) -> None:
@@ -85,23 +86,23 @@ class RadioWidget(QWidget):
        Vlc().setvolume(self.__volume)
 
     def updateinfo(self, info:str):
-        self.__infolabel.setText(info)
+        self.__lbl_nowplaying.setText(info)
 
     def getmeta(self, infocallback:pyqtSignal) -> None: 
         previnfo= ""
-        sleep = 5
+        sleep = 2
         while self.__vlcgetmeta_enabled:
             time.sleep(sleep)
-            if(sleep < 6):
-                sleep = sleep + 5
+            if(sleep < 3):
+                sleep = sleep + 8
                 info = Vlc().getmeta()
-                if(Vlc().isplaying() and info != previnfo):
+                if(Vlc().isplaying and info != previnfo):
                     infocallback.emit(info)
                     previnfo = info
 
     def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
-        self.__infolabel.setMaximumWidth(self.width() - 20)
+        self.__btn_playcontrol.setMaximumWidth(self.width() - 20)
 
 class MetaSignal(QObject):
     info = pyqtSignal(str)

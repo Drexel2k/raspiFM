@@ -1,16 +1,15 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QSizePolicy
+from PyQt6.QtWidgets import QScrollArea
 
 from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
 from .PushButtonMain import PushButtonMain
-
-from PyQt6.QtWidgets import QScrollArea
-from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     __slots__ = ["__mainwidget"]
@@ -33,9 +32,9 @@ class MainWindow(QMainWindow):
 
         left_layout_vertical = QVBoxLayout()
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
-        radio = RadioWidget()
-        radio.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        main_layout_horizontal.addWidget(radio, stretch=4)
+        radiowdiget = RadioWidget()
+        radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        main_layout_horizontal.addWidget(radiowdiget, stretch=4)
         
         radiobutton = PushButtonMain()
         radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -70,12 +69,16 @@ class MainWindow(QMainWindow):
 
     def radioclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
-             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget())
-             layoutitem.widget().close()
+            radiowdiget = RadioWidget()
+            radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowdiget)
+            layoutitem.widget().close()
+            layoutitem.widget().setParent(None)
 
     def favclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
-           layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget())
-           layoutitem.widget().setParent(None)
-           layoutitem.widget().close()
-           layoutitem.widget().deleteLater()
+            favoriteswdiget = FavoritesWidget()
+            favoriteswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
+            layoutitem.widget().close()
+            layoutitem.widget().setParent(None)

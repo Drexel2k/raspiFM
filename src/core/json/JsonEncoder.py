@@ -43,7 +43,7 @@ class LanguageListEncoder(json.JSONEncoder):
 class RadioStationEncoder(json.JSONEncoder):
     def default(self, obj:RadioStation):
         if isinstance(obj, RadioStation):
-            return {"__type__":"RadioStation", "uuid":str(obj.uuid), "name":obj.name, "url":obj.url, "countrycode":obj.countrycode, "languagecodes":obj.languacecodes, "homepage":obj.homepage, "faviconb64":obj.faviconb64, "codec":obj.codec, "bitrate":obj.bitrate, "tags":obj.tags}    
+            return {"__type__":"RadioStation", "uuid":str(obj.uuid), "name":obj.name, "url":obj.url, "countrycode":obj.countrycode, "languagecodes":obj.languacecodes, "homepage":obj.homepage, "faviconb64":obj.faviconb64, "faviconextension":obj.faviconextension, "codec":obj.codec, "bitrate":obj.bitrate, "tags":obj.tags}    
     
         return json.JSONEncoder.default(self, obj)
     

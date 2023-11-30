@@ -1,14 +1,20 @@
 from __future__ import annotations
+from enum import Enum
 
 import vlc
 from vlc import MediaPlayer
 
 class Vlc:
-    __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia"]
+    __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__state"]
     __instance:Vlc = None
     __vlcinstance:vlc.Instance
     __vlcplayer: MediaPlayer
     __vlcmedia:vlc.Media
+    __state:PlayerState
+
+    @property
+    def isplaying(self) -> bool:
+        return self.__state == PlayerState.Playing
 
     def __new__(cls):
         if cls.__instance is None:
@@ -18,23 +24,27 @@ class Vlc:
     
     def __init(self):
         self.__vlcinstance = vlc.Instance()
+        self.__vlcplayer = None
+        self.__vlcmedia = None
+        self.__state = PlayerState.Stopped
 
     def play(self, url:str, volume) -> None:
-        self.__vlcplayer = self.__vlcinstance.media_player_new()
-        self.__vlcmedia = self.__vlcinstance.media_new(url)
-        self.__vlcplayer.set_media(self.__vlcmedia)
-        self.setvolume(volume)
-        self.__vlcplayer.play()
+            self.__state = PlayerState.Playing
+            self.__vlcplayer = self.__vlcinstance.media_player_new()
+            self.__vlcmedia = self.__vlcinstance.media_new(url)
+            self.__vlcplayer.set_media(self.__vlcmedia)
+            self.setvolume(volume)
+            self.__vlcplayer.play()
 
     def stop(self) -> None:
+        self.__state = PlayerState.Stopped
         self.__vlcplayer.stop()
+        vlc.libvlc_media_player_release(self.__vlcplayer)
+        vlc.libvlc_media_release(self.__vlcmedia)
 
     def getmeta(self) -> str:     
-        if(self.__vlcplayer.is_playing()):
+        if(self.isplaying):
             return self.__vlcmedia.get_meta(vlc.Meta.NowPlaying) # vlc.Meta 12: 'NowPlaying', see vlc.py class Meta(_Enum)
-    
-    def isplaying(self) -> bool:
-        return self.__vlcplayer.is_playing()
     
     def setvolume(self, volume:int) -> None:
         if(volume < 0):
@@ -45,3 +55,6 @@ class Vlc:
 
         self.__vlcplayer.audio_set_volume(volume)
 
+class PlayerState(Enum):
+    Playing = 1
+    Stopped = 2

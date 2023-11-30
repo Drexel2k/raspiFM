@@ -3,7 +3,7 @@ from . import app
 from flask import Response, make_response, render_template, request
 from uuid import UUID
 
-from ..core.raspifmcore import RaspiFM
+from ..core.RaspiFM import RaspiFM
 from ..core import raspifmsettings
 from ..utils import utils
 from .ViewProxies.RadioStationView import RadioStationView
