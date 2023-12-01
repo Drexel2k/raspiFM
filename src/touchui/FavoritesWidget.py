@@ -1,17 +1,12 @@
 import os
 import base64
+from PyQt6.QtCore import (Qt, QSize, pyqtSlot)
+from PyQt6.QtGui import (QPixmap, QIcon)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtWidgets import QVBoxLayout
-from PyQt6.QtWidgets import QComboBox
-from PyQt6.QtWidgets import QPushButton
-
+from ..core.Vlc import Vlc
+from ..core.business.RadioStation import RadioStation
 from .PushButtonData import PushButtonData
-
 from ..core.RaspiFM import RaspiFM
 
 class FavoritesWidget(QWidget):
@@ -61,4 +56,9 @@ class FavoritesWidget(QWidget):
             button.setIcon(favIcon)
 
             button.setText(f' {station.name}')
+            button.clicked.connect(self.buttonclicked)
             self.__layout.insertWidget(1, button)
+
+    @pyqtSlot()
+    def buttonclicked(self):
+        Vlc().play(self.sender().data)

@@ -1,12 +1,8 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QVBoxLayout
-from PyQt6.QtWidgets import QHBoxLayout
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtWidgets import QSizePolicy
-from PyQt6.QtWidgets import QScrollArea
+from PyQt6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
 
+from ..core.RaspiFM import RaspiFM
 from ..core.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
@@ -33,6 +29,8 @@ class MainWindow(QMainWindow):
 
         left_layout_vertical = QVBoxLayout()
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
+
+        Vlc(RaspiFM().favorites_getdefaultlist().stations[0])
         radiowdiget = RadioWidget()
         radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         main_layout_horizontal.addWidget(radiowdiget, stretch=4)
@@ -64,10 +62,6 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(sptfybutton)
         left_layout_vertical.addWidget(setbutton)
 
-    def resizeEvent(self, event):
-        QMainWindow.resizeEvent(self, event)
-        self.__mainwidget.setFixedSize(self.width(), self.height())
-
     def radioclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
             radiowdiget = RadioWidget()
@@ -83,9 +77,16 @@ class MainWindow(QMainWindow):
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
             layoutitem.widget().close()
             layoutitem.widget().setParent(None)
+    
+    def resizeEvent(self, event):
+        QMainWindow.resizeEvent(self, event)
+        self.__mainwidget.setFixedSize(self.width(), self.height())
 
     def closeEvent(self, event) -> None:
         QMainWindow.closeEvent(self, event)
+        widget = self.__mainwidget.layout().itemAt(1).widget()
+        widget.close()
+        widget.setParent(None)
         Vlc().shutdown()
         
        
