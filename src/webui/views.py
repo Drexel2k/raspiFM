@@ -110,7 +110,7 @@ def taglist() -> str:
 def gettags() -> str:
     try:
         form = request.form
-        taglist = core.tags_get(form["filter"])
+        taglist = RaspiFM().tags_get(form["filter"])
         return render_template("gettags.html", tags=taglist)
     except BaseException as e:
         return get_errorresponse(e)
