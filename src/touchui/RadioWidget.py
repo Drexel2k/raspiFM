@@ -3,11 +3,9 @@ import time
 from types import MethodType
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtCore import QObject
 from PyQt6.QtCore import QRunnable
 from PyQt6.QtCore import QThreadPool
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtWidgets import QVBoxLayout
@@ -20,19 +18,21 @@ from .MarqueeLabel import MarqueeLabel
 from ..core.RaspiFM import RaspiFM
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_info", "__volume"]
+    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying", "__volume"]
 
     __btn_playcontrol:QPushButton
     __lbl_nowplaying:MarqueeLabel
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
     __volume:int
+    __inforeceived = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.__threadpool = QThreadPool()
         self.__volume = 50
+        
         main_layout_vertical = QVBoxLayout()
         self.setLayout(main_layout_vertical)
  
@@ -64,18 +64,13 @@ class RadioWidget(QWidget):
         
         self.startmetagetter()
 
-    def startmetagetter(self):
-        self.__vlcgetmeta_enabled = True
-        mediametagetter = MediaMetaGetter(self.getmeta)
-        mediametagetter.infocallback.info.connect(self.updateinfo)
-        self.__threadpool.start(mediametagetter)
-
     def playcontrol_clicked(self) -> None:
         if(Vlc().isplaying):
             self.__vlcgetmeta_enabled = False
             Vlc().stop()
             self.__btn_playcontrol.setText(None)
             self.__btn_playcontrol.setText("Play")
+            self.__lbl_nowplaying.setText(None)
         else:
             Vlc().play(RaspiFM().favorites_getdefaultlist().stations[0].url, self.__volume)
             self.__btn_playcontrol.setText("Stop")
@@ -88,32 +83,36 @@ class RadioWidget(QWidget):
     def updateinfo(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
-    def getmeta(self, infocallback:pyqtSignal) -> None: 
+    def startmetagetter(self):
+        self.__vlcgetmeta_enabled = True
+        mediametagetter = MediaMetaGetter(self.getmeta)
+        self.__inforeceived.connect(self.updateinfo)
+        self.__threadpool.start(mediametagetter)
+
+    def getmeta(self) -> None: 
         previnfo= ""
         sleep = 2
         while self.__vlcgetmeta_enabled:
             time.sleep(sleep)
             if(sleep < 3):
                 sleep = sleep + 8
-                info = Vlc().getmeta()
-                if(Vlc().isplaying and info != previnfo):
-                    infocallback.emit(info)
-                    previnfo = info
+
+            info = Vlc().getmeta()
+            if(Vlc().isplaying and info != previnfo):
+                self.__inforeceived.emit(info)
+                previnfo = info
 
     def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
-        self.__btn_playcontrol.setMaximumWidth(self.width() - 20)
-
-class MetaSignal(QObject):
-    info = pyqtSignal(str)
+        self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
 
 class MediaMetaGetter(QRunnable):
+    __slots__ = ["__execute"]
+    __execute:MethodType
 
     def __init__(self, execute:MethodType):
         super().__init__()
-        self.execute = execute
-        self.infocallback = MetaSignal()
+        self.__execute = execute
 
-    @pyqtSlot()
     def run(self) ->None:
-        self.execute(self.infocallback.info)
+        self.__execute()

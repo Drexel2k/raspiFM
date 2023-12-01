@@ -29,12 +29,12 @@ class Vlc:
         self.__state = PlayerState.Stopped
 
     def play(self, url:str, volume) -> None:
-            self.__state = PlayerState.Playing
-            self.__vlcplayer = self.__vlcinstance.media_player_new()
-            self.__vlcmedia = self.__vlcinstance.media_new(url)
-            self.__vlcplayer.set_media(self.__vlcmedia)
-            self.setvolume(volume)
-            self.__vlcplayer.play()
+        self.__state = PlayerState.Playing
+        self.__vlcplayer = self.__vlcinstance.media_player_new()
+        self.__vlcmedia = self.__vlcinstance.media_new(url)
+        self.__vlcplayer.set_media(self.__vlcmedia)
+        self.setvolume(volume)
+        self.__vlcplayer.play()
 
     def stop(self) -> None:
         self.__state = PlayerState.Stopped
@@ -54,6 +54,13 @@ class Vlc:
             volume = 100
 
         self.__vlcplayer.audio_set_volume(volume)
+
+    def shutdown(self) -> None:
+        if(self.__state == PlayerState.Playing):
+            self.stop()
+
+        vlc.libvlc_release(self.__vlcinstance)
+        
 
 class PlayerState(Enum):
     Playing = 1

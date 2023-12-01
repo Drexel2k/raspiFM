@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QComboBox
 from PyQt6.QtWidgets import QPushButton
 
+from .PushButtonData import PushButtonData
+
 from ..core.RaspiFM import RaspiFM
 
 class FavoritesWidget(QWidget):
@@ -46,7 +48,7 @@ class FavoritesWidget(QWidget):
 
         favoritelist = self.__cbo_favoritelists.currentData()
         for station in favoritelist.stations: 
-            button = QPushButton()
+            button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             button.setFixedHeight(50)
             button.setMaximumWidth(self.width() - 40)

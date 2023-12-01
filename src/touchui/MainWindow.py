@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QSizePolicy
 from PyQt6.QtWidgets import QScrollArea
 
+from ..core.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
 from .PushButtonMain import PushButtonMain
@@ -82,3 +83,9 @@ class MainWindow(QMainWindow):
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
             layoutitem.widget().close()
             layoutitem.widget().setParent(None)
+
+    def closeEvent(self, event) -> None:
+        QMainWindow.closeEvent(self, event)
+        Vlc().shutdown()
+        
+       
