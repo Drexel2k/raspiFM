@@ -2,8 +2,9 @@ import base64
 import time
 from types import MethodType
 
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import (Qt, QRunnable, QThreadPool, pyqtSignal, pyqtSlot, QSize)
-from PyQt6.QtGui import (QPixmap, QIcon )
+from PyQt6.QtGui import (QPixmap, QIcon, QImage, QPainter)
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
 
 from..core.Vlc import Vlc
@@ -29,8 +30,17 @@ class RadioWidget(QWidget):
     
             stationimagelabel = QLabel()
             qx = QPixmap()
-        
-            qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
+            if(Vlc().currentstation.faviconb64):
+                qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
+            else:
+                renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
+                image = QImage(180, 180, QImage.Format.Format_ARGB32)
+                image.fill(0x00000000)
+                painter = QPainter(image)
+                renderer.render(painter)
+                painter.end()
+                qx.convertFromImage(image)
+
             stationimagelabel.setPixmap(qx.scaledToHeight(180, Qt.TransformationMode.SmoothTransformation))
             main_layout_vertical.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 

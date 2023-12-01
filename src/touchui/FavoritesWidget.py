@@ -1,11 +1,12 @@
 import os
 import base64
+
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import (Qt, QSize, pyqtSlot)
-from PyQt6.QtGui import (QPixmap, QIcon)
+from PyQt6.QtGui import (QPixmap, QIcon, QImage, QPainter)
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
 
 from ..core.Vlc import Vlc
-from ..core.business.RadioStation import RadioStation
 from .PushButtonData import PushButtonData
 from ..core.RaspiFM import RaspiFM
 
@@ -49,8 +50,18 @@ class FavoritesWidget(QWidget):
             button.setMaximumWidth(self.width() - 40)
             button.setStyleSheet("QPushButton { text-align:left; }")
 
-            qx = QPixmap()
-            qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
+            if(station.faviconb64):
+                qx = QPixmap()
+                qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
+            else:
+                renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
+                image = QImage(42, 42, QImage.Format.Format_ARGB32)
+                image.fill(0x00000000)
+                painter = QPainter(image)
+                renderer.render(painter)
+                painter.end()
+                qx.convertFromImage(image)
+
             favIcon = QIcon(qx)
             button.setIconSize(QSize(42, 42))
             button.setIcon(favIcon)
