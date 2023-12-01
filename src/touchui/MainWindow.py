@@ -36,26 +36,22 @@ class MainWindow(QMainWindow):
         main_layout_horizontal.addWidget(radiowdiget, stretch=4)
         
         radiobutton = PushButtonMain()
-        radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        radioIcon = QIcon("src/webui/static/broadcast-pin-blue.svg")
-        radiobutton.setIcon(radioIcon)
+        radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
+        radiobutton.setIcon(QIcon("src/webui/static/broadcast-pin-blue.svg"))
         radiobutton.clicked.connect(self.radioclicked)
 
         favbutton = PushButtonMain()
         favbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        favIcon = QIcon("src/webui/static/star-blue.svg")
-        favbutton.setIcon(favIcon)
+        favbutton.setIcon(QIcon("src/webui/static/star-blue.svg"))
         favbutton.clicked.connect(self.favclicked)
 
         sptfybutton = PushButtonMain()
         sptfybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sptfyIcon = QIcon("src/webui/static/spotify-blue.svg")
-        sptfybutton.setIcon(sptfyIcon)
+        sptfybutton.setIcon(QIcon("src/webui/static/spotify-blue.svg"))
 
         setbutton = PushButtonMain()
         setbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        setIcon = QIcon("src/webui/static/gear-blue.svg")
-        setbutton.setIcon(setIcon)
+        setbutton.setIcon(QIcon("src/webui/static/gear-blue.svg"))
 
         left_layout_vertical.addWidget(radiobutton)
         left_layout_vertical.addWidget(favbutton)

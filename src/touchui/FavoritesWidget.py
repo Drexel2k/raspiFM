@@ -21,7 +21,7 @@ class FavoritesWidget(QWidget):
         self.setLayout(self.__layout)
         self.__cbo_favoritelists = QComboBox()
         self.__cbo_favoritelists.setFixedHeight(50)
-        self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; font-size:30px }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
+        self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
         for list in RaspiFM().favorites_getlists():
             self.__cbo_favoritelists.addItem(list.name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.selectionchange)
@@ -47,7 +47,7 @@ class FavoritesWidget(QWidget):
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             button.setFixedHeight(50)
             button.setMaximumWidth(self.width() - 40)
-            button.setStyleSheet("QPushButton { font-size:30px; text-align:left; }")
+            button.setStyleSheet("QPushButton { text-align:left; }")
 
             qx = QPixmap()
             qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
@@ -57,7 +57,7 @@ class FavoritesWidget(QWidget):
 
             button.setText(f' {station.name}')
             button.clicked.connect(self.buttonclicked)
-            self.__layout.insertWidget(1, button)
+            self.__layout.insertWidget(self.__layout.count() - 1, button)
 
     @pyqtSlot()
     def buttonclicked(self):

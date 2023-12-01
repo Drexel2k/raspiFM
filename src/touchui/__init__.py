@@ -1,12 +1,12 @@
+import os
 from PyQt6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 
 from .MainWindow import MainWindow
 
 from ..core import raspifmsettings  
-
 app = QApplication([])
-apply_stylesheet(app, theme="dark_blue.xml")
+apply_stylesheet(app, theme="dark_blue.xml", css_file=f'{os.getcwd()}\\src\\touchui\\raspiFM.css')
 
 window = MainWindow()
 

@@ -2,13 +2,12 @@ import base64
 import time
 from types import MethodType
 
-from PyQt6.QtCore import (Qt, QRunnable, QThreadPool, pyqtSignal, pyqtSlot)
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import (Qt, QRunnable, QThreadPool, pyqtSignal, pyqtSlot, QSize)
+from PyQt6.QtGui import (QPixmap, QIcon )
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
 
 from..core.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel
-from ..core.RaspiFM import RaspiFM
 
 class RadioWidget(QWidget):
     __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying"]
@@ -41,11 +40,12 @@ class RadioWidget(QWidget):
 
             main_layout_vertical.addStretch()
 
-            playcontrolbutton = QPushButton("Stop")
-            playcontrolbutton.clicked.connect(self.playcontrol_clicked)
-            playcontrolbutton.setFixedWidth(100)
-            self.__btn_playcontrol = playcontrolbutton
-            main_layout_vertical.addWidget(playcontrolbutton, alignment = Qt.AlignmentFlag.AlignHCenter)
+            self.__btn_playcontrol = QPushButton()
+            self.__btn_playcontrol.clicked.connect(self.playcontrol_clicked)
+            self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
+            self.__btn_playcontrol.setFixedSize(QSize(80, 60))
+            self.__btn_playcontrol.setIconSize(QSize(80, 80))
+            main_layout_vertical.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
             volslider = QSlider(Qt.Orientation.Horizontal)
             volslider.sliderMoved.connect(self.volslider_moved)
@@ -62,11 +62,11 @@ class RadioWidget(QWidget):
             self.__vlcgetmeta_enabled = False
             Vlc().stop()
             self.__btn_playcontrol.setText(None)
-            self.__btn_playcontrol.setText("Play")
+            self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
             Vlc().play()
-            self.__btn_playcontrol.setText("Stop")
+            self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
             self.startmetagetter()
 
     def volslider_moved(self, value:int) -> None:
