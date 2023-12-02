@@ -1,10 +1,10 @@
 import os
 import base64
 
-from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtCore import (Qt, QSize, pyqtSlot)
-from PyQt6.QtGui import (QPixmap, QIcon, QImage, QPainter)
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtCore import (Qt, QSize, Slot)
+from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
 
 from ..core.Vlc import Vlc
 from .PushButtonData import PushButtonData
@@ -70,6 +70,6 @@ class FavoritesWidget(QWidget):
             button.clicked.connect(self.buttonclicked)
             self.__layout.insertWidget(self.__layout.count() - 1, button)
 
-    @pyqtSlot()
+    @Slot()
     def buttonclicked(self):
         Vlc().play(self.sender().data)

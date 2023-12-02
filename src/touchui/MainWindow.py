@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
 
 from ..core.RaspiFM import RaspiFM
 from ..core.Vlc import Vlc

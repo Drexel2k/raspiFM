@@ -18,7 +18,7 @@
         <select name="country" id="slcountry" class="form-control max-width-12-sm">
           <option {% if selectedcountry=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for countryname, countrycode in countries.countrylist.items() %}
-              <option {% if selected["country"]==countrycode %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
+              <option {% if selected["country"]==countrycode|upper %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
           {% endfor %}
         </select>
       </div>
@@ -28,7 +28,7 @@
         <select name="lang" id="sllang" class="form-control max-width-12-sm">
           <option {% if selectedlang=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
           {% for languagename, languacecode in languages.languagelist.items() %}
-              <option {% if selected["language"]==languagename %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
+              <option {% if selected["language"]==languagename|lower %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
           {% endfor %}
         </select>
       </div>

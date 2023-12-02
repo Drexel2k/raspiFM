@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import QPushButton
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QPushButton
         
 class PushButtonMain(QPushButton):
     def __init__ (self, *args, **kwargs):

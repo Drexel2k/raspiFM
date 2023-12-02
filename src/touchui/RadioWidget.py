@@ -2,10 +2,10 @@ import base64
 import time
 from types import MethodType
 
-from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtCore import (Qt, QRunnable, QThreadPool, pyqtSignal, pyqtSlot, QSize)
-from PyQt6.QtGui import (QPixmap, QIcon, QImage, QPainter)
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtCore import (Qt, QRunnable, QThreadPool, Slot, Signal, QSize)
+from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
 
 from..core.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel
@@ -17,7 +17,7 @@ class RadioWidget(QWidget):
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
     
-    __inforeceived = pyqtSignal(str)
+    __inforeceived = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,7 +82,7 @@ class RadioWidget(QWidget):
     def volslider_moved(self, value:int) -> None:
        Vlc().setvolume(value)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def updateinfo(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
