@@ -7,6 +7,7 @@ from PySide6.QtCore import (Qt, QRunnable, QThreadPool, Slot, Signal, QSize)
 from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
 
+from ..utils import utils
 from..core.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel
 
@@ -93,7 +94,7 @@ class RadioWidget(QWidget):
         self.__threadpool.start(mediametagetter)
 
     def getmeta(self) -> None: 
-        previnfo= ""
+        previnfo= "-1"
         sleepticks = 4
         sleeptickcount = 1
         while self.__vlcgetmeta_enabled:
@@ -104,10 +105,14 @@ class RadioWidget(QWidget):
 
                 sleeptickcount = 0
                 info = Vlc().getmeta()
-                if(Vlc().isplaying and info != previnfo and self.__vlcgetmeta_enabled):
-                    self.__inforeceived.emit(info)
-                    previnfo = info
-            
+                if(Vlc().isplaying):
+                    if(info != previnfo and self.__vlcgetmeta_enabled):
+                        previnfo = info
+                        if(utils.str_isnullorwhitespace(info)):
+                            info = Vlc().currentstation.name
+
+                        self.__inforeceived.emit(info)
+  
             sleeptickcount += 1
 
     def resizeEvent(self, event) -> None:
