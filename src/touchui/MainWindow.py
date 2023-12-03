@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
 
+from..core import raspifmsettings
 from ..core.RaspiFM import RaspiFM
 from ..core.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
@@ -14,8 +15,11 @@ class MainWindow(QMainWindow):
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle("raspiFM touch")
 
+        if(raspifmsettings.touch_runontouch):
+            self.setCursor(Qt.CursorShape.BlankCursor)
+
+        self.setWindowTitle("raspiFM touch")
         self.scroll = QScrollArea()
         
         main_layout_horizontal = QHBoxLayout()
@@ -73,6 +77,11 @@ class MainWindow(QMainWindow):
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
             layoutitem.widget().close()
             layoutitem.widget().setParent(None)
+
+    def keyPressEvent(self, event):
+        if (event.key() == Qt.Key_Escape):
+            if(self.isFullScreen()):
+                self.showNormal() 
     
     def resizeEvent(self, event):
         QMainWindow.resizeEvent(self, event)

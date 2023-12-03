@@ -5,7 +5,7 @@ import ctypes
 serialization_directory = os.path.expanduser('~/raspifm')
 web_defaultlanguage="german"
 web_defaultcountry="DE"
-touch_startfullscreen = False
+touch_runontouch = False
 
 # Windows directory support is only for developing on windows machines
 if(sys.platform == "win32"):

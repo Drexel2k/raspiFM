@@ -9,11 +9,10 @@ app = QApplication([])
 apply_stylesheet(app, theme="dark_blue.xml", css_file=f'{os.getcwd()}\\src\\touchui\\raspiFM.css')
 
 window = MainWindow()
+window.resize(800, 480)
 
-if(raspifmsettings.touch_startfullscreen):
+if(raspifmsettings.touch_runontouch):
     window.showFullScreen()
-else:
-    window.resize(800, 480)
 
 window.show()
 
