@@ -63,10 +63,7 @@ class RadioWidget(QWidget):
             volslider.setValue(50)
             main_layout_vertical.addWidget(volslider)
 
-            if(not Vlc().isplaying):
-                Vlc().play(Vlc().currentstation.url)
-            
-            self.startmetagetter()
+            # MainWidnow starts initial playing
 
     def playcontrol_clicked(self) -> None:
         if(Vlc().isplaying):

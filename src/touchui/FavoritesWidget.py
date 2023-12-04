@@ -2,10 +2,12 @@ import os
 import base64
 
 from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtCore import (Qt, QSize, Slot)
+from PySide6.QtCore import (Qt, QSize, Slot, Signal)
 from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
 
+from ..core.radiobrowserapi import stationapi
+from ..core import raspifmsettings
 from ..core.Vlc import Vlc
 from .PushButtonData import PushButtonData
 from ..core.RaspiFM import RaspiFM
@@ -14,6 +16,8 @@ class FavoritesWidget(QWidget):
     __slots__ = ["__cbo_favoritelists", "__layout"]
     __cbo_favoritelists:QComboBox
     __layout:QVBoxLayout
+
+    favclicked = Signal()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,6 +25,7 @@ class FavoritesWidget(QWidget):
         self.__layout = QVBoxLayout()
         self.setLayout(self.__layout)
         self.__cbo_favoritelists = QComboBox()
+
         self.__cbo_favoritelists.setFixedHeight(50)
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
         for list in RaspiFM().favorites_getlists():
@@ -31,12 +36,12 @@ class FavoritesWidget(QWidget):
 
         self.updatefavoritesbuttons()
 
-    def selectionchange(self, index):
+    def selectionchange(self):
         self.updatefavoritesbuttons()
 
     def updatefavoritesbuttons(self) -> None:
         while self.layout().count() > 2: #stretch and combobox always contained
-            layoutitem = self.layout().takeAt(1)
+            layoutitem = self.layout().takeAt(1) # 0 = combobox, max0 spacer, everything between = Buttons
             btn = layoutitem.widget()
             btn.close()
             btn.setParent(None)
@@ -46,8 +51,8 @@ class FavoritesWidget(QWidget):
         for station in favoritelist.stations: 
             button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            button.setMaximumWidth(self.width() - 40) # If not done, UI will do jerk on time, when widget is opened.
             button.setFixedHeight(50)
-            button.setMaximumWidth(self.width() - 40)
             button.setStyleSheet("QPushButton { text-align:left; }")
 
             if(station.faviconb64):
@@ -73,3 +78,16 @@ class FavoritesWidget(QWidget):
     @Slot()
     def buttonclicked(self):
         Vlc().play(self.sender().data)
+        if(raspifmsettings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+            stationapi.send_stationclicked(self.sender().data.uuid)
+
+        self.favclicked.emit()
+
+    def resizeEvent(self, event):
+        QWidget.resizeEvent(self, event)
+        if self.layout().count() > 2:
+            itemindex = 1
+            while itemindex < self.layout().count() - 1: #spacer at end
+                layoutitem = self.layout().itemAt(itemindex)
+                layoutitem.widget().setMaximumWidth(self.width() - 20)
+                itemindex +=1

@@ -4,7 +4,7 @@ import random
 from base64 import b64encode
 from ..json.JsonSerializer import JsonSerializer
 
-def get_radiobrowser_base_urls():
+def get_random_radiobrowser_base_url() -> str:
     hosts = []
     # get all hosts from DNS
     ips = socket.getaddrinfo('all.api.radio-browser.info',
@@ -21,32 +21,24 @@ def get_radiobrowser_base_urls():
     # sort list of names
     hosts.sort()
     # add "https://" in front to make it an url
-    return list(map(lambda x: "https://" + x, hosts))
+    servers = list(map(lambda x: "https://" + x, hosts))
+    random.shuffle(servers)
+    return servers[0]
 
-def do_radiobrowser_post_request_get_data(uri, params) -> bytes:
-    paramsEncoded = None
+def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
+    paramsencoded = None
     if params:
-        paramsEncoded = JsonSerializer().serialize_restparams(params)
+        paramsencoded = JsonSerializer().serialize_restparams(params)
 
-    req = request.Request(uri, paramsEncoded)
+    req = request.Request(get_random_radiobrowser_base_url() + endpoint, paramsencoded)
 
-    req.add_header('User-Agent', 'raspiFM/0.0.1')
+    req.add_header('User-Agent', 'raspiFM/0.5.0')
     req.add_header('Content-Type', 'application/json')
     response = request.urlopen(req)
     data = response.read()
 
     response.close()
     return data
-
-def get_radiobrowser_post_request_data(endpoint: str, param: dict) -> bytes:
-    servers = get_radiobrowser_base_urls()
-    random.shuffle(servers)
-
-    for server_base in servers:
-        uri = server_base + endpoint
-        return do_radiobrowser_post_request_get_data(uri, param)
-    
-    return b""
 
 def get_urlbinary_contentasb64(url:str) -> str:
     try:
@@ -55,4 +47,19 @@ def get_urlbinary_contentasb64(url:str) -> str:
             return b64encode(response.read()).decode("ASCII")
     except BaseException as e:
         pass #if server refuses request becaus we are a bot, just do nothing, we can live without picture.
-    
+
+def radiobrowser_get_request(endpoint:str, params:dict):
+    if params:
+        paramsencoded = "/".join(key + "/" + value for key, value in params.items())
+
+    str = get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded
+    try:
+        req = request.Request(get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded)
+
+        req.add_header('User-Agent', 'raspiFM/0.5.0')
+        req.add_header('Content-Type', 'application/json')
+        response = request.urlopen(req)
+        response.close()
+    except BaseException as e:
+        pass #if lick fails don't care.
+

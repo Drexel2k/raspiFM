@@ -2,7 +2,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
 
-from..core import raspifmsettings
+from ..core.radiobrowserapi import stationapi
+from ..core import raspifmsettings
 from ..core.RaspiFM import RaspiFM
 from ..core.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
@@ -15,9 +16,6 @@ class MainWindow(QMainWindow):
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        if(raspifmsettings.touch_runontouch):
-            self.setCursor(Qt.CursorShape.BlankCursor)
 
         self.setWindowTitle("raspiFM touch")
         self.scroll = QScrollArea()
@@ -34,7 +32,11 @@ class MainWindow(QMainWindow):
         left_layout_vertical = QVBoxLayout()
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
 
-        Vlc(RaspiFM().favorites_getdefaultlist().stations[0])
+        startstation = RaspiFM().favorites_getdefaultlist().stations[0]
+        Vlc(startstation)
+        if(raspifmsettings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+            stationapi.send_stationclicked(startstation.uuid)
+
         radiowdiget = RadioWidget()
         radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         main_layout_horizontal.addWidget(radiowdiget, stretch=4)
@@ -67,13 +69,19 @@ class MainWindow(QMainWindow):
             radiowdiget = RadioWidget()
             radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowdiget)
-            layoutitem.widget().close()
-            layoutitem.widget().setParent(None)
+
+            widget = layoutitem.widget()
+            if(isinstance(widget, FavoritesWidget)):
+                MainWindow.disconnect(widget, None, None, None)
+
+            widget.close()
+            widget.setParent(None)
 
     def favclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
             favoriteswdiget = FavoritesWidget()
             favoriteswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            favoriteswdiget.favclicked.connect(self.radioclicked)
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
             layoutitem.widget().close()
             layoutitem.widget().setParent(None)

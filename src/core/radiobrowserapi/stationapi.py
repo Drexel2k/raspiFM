@@ -26,3 +26,6 @@ def query_station(stationuuid:UUID) -> RadioStationApi:
 
 def get_faviconasb64(station:RadioStationApi) -> str:
     return requestbase.get_urlbinary_contentasb64(station.favicon)
+
+def send_stationclicked(stationuuid:UUID) -> None:
+    requestbase.radiobrowser_get_request("/json", {"url":str(stationuuid)})
