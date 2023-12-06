@@ -3,9 +3,9 @@ import time
 from types import MethodType
 
 from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtCore import (Qt, QRunnable, QThreadPool, Slot, Signal, QSize)
-from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, QSlider)
+from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QSize
+from PySide6.QtGui import QPixmap, QIcon, QImage, QPainter
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider
 
 from ..utils import utils
 from..core.Vlc import Vlc

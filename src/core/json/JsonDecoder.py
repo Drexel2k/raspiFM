@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from uuid import UUID
 
+from ..Settings import UserSettings
 from ..business.CountryList import CountryList
 from ..business.FavoriteList import FavoriteList
 from ..business.Favorites import Favorites
@@ -106,5 +107,15 @@ class TagListDecoder(json.JSONDecoder):
         if "__type__" in obj and obj["__type__"] == "TagList":
             obj["lastupdate"] =  datetime.fromisoformat(obj["lastupdate"])
             return TagList(serializationdata=obj)
+        
+        return obj
+    
+class UserSettingsDecoder(json.JSONDecoder):
+    def __init__(self):
+        json.JSONDecoder.__init__(self, object_hook=self.object_hook)
+
+    def object_hook(self, obj):
+        if "__type__" in obj and obj["__type__"] == "UserSettings":
+            return UserSettings(serializationdata=obj)
         
         return obj

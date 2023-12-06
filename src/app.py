@@ -1,10 +1,10 @@
 import threading
-from .webui import app
-from .webui import views
+from .webui.web import app
+from .webui.web import views
 
 print("http://127.0.0.1:5000/stationsearch")
 def starttouchui():
-    from . import touchui
+    from .touchui import touch
 
 x = threading.Thread(target=starttouchui)
 x.start()

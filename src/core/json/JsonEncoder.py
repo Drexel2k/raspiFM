@@ -1,6 +1,7 @@
 import json
 from uuid import UUID
 
+from ..Settings import UserSettings
 from ..business.CountryList import CountryList
 from ..business.FavoriteList import FavoriteList
 from ..business.Favorites import Favorites
@@ -61,6 +62,13 @@ class TagListEncoder(json.JSONEncoder):
     def default(self, obj:TagList):
         if isinstance(obj, TagList):
             return {"__type__":"TagList", "lastupdate":obj.lastupdate.isoformat(), "taglist":obj.taglist}
+    
+        return json.JSONEncoder.default(self, obj)
+    
+class UserSettingsEncoder(json.JSONEncoder):
+    def default(self, obj:UserSettings):
+        if isinstance(obj, UserSettings):
+            return {"__type__":"UserSettings", "web_defaultlanguage":obj.web_defaultlanguage, "web_defaultcountry":obj.web_defaultcountry, "touch_runontouch":obj.touch_runontouch}
     
         return json.JSONEncoder.default(self, obj)
     

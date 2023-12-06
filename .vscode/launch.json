@@ -19,7 +19,7 @@
                 "--no-reload"
             ],
             "jinja": true,
-            "justMyCode": false
+            "justMyCode": true
         },    
         {
             "name": "Python: WebUI/Flask",
@@ -27,7 +27,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "src.webui.raspifmwebapp",
+                "FLASK_APP": "src.webui.web",
                 "FLASK_DEBUG": "1"
             },
             "args": [
@@ -42,7 +42,7 @@
             "name": "Python: TouchUI",
             "type": "python",
             "request": "launch",
-            "module": "src.touchui",
+            "module": "src.touchui.touch",
             "justMyCode": true
         },
         {

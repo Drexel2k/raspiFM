@@ -1,5 +1,5 @@
 import traceback
-from . import app
+from .web import app
 from flask import Response, make_response, render_template, request
 from uuid import UUID
 

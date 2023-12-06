@@ -1,9 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea)
+from PySide6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea
 
 from ..core.radiobrowserapi import stationapi
-from ..core import raspifmsettings
 from ..core.RaspiFM import RaspiFM
 from ..core.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
@@ -34,7 +33,7 @@ class MainWindow(QMainWindow):
 
         startstation = RaspiFM().favorites_getdefaultlist().stations[0]
         Vlc(startstation)
-        if(raspifmsettings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+        if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(startstation.uuid)
 
         radiowdiget = RadioWidget()

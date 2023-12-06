@@ -2,12 +2,11 @@ import os
 import base64
 
 from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtCore import (Qt, QSize, Slot, Signal)
-from PySide6.QtGui import (QPixmap, QIcon, QImage, QPainter)
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QComboBox)
+from PySide6.QtCore import Qt, QSize, Slot, Signal
+from PySide6.QtGui import QPixmap, QIcon, QImage, QPainter
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox
 
 from ..core.radiobrowserapi import stationapi
-from ..core import raspifmsettings
 from ..core.Vlc import Vlc
 from .PushButtonData import PushButtonData
 from ..core.RaspiFM import RaspiFM

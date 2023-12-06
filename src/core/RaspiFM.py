@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
+from pathlib import Path
 from uuid import UUID
 from os import path
 
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
-from .business.CountryList import CountryList
+from .Settings import Settings, UserSettings
 from .radiobrowserapi import stationapi
 from .radiobrowserapi.data.RadioStationApi import RadioStationApi
 from .radiobrowserapi import listapi
@@ -20,26 +21,12 @@ from .business.RadioStation import RadioStation
 from .business.FavoriteList import FavoriteList
 from ..utils import utils
 
-from .raspifmsettings import serialization_directory
-
-
 class RaspiFM:
-    __slots__ = ["__favorites_obj", "__radiostations_obj"]
+    __slots__ = ["__favorites_obj", "__radiostations_obj", "__settings"]
     __instance:RaspiFM = None
     __radiostations_obj:RadioStations
     __favorites_obj:Favorites
-
-    def __new__(cls):
-        if cls.__instance is None:
-            cls.__instance = super(RaspiFM, cls).__new__(cls)
-            cls.__instance.__init()
-        return cls.__instance
-    
-    def __init(self):
-        JsonSerializer(serialization_directory)
-        JsonDeserializer(serialization_directory)
-        self.__radiostations_obj = None
-        self.__favorites_obj = None
+    __settings:Settings
 
     @property
     def __radiostations(self) -> RadioStations:
@@ -60,6 +47,34 @@ class RaspiFM:
             self.__favorites_obj = favorites
 
         return self.__favorites_obj
+    
+    @property
+    def settings(self) -> Settings:
+        return self.__settings
+    
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = super(RaspiFM, cls).__new__(cls)
+            cls.__instance.__init()
+        return cls.__instance
+    
+    def __init(self):
+        self.__settings = Settings()
+
+        if not Path(self.__settings.serialization_directory).is_dir():
+            Path(self.__settings.serialization_directory).mkdir(parents=True, exist_ok=True)
+
+        if not Path(self.__settings.serialization_directory, "cache/").is_dir():    
+            Path(self.__settings.serialization_directory, "cache/").mkdir(parents=True, exist_ok=True)
+            
+        JsonSerializer(self.__settings.serialization_directory)
+        JsonDeserializer(self.__settings.serialization_directory)
+        self.__radiostations_obj = None
+        self.__favorites_obj = None
+
+        usersettings = JsonDeserializer().get_usersettings()
+        if(usersettings):
+            self.__settings.usersettings = usersettings        
     
     def stations_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),

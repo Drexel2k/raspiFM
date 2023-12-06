@@ -30,10 +30,10 @@ class Vlc:
     def currentvolum(self) -> int:
         return self.__volume
 
-    def __new__(cls, *station):
+    def __new__(cls, station):
         if cls.__instance is None:
             cls.__instance = super(Vlc, cls).__new__(cls)
-            cls.__instance.__init(station[0])
+            cls.__instance.__init(station)
         return cls.__instance
     
     def __init(self, station:RadioStation):

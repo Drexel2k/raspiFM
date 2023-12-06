@@ -2,11 +2,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .JsonDecoder import CountryListDecoder
-from .JsonDecoder import LanguageListDecoder
-from .JsonDecoder import TagListDecoder
-from .JsonDecoder import FavoritesDecoder
-from .JsonDecoder import RadioStationsDecoder
+from .JsonDecoder import CountryListDecoder, UserSettingsDecoder, LanguageListDecoder, TagListDecoder, FavoritesDecoder, RadioStationsDecoder
+from ..Settings import UserSettings
 from ..business.CountryList import CountryList
 from ..business.LanguageList import LanguageList
 from ..business.TagList import TagList
@@ -18,13 +15,13 @@ class JsonDeserializer():
     __instance:JsonDeserializer  = None
     __path:str
 
-    def __new__(cls, *path):
+    def __new__(cls, path):
         if cls.__instance is None:
             if not path:
                 raise TypeError("On first call a path paramter must be given which is the serialization folder.")
 
             cls.__instance = super(JsonDeserializer, cls).__new__(cls)
-            cls.__instance.__init(path[0])
+            cls.__instance.__init(path)
         return cls.__instance
     
     def __init(self, path:str):
@@ -72,6 +69,15 @@ class JsonDeserializer():
                 jsonstring = infile.read()
                 if jsonstring:
                     return json.loads(jsonstring, cls=RadioStationsDecoder)
+            
+        return None
+    
+    def get_usersettings(self) -> UserSettings:
+        if Path(self.__path, "settings.json").exists():
+            with open(Path(self.__path, "settings.json"), "r") as infile:
+                jsonstring = infile.read()
+                if jsonstring:
+                    return json.loads(jsonstring, cls=UserSettingsDecoder)
             
         return None
     
