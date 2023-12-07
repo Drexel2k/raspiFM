@@ -30,8 +30,11 @@ class Vlc:
     def currentvolum(self) -> int:
         return self.__volume
 
-    def __new__(cls, station):
+    def __new__(cls, station = None):
         if cls.__instance is None:
+            if not station:
+                raise TypeError("On first call a station paramter must be given to start playing.")
+
             cls.__instance = super(Vlc, cls).__new__(cls)
             cls.__instance.__init(station)
         return cls.__instance
@@ -50,16 +53,15 @@ class Vlc:
         if(station):
             self.__station = station 
 
-        if(self.__station):
-            if(self.__state == PlayerState.Playing):
-                self.stop()
-    
-            self.__state = PlayerState.Playing
-            self.__vlcplayer = self.__vlcinstance.media_player_new()
-            self.__vlcmedia = self.__vlcinstance.media_new(self.__station.url)
-            self.__vlcplayer.set_media(self.__vlcmedia)
-            self.setvolume(self.__volume)
-            self.__vlcplayer.play()
+        if(self.__state == PlayerState.Playing):
+            self.stop()
+
+        self.__state = PlayerState.Playing
+        self.__vlcplayer = self.__vlcinstance.media_player_new()
+        self.__vlcmedia = self.__vlcinstance.media_new(self.__station.url)
+        self.__vlcplayer.set_media(self.__vlcmedia)
+        self.setvolume(self.__volume)
+        self.__vlcplayer.play()
 
     def stop(self) -> None:
         self.__state = PlayerState.Stopped

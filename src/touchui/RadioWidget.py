@@ -63,6 +63,7 @@ class RadioWidget(QWidget):
             volslider.setValue(50)
             main_layout_vertical.addWidget(volslider)
 
+            self.startmetagetter()
             # MainWidnow starts initial playing
 
     def playcontrol_clicked(self) -> None:

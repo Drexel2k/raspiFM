@@ -4,7 +4,6 @@ from flask import Response, make_response, render_template, request
 from uuid import UUID
 
 from ..core.RaspiFM import RaspiFM
-from ..core import raspifmsettings
 from ..utils import utils
 from .ViewProxies.RadioStationView import RadioStationView
 from ..core.business.Exceptions import InvalidOperationException
@@ -40,7 +39,7 @@ def stationsearch() -> str:
         countries = RaspiFM().countries_get()
         languages = RaspiFM().languages_get()
 
-        selected = {"name":None, "country":raspifmsettings.web_defaultcountry, "language":raspifmsettings.web_defaultlanguage, "tags":[], "orderby":"clickcount", "order":"desc", "favoritelist":RaspiFM().favorites_getdefaultlist() }
+        selected = {"name":None, "country":RaspiFM().settings.usersettings.web_defaultcountry, "language":RaspiFM().settings.usersettings.web_defaultlanguage, "tags":[], "orderby":"clickcount", "order":"desc", "favoritelist":RaspiFM().favorites_getdefaultlist() }
 
         pagelast=1
         pagenext=2

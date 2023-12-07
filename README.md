@@ -14,10 +14,11 @@ In Visual Studio Code:
 7. Command Palette -> Python: Create Terminal
 
 With PySide 6 I had the error message
-  Could not load the Qt platform plugin "xcb" in "" even though it was found.
-on touchUI launch. It seems somehow to be well known, but solutions are a little
-bit differ a little bit, the reason is a package missing or needed to be reinstalled,
-but different packages are the cause:
+
+  Could not load the Qt platform plugin "xcb" in ""
+
+even though it was found on touchUI launch. It seems somehow to be well known, but solutions are a little
+bit differ a little bit, the reason is a package missing or needed to be reinstalled, but different packages are the cause:
 Here is a big thread about it: https://forum.qt.io/topic/93247/qt-qpa-plugin-could-not-load-the-qt-platform-plugin-xcb-in-even-though-it-was-found
 But googling will also bring up other communities and threads. This was my solution:
 https://forum.qt.io/topic/93247/qt-qpa-plugin-could-not-load-the-qt-platform-plugin-xcb-in-even-though-it-was-found/165
