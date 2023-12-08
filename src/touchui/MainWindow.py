@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         main_layout_horizontal.addLayout(left_layout_vertical, stretch=1)
 
         startstation = RaspiFM().favorites_getdefaultlist().stations[0]
+        RaspiFM().spotify_pause()
         Vlc(startstation)
         if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(startstation.uuid)
@@ -43,12 +44,12 @@ class MainWindow(QMainWindow):
         radiobutton = PushButtonMain()
         radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
         radiobutton.setIcon(QIcon("src/webui/static/broadcast-pin-blue.svg"))
-        radiobutton.clicked.connect(self.radioclicked)
+        radiobutton.clicked.connect(self.__radioclicked)
 
         favbutton = PushButtonMain()
         favbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         favbutton.setIcon(QIcon("src/webui/static/star-blue.svg"))
-        favbutton.clicked.connect(self.favclicked)
+        favbutton.clicked.connect(self.__favclicked)
 
         sptfybutton = PushButtonMain()
         sptfybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -63,7 +64,7 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(sptfybutton)
         left_layout_vertical.addWidget(setbutton)
 
-    def radioclicked(self) -> None:
+    def __radioclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
             radiowdiget = RadioWidget()
             radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -76,11 +77,11 @@ class MainWindow(QMainWindow):
             widget.close()
             widget.setParent(None)
 
-    def favclicked(self) -> None:
+    def __favclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
             favoriteswdiget = FavoritesWidget()
             favoriteswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            favoriteswdiget.favclicked.connect(self.radioclicked)
+            favoriteswdiget.favclicked.connect(self.__radioclicked)
             layoutitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdiget)
             layoutitem.widget().close()
             layoutitem.widget().setParent(None)

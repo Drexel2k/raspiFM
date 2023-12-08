@@ -43,7 +43,7 @@
             "type": "python",
             "request": "launch",
             "module": "src.touchui.touch",
-            "justMyCode": true
+            "justMyCode": true,
         },
         {
             "name": "Python: Core Module",

@@ -59,6 +59,7 @@ def radiobrowser_get_request(endpoint:str, params:dict):
         req.add_header('User-Agent', 'raspiFM/0.5.0')
         req.add_header('Content-Type', 'application/json')
         response = request.urlopen(req)
+        #data = response.read()
         response.close()
     except BaseException as e:
         pass #if lick fails don't care.

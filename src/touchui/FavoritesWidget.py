@@ -29,16 +29,16 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
         for list in RaspiFM().favorites_getlists():
             self.__cbo_favoritelists.addItem(list.name, list)
-        self.__cbo_favoritelists.currentIndexChanged.connect(self.selectionchange)
+        self.__cbo_favoritelists.currentIndexChanged.connect(self.__selectionchange)
         self.__layout.addWidget(self.__cbo_favoritelists)
         self.__layout.addStretch()
 
-        self.updatefavoritesbuttons()
+        self.__updatefavoritesbuttons()
 
-    def selectionchange(self):
-        self.updatefavoritesbuttons()
+    def __selectionchange(self):
+        self.__updatefavoritesbuttons()
 
-    def updatefavoritesbuttons(self) -> None:
+    def __updatefavoritesbuttons(self) -> None:
         while self.layout().count() > 2: #stretch and combobox always contained
             layoutitem = self.layout().takeAt(1) # 0 = combobox, max0 spacer, everything between = Buttons
             btn = layoutitem.widget()
@@ -71,13 +71,14 @@ class FavoritesWidget(QWidget):
             button.setIcon(favIcon)
 
             button.setText(f' {station.name}')
-            button.clicked.connect(self.buttonclicked)
+            button.clicked.connect(self.__buttonclicked)
             self.__layout.insertWidget(self.__layout.count() - 1, button)
 
     @Slot()
-    def buttonclicked(self):
+    def __buttonclicked(self):
+        RaspiFM().spotify_pause()
         Vlc().play(self.sender().data)
-        if(raspifmsettings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+        if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(self.sender().data.uuid)
 
         self.favclicked.emit()

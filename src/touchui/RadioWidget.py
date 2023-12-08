@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QSize
 from PySide6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider
 
+from ..core.RaspiFM import RaspiFM
 from ..utils import utils
 from..core.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel
@@ -52,21 +53,21 @@ class RadioWidget(QWidget):
             main_layout_vertical.addStretch()
 
             self.__btn_playcontrol = QPushButton()
-            self.__btn_playcontrol.clicked.connect(self.playcontrol_clicked)
+            self.__btn_playcontrol.clicked.connect(self.__playcontrol_clicked)
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
             self.__btn_playcontrol.setFixedSize(QSize(80, 60))
             self.__btn_playcontrol.setIconSize(QSize(80, 80))
             main_layout_vertical.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
             volslider = QSlider(Qt.Orientation.Horizontal)
-            volslider.sliderMoved.connect(self.volslider_moved)
+            volslider.sliderMoved.connect(self.__volslider_moved)
             volslider.setValue(50)
             main_layout_vertical.addWidget(volslider)
 
-            self.startmetagetter()
+            self.__startmetagetter()
             # MainWidnow starts initial playing
 
-    def playcontrol_clicked(self) -> None:
+    def __playcontrol_clicked(self) -> None:
         if(Vlc().isplaying):
             self.__vlcgetmeta_enabled = False
             Vlc().stop()
@@ -74,24 +75,25 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
+            RaspiFM().spotify_pause()
             Vlc().play()
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
-            self.startmetagetter()
+            self.__startmetagetter()
 
-    def volslider_moved(self, value:int) -> None:
+    def __volslider_moved(self, value:int) -> None:
        Vlc().setvolume(value)
 
     @Slot(str)
-    def updateinfo(self, info:str):
+    def __updateinfo(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
-    def startmetagetter(self):
+    def __startmetagetter(self):
         self.__vlcgetmeta_enabled = True
-        mediametagetter = MediaMetaGetter(self.getmeta)
-        self.__inforeceived.connect(self.updateinfo)
+        mediametagetter = MediaMetaGetter(self.__getmeta)
+        self.__inforeceived.connect(self.__updateinfo)
         self.__threadpool.start(mediametagetter)
 
-    def getmeta(self) -> None: 
+    def __getmeta(self) -> None: 
         previnfo= "-1"
         sleepticks = 4
         sleeptickcount = 1
