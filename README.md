@@ -1,6 +1,21 @@
 # raspiFM
 Internetradio on Raspberry Pi
 
+# Requirements (for Spotify connect)
+To use the Spotify conncet feature, spotifyd needs to be installed. Unfortunetally, spotifyd delivers only 32 bit binaries,
+so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi os).
+To build a 64bit binary and set up the daemon:
+1. Uninstall current rust compiler, it may be to old: sudo apt remove rustc
+2. Install current rust version, select option 1: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+3. Setup environement: source "$HOME/.cargo/env"
+4. Download the spotifyd git repsoitory: git clone https://github.com/Spotifyd/spotifyd.git
+5. Build spotifyd with DBus support: cd spotifyd, then cargo build --release --features dbus_mpris
+6. Copy the compiled file to /usr/bin: cp ./target/release/spotifyd /usr/bin
+7. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: sudo cp ./spotifyd.service /etc/systemd/system
+8. Enable the daemon/autostart: sudo systemctl enable spotifyd.service
+8. Allow the spotifyd daemon to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: sudo cp ./spotifyd-dbus.conf /usr/share/dbus-1/system.d
+9. Reboot
+
 # IDE Setup / Build instructions for Raspberry Pi OS/Linux
 1. Install Visual Studio Code with Python Extension (sudo apt install code)
 2. Install Qt for touch ui (sudo apt install qt6-base-dev)
