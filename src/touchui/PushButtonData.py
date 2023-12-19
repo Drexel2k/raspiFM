@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QPushButton
+from PyQt6.QtWidgets import QPushButton
 
 class PushButtonData(QPushButton):
     __slots__ = ["__data"]

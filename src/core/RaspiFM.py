@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import dbus
-
 from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
@@ -187,32 +185,6 @@ class RaspiFM:
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def spotify_pause(self) -> None:
-        service = self.__get_spotifyd_dbus_instance()
-        if(service):
-            path = "/org/mpris/MediaPlayer2"
-            iface = "org.mpris.MediaPlayer2.Player"
-            #ifaceprops = "org.freedesktop.DBus.Properties"
-
-            proxy = dbus.SystemBus().get_object(service, path)
-            proxy.Pause(dbus_interface=iface)
-            #vol = interface.Get(iface,"Volume")
-            #print(vol)
-
-    def __get_spotifyd_dbus_instance(self) -> str:
-        service = "org.freedesktop.DBus"
-        path = "/org/freedesktop/DBus"
-        iface = "org.freedesktop.DBus"
-
-        proxy = dbus.SystemBus().get_object(service, path)
-        dbusnames = proxy.ListNames(dbus_interface=iface)
-
-        for dbusname in dbusnames:
-            if(dbusname.startswith("org.mpris.MediaPlayer2.spotifyd.instance")):
-                return dbusname
-        
-        return None
-
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)
     
@@ -221,4 +193,3 @@ class RaspiFM:
     
     def get_serialzeddict(self, dict:dict) -> str:
         return JsonSerializer().serialize_dict(dict)
-

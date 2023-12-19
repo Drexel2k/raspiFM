@@ -2,10 +2,10 @@ import base64
 import time
 from types import MethodType
 
-from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QSize
-from PySide6.QtGui import QPixmap, QIcon, QImage, QPainter
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider
+#from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
+from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider
 
 from ..core.RaspiFM import RaspiFM
 from ..utils import utils
@@ -19,7 +19,7 @@ class RadioWidget(QWidget):
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
     
-    __inforeceived = Signal(str)
+    __inforeceived = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +75,7 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
-            RaspiFM().spotify_pause()
+            #RaspiFM().spotify_pause()
             Vlc().play()
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
             self.__startmetagetter()
@@ -83,7 +83,7 @@ class RadioWidget(QWidget):
     def __volslider_moved(self, value:int) -> None:
        Vlc().setvolume(value)
 
-    @Slot(str)
+    @pyqtSlot(str)
     def __updateinfo(self, info:str):
         self.__lbl_nowplaying.setText(info)
 

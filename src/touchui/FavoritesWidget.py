@@ -1,10 +1,10 @@
 import os
 import base64
 
-from PySide6.QtSvg import QSvgRenderer
-from PySide6.QtCore import Qt, QSize, Slot, Signal
-from PySide6.QtGui import QPixmap, QIcon, QImage, QPainter
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox
+from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
+from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox
 
 from ..core.radiobrowserapi import stationapi
 from ..core.Vlc import Vlc
@@ -16,7 +16,7 @@ class FavoritesWidget(QWidget):
     __cbo_favoritelists:QComboBox
     __layout:QVBoxLayout
 
-    favclicked = Signal()
+    favclicked = pyqtSignal()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,7 +44,6 @@ class FavoritesWidget(QWidget):
             btn = layoutitem.widget()
             btn.close()
             btn.setParent(None)
-
 
         favoritelist = self.__cbo_favoritelists.currentData()
         for station in favoritelist.stations: 
@@ -74,9 +73,9 @@ class FavoritesWidget(QWidget):
             button.clicked.connect(self.__buttonclicked)
             self.__layout.insertWidget(self.__layout.count() - 1, button)
 
-    @Slot()
+    @pyqtSlot()
     def __buttonclicked(self):
-        RaspiFM().spotify_pause()
+        #RaspiFM().spotify_pause()
         Vlc().play(self.sender().data)
         if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(self.sender().data.uuid)

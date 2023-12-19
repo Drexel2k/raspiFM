@@ -1,7 +1,7 @@
 import os
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 
 from ..core.RaspiFM import RaspiFM
