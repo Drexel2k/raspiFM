@@ -8,10 +8,11 @@ from os import path
 
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
-from .Settings import Settings, UserSettings
-from .radiobrowserapi import stationapi
-from .radiobrowserapi.data.RadioStationApi import RadioStationApi
-from .radiobrowserapi import listapi
+from .Settings import Settings
+from .http.radiobrowserapi import stationapi
+from .http.radiobrowserapi.data.RadioStationApi import RadioStationApi
+from .http.radiobrowserapi import listapi
+from .http.basics import httpcontent
 from .business.CountryList import CountryList
 from .business.LanguageList import LanguageList
 from .business.TagList import TagList
@@ -128,7 +129,7 @@ class RaspiFM:
                                    radiostationapi.countrycode,
                                    radiostationapi.languagecodes,
                                    radiostationapi.homepage,
-                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else stationapi.get_faviconasb64(radiostationapi),
+                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else httpcontent.get_urlbinary_contentasb64(radiostationapi.favicon),
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else path.splitext(radiostationapi.favicon)[1][1:],
                                    radiostationapi.codec,
                                    radiostationapi.bitrate,

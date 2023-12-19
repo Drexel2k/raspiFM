@@ -1,8 +1,7 @@
 import socket
 from urllib import request
 import random
-from base64 import b64encode
-from ..json.JsonSerializer import JsonSerializer
+from ...json.JsonSerializer import JsonSerializer
 
 def get_random_radiobrowser_base_url() -> str:
     hosts = []
@@ -39,14 +38,6 @@ def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
 
     response.close()
     return data
-
-def get_urlbinary_contentasb64(url:str) -> str:
-    try:
-        req = request.Request(url=url, headers={'User-Agent': 'Mozilla/5.0'})
-        with request.urlopen(req) as response:
-            return b64encode(response.read()).decode("ASCII")
-    except BaseException as e:
-        pass #if server refuses request becaus we are a bot, just do nothing, we can live without picture.
 
 def radiobrowser_get_request(endpoint:str, params:dict):
     if params:

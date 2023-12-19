@@ -1,12 +1,10 @@
 from __future__ import annotations
-from datetime import datetime
-
-from enum import Enum
 
 import vlc
 from vlc import MediaPlayer
 
-from ..core.business.RadioStation import RadioStation
+from .PlayerState import PlayerState
+from ..business.RadioStation import RadioStation
 
 class Vlc:
     __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__state", "__volume", "__station"]
@@ -32,11 +30,9 @@ class Vlc:
 
     def __new__(cls, station = None):
         if cls.__instance is None:
-            if not station:
-                raise TypeError("On first call a station paramter must be given to start playing.")
-
             cls.__instance = super(Vlc, cls).__new__(cls)
             cls.__instance.__init(station)
+
         return cls.__instance
     
     def __init(self, station:RadioStation):
@@ -50,6 +46,9 @@ class Vlc:
             self.play(station)
 
     def play(self, station:RadioStation = None) -> None:
+        if (not station and not self.__station):
+            raise ValueError("No station to play.")
+
         if(station):
             self.__station = station 
 
@@ -115,8 +114,3 @@ class Vlc:
             self.stop()
 
         vlc.libvlc_release(self.__vlcinstance)
-        
-
-class PlayerState(Enum):
-    Playing = 1
-    Stopped = 2

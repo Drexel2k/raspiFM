@@ -6,8 +6,8 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox
 
-from ..core.radiobrowserapi import stationapi
-from ..core.Vlc import Vlc
+from ..core.http.radiobrowserapi import stationapi
+from ..core.players.Vlc import Vlc
 from .PushButtonData import PushButtonData
 from ..core.RaspiFM import RaspiFM
 

@@ -19,12 +19,13 @@ class RadioStation:
         return self.__name
     
     @property
-    def uuid(self) -> str:
+    def uuid(self) -> UUID:
         return self.__uuid
     
     @property
     def url(self) -> str:
         return self.__url
+    
     @property
     def countrycode(self) -> str:
         return self.__countrycode

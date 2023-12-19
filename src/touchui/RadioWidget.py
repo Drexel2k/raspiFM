@@ -2,38 +2,104 @@ import base64
 import time
 from types import MethodType
 
-#from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem, QLayout
 
 from ..core.RaspiFM import RaspiFM
 from ..utils import utils
-from..core.Vlc import Vlc
-from .MarqueeLabel import MarqueeLabel
+from..core.players.Vlc import Vlc
+from .MarqueeLabel import MarqueeLabel 
+from ..core.http.radiobrowserapi import stationapi
+from ..core.RaspiFM import RaspiFM
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying"]
+    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying", "__nostations"]
     __btn_playcontrol:QPushButton
     __lbl_nowplaying:MarqueeLabel
     __vlcgetmeta_enabled:bool
     __threadpool:QThreadPool
-    
+    __nostations:bool
     __inforeceived = pyqtSignal(str)
 
-    def __init__(self, *args, **kwargs):
+    playstarting = pyqtSignal()
+
+    def __init__(self, startplaying:bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if(Vlc().currentstation):
-            self.__threadpool = QThreadPool()
+        self.__threadpool = QThreadPool()
+        self.setLayout(QVBoxLayout())
+
+        self.__nostations = False
+        self.__init(startplaying)
+
+    def __init(self, startplaying:bool) -> None:
+        defaultlist = RaspiFM().favorites_getdefaultlist()
+        if(len(defaultlist.stations) > 0):
+            #remove no favorites warning if warning was set before. 
+            #todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
+            #to delete also all sub widgets
+            if(self.__nostations): 
+                layoutitem = self.layout().takeAt(0)
+                while layoutitem.count() > 0:
+                    item = layoutitem.takeAt(0)
+                    #QSpaceritem/QLayoutItem have no parents
+                    if(isinstance(item, QWidgetItem)):
+                        item.widget().close()
+                        item.widget().setParent(None)
+
+                self.__nostations = False
+
+            if(startplaying and not Vlc().isplaying):
+                station = Vlc().currentstation
+                if(not station):
+                    station = RaspiFM().favorites_getdefaultlist().stations[0]
+                    Vlc().play(station)
+                else:
+                    Vlc().play()                  
+
+                if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+                    stationapi.send_stationclicked(station.uuid)
             
-            main_layout_vertical = QVBoxLayout()
-            self.setLayout(main_layout_vertical)
-    
+            layout = self.layout()
+            
             stationimagelabel = QLabel()
+            layout.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+
+            self.__lbl_nowplaying = MarqueeLabel()
+            self.__lbl_nowplaying.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
+            layout.addWidget(self.__lbl_nowplaying, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+            layout.addStretch()
+
+            self.__btn_playcontrol = QPushButton()
+            self.__btn_playcontrol.clicked.connect(self.__playcontrol_clicked)
+            self.__btn_playcontrol.setFixedSize(QSize(80, 60))
+            self.__btn_playcontrol.setIconSize(QSize(80, 80))
+            layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
+
+            volslider = QSlider(Qt.Orientation.Horizontal)
+            volslider.sliderMoved.connect(self.__volslider_moved)
+            volslider.setValue(50)
+            layout.addWidget(volslider)
+
             qx = QPixmap()
-            if(Vlc().currentstation.faviconb64):
-                qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
+            if(Vlc().isplaying):   
+                if(station.faviconb64):
+                    qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
+                else:
+                    renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
+                    image = QImage(180, 180, QImage.Format.Format_ARGB32)
+                    image.fill(0x00000000)
+                    painter = QPainter(image)
+                    renderer.render(painter)
+                    painter.end()
+                    qx.convertFromImage(image)
+
+ 
+                self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
+                self.__startmetagetter()
             else:
                 renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
                 image = QImage(180, 180, QImage.Format.Format_ARGB32)
@@ -43,29 +109,26 @@ class RadioWidget(QWidget):
                 painter.end()
                 qx.convertFromImage(image)
 
+                self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
+
             stationimagelabel.setPixmap(qx.scaledToHeight(180, Qt.TransformationMode.SmoothTransformation))
-            main_layout_vertical.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        else:
+            self.__nostations = True
+            layout = self.layout()
+            layout.addStretch()
+            label = QLabel("No radio station favorites found,")
+            layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+            label = QLabel("go to webinterface (probably http://raspifm),")
+            layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+            label = QLabel("save favorites and press refresh.")
+            layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+            refreshbutton = QPushButton("Refresh")
+            refreshbutton.clicked.connect(self.__refreshlicked)
+            layout.addWidget(refreshbutton)
+            layout.addStretch()
 
-            self.__lbl_nowplaying = MarqueeLabel()
-            self.__lbl_nowplaying.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
-            main_layout_vertical.addWidget(self.__lbl_nowplaying, alignment=Qt.AlignmentFlag.AlignHCenter)
-
-            main_layout_vertical.addStretch()
-
-            self.__btn_playcontrol = QPushButton()
-            self.__btn_playcontrol.clicked.connect(self.__playcontrol_clicked)
-            self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
-            self.__btn_playcontrol.setFixedSize(QSize(80, 60))
-            self.__btn_playcontrol.setIconSize(QSize(80, 80))
-            main_layout_vertical.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
-
-            volslider = QSlider(Qt.Orientation.Horizontal)
-            volslider.sliderMoved.connect(self.__volslider_moved)
-            volslider.setValue(50)
-            main_layout_vertical.addWidget(volslider)
-
-            self.__startmetagetter()
-            # MainWidnow starts initial playing
+    def __refreshlicked(self) -> None:
+        self.__init(False)
 
     def __playcontrol_clicked(self) -> None:
         if(Vlc().isplaying):
@@ -75,7 +138,7 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
-            #RaspiFM().spotify_pause()
+            self.playstarting.emit()
             Vlc().play()
             self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
             self.__startmetagetter()

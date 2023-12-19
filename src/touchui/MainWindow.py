@@ -3,13 +3,15 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QLabel, QPushButton, QWidgetItem, QLayout
 
+from ..core.players.SpotifyInfo import SpotifyInfo
+from ..core.players.Spotify import Spotify
 from ..utils import utils
-from ..core.radiobrowserapi import stationapi
-from ..core.RaspiFM import RaspiFM
-from ..core.Vlc import Vlc
+from ..core.players.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
+from .SpotifyWidget import SpotifyWidget
 from .PushButtonMain import PushButtonMain
+from. import dbusstrings
 
 class MainWindow(QMainWindow):
     __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection"]
@@ -32,96 +34,70 @@ class MainWindow(QMainWindow):
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
 
-        if(not self.__init()):
-            vertical = QVBoxLayout()
-            self.__mainwidget.layout().addLayout(vertical)
-            vertical.addStretch()
-            label = QLabel("No radio station favorites found,")
-            vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-            label = QLabel("go to webinterface (probably http://raspifm),")
-            vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-            label = QLabel("save favorites and press refresh.")
-            vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-            refreshbutton = QPushButton("Refresh")
-            refreshbutton.clicked.connect(self.__refreshlicked)
-            vertical.addWidget(refreshbutton)
-            vertical.addStretch()
+        self.__initializespotify()
+        Vlc()
 
-    def __init(self) -> bool:
-        defaultlist = RaspiFM().favorites_getdefaultlist()
+        left_layout_vertical = QVBoxLayout()
+        self.__mainwidget.layout().addLayout(left_layout_vertical, stretch=1)
+    
+        radiobutton = PushButtonMain()
+        radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
+        radiobutton.setIcon(QIcon("src/webui/static/broadcast-pin-blue.svg"))
+        radiobutton.clicked.connect(self.__radioclicked)
 
-        if(len(defaultlist.stations) > 0):
-            #remove no favorites warning if warning was set before. favorite warning constists of 1 child, the QVBoxLayout, in the main QHBoxLayout,
-            #where the normal setup consists of 2 children in the main QHBoxLayout, one QVBoxLayout layout and one widget
+        favoritesbutton = PushButtonMain()
+        favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        favoritesbutton.setIcon(QIcon("src/webui/static/star-blue.svg"))
+        favoritesbutton.clicked.connect(self.__favoritesclicked)
 
-            #todo: maybe remove mainwidget oder add a root widget over all the info widget so that only the main or root widget has to be deleted
-            # to delte also all sub widgets
-            if(self.__mainwidget.layout().count() == 1): 
-                layoutitem = self.__mainwidget.layout().takeAt(0)
-                for index in reversed(range(layoutitem.count())):
-                    item = layoutitem.takeAt(index)
-                    #QSpaceritem/QLayoutItem have no parents
-                    if(isinstance(item, QWidgetItem) or isinstance(item, QLayout)):
-                        item.widget().close()
-                        item.widget().setParent(None)
+        spotifybutton = PushButtonMain()
+        spotifybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        spotifybutton.setIcon(QIcon("src/webui/static/spotify-blue.svg"))
+        spotifybutton.clicked.connect(self.__spotifyclicked)
 
-                #QLayout has parent
-                layoutitem.setParent(None)
+        settingsbutton = PushButtonMain()
+        settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        settingsbutton.setIcon(QIcon("src/webui/static/gear-blue.svg"))
 
-            left_layout_vertical = QVBoxLayout()
-            self.__mainwidget.layout().addLayout(left_layout_vertical, stretch=1)
+        left_layout_vertical.addWidget(radiobutton)
+        left_layout_vertical.addWidget(favoritesbutton)
+        left_layout_vertical.addWidget(spotifybutton)
+        left_layout_vertical.addWidget(settingsbutton)
 
-            startstation = RaspiFM().favorites_getdefaultlist().stations[0]
-            #RaspiFM().spotify_pause()
-            Vlc(startstation)
-            if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
-                stationapi.send_stationclicked(startstation.uuid)
-
-            radiowdiget = RadioWidget()
-            radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            self.__mainwidget.layout().addWidget(radiowdiget, stretch=4)
-            
-            radiobutton = PushButtonMain()
-            radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
-            radiobutton.setIcon(QIcon("src/webui/static/broadcast-pin-blue.svg"))
-            radiobutton.clicked.connect(self.__radioclicked)
-
-            favbutton = PushButtonMain()
-            favbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            favbutton.setIcon(QIcon("src/webui/static/star-blue.svg"))
-            favbutton.clicked.connect(self.__favclicked)
-
-            sptfybutton = PushButtonMain()
-            sptfybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            sptfybutton.setIcon(QIcon("src/webui/static/spotify-blue.svg"))
-
-            setbutton = PushButtonMain()
-            setbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            setbutton.setIcon(QIcon("src/webui/static/gear-blue.svg"))
-
-            left_layout_vertical.addWidget(radiobutton)
-            left_layout_vertical.addWidget(favbutton)
-            left_layout_vertical.addWidget(sptfybutton)
-            left_layout_vertical.addWidget(setbutton)
-
-            self.__initializespotify()
-            return True
+        if(Spotify().isplaying):
+            self.__mainwidget.layout().addWidget(SpotifyWidget(), stretch=4)
         else:
-            return False
+            radiowidget = RadioWidget(True)
+            radiowidget.playstarting.connect(self.__stopspotify)
+            self.__mainwidget.layout().addWidget(radiowidget, stretch=4)
         
     def __initializespotify(self) -> None:
         self.__system_dbusconnection = QtDBus.QDBusConnection.systemBus()
         self.__system_dbusconnection.registerObject('/', self) #needed to prevent hang of connect call, is a bug, which will be fixed.
+        
+        #check if spotify is already up
         servicenames = self.__system_dbusconnection.interface().registeredServiceNames().value()
         for name in servicenames:
-            if name.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
+            if name.startswith(dbusstrings.spotifydservicestart):
                self.__spotify_dbusname = name
                break
         
         if(utils.str_isnullorwhitespace(self.__spotify_dbusname)):
-            self.__system_dbusconnection.connect("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", self.__dbus_nameownerchanged)
+            #if spotify is not up, listen for it to come up
+            self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
         else:
-            self.__system_dbusconnection.connect(self.__spotify_dbusname, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", self.__spotifyd_propertieschanged)
+            #if spotify is up, listen to player/track changes
+            self.__system_dbusconnection.connect(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, dbusstrings.dbussignalpropertieschanged, self.__spotifyd_propertieschanged)
+
+            interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
+            message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertyplaybackstatus)
+            state = message.arguments()[0]
+            if(state == "Playing"):
+                message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata)
+                metadata = message.arguments()[0]
+                Spotify(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
+            else:
+                Spotify()
 
     @pyqtSlot(QtDBus.QDBusMessage)
     def __dbus_nameownerchanged(self, msg:QtDBus.QDBusMessage) -> None:
@@ -133,61 +109,79 @@ class MainWindow(QMainWindow):
         if(servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance")):
             #service new on the bus
             if(utils.str_isnullorwhitespace(newowner)):
-                self.__system_dbusconnection.disconnect("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", self.__dbus_nameownerchanged)
+                self.__system_dbusconnection.disconnect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
                 self.__spotify_dbusname = servicename
-                self.__system_dbusconnection.connect(self.__spotify_dbusname, "/org/mpris/MediaPlayer2", "org.freedesktop.DBus.Properties", "PropertiesChanged", self.__spotifyd_propertieschanged)
+                self.__system_dbusconnection.connect(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, dbusstrings.dbussignalpropertieschanged, self.__spotifyd_propertieschanged)
 
             #service left bus
             if(utils.str_isnullorwhitespace(oldowner)):
                 self.__spotify_dbusname = None
-                self.__system_dbusconnection.connect("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", self.__dbus_nameownerchanged)
+                self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
+                self.__spotifystopped()
 
     @pyqtSlot(QtDBus.QDBusMessage)
     def __spotifyd_propertieschanged(self, msg:QtDBus.QDBusMessage) -> None:
         changeproperties = msg.arguments()[1]
-        playbackstatus = changeproperties["PlaybackStatus"]
-        metadata = changeproperties["Metadata"]
-        title = metadata["xesam:title"]
-        album = metadata["xesam:album"]
-        artists = metadata["xesam:artist"] #list
-        arturl = metadata["mpris:artUrl"]
-        
-    def __refreshlicked(self) -> None:
-        self.__init()
+        if(changeproperties["PlaybackStatus"] == "Playing"):
+            #no radio widget update necessary, if Plabackstatus is changed from not playing, then SpotifyWidget will be shown.
+            #Therefore if the user clicks back to radio, it loads in correct current state
+            Vlc().stop
+            
+            if(not Spotify().isplaying):
+                Spotify().isplaying = True
+                if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                    spotifywidget = SpotifyWidget()
+                    spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                    widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
+                    self.__closewidgetitem(widgetitem)
+
+            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                metadata = changeproperties["Metadata"]
+                Spotify().currentlyplaying = SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl])
+                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
+        else:
+            self.__spotifystopped()
+
+    def __spotifystopped(self) -> None:
+        if(Spotify().isplaying):
+            Spotify().isplaying = False
+
+            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
+    
+    def __stopspotify(self) -> None:
+        interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.spotifydinterface, self.__system_dbusconnection)
+        interface.call(dbusstrings.spotifydmethodpause)
 
     def __radioclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
-            radiowdiget = RadioWidget()
-            radiowdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowdiget)
+            radiowidget = RadioWidget(not Spotify().isplaying)
+            radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
+            self.__closewidgetitem(widgetitem)
 
-            widget = widgetitem.widget()
-            if(isinstance(widget, FavoritesWidget)):
-                widget.favclicked.disconnect()
-
-            widget.close()
-            widget.setParent(None)
-
-    def __favclicked(self) -> None:
+    def __favoritesclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
             favoriteswdidget = FavoritesWidget()
             favoriteswdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             favoriteswdidget.favclicked.connect(self.__radioclicked)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdidget)
-            widgetitem.widget().close()
-            widgetitem.widget().setParent(None)
+            self.__closewidgetitem(widgetitem)
 
-    def spotify_pause(self) -> None:
-        service = self.__get_spotifyd_dbus_instance()
-        if(service):
-            path = "/org/mpris/MediaPlayer2"
-            iface = "org.mpris.MediaPlayer2.Player"
-            #ifaceprops = "org.freedesktop.DBus.Properties"
+    def __spotifyclicked(self) -> None:
+        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+            spotifywdidget = SpotifyWidget()
+            spotifywdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywdidget)
+            self.__closewidgetitem(widgetitem)
 
-            #proxy = dbus.SystemBus().get_object(service, path)
-            #proxy.Pause(dbus_interface=iface)
-            #vol = interface.Get(iface,"Volume")
-            #print(vol)
+    def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
+        widget = widgetitem.widget()
+        if(isinstance(widget, FavoritesWidget)):
+            widget.favclicked.disconnect()
+
+        widget.close()
+        widget.setParent(None)
 
     def keyPressEvent(self, event): 
         if (event.key() == QtCore.Qt.Key.Key_Escape):

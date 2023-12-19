@@ -5,9 +5,12 @@ Internetradio on Raspberry Pi
 ## Update your package repository
 Do a "sudo apt update" first.
 
+## Set up HifiBerry MiniAmp
+- tbd
+
 ## Requirements for Spotify connect for Raspberry Pi OS/Linux
 To use the Spotify conncet feature, spotifyd needs to be installed. Unfortunetally, spotifyd delivers only 32 bit binaries,
-so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi os).
+so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS).
 To build a 64bit binary and set up the daemon:
 - 1. Uninstall current rust compiler, it may be to old: "sudo apt remove rustc" (may not be needed on other Linux distributions than Raspberry Pi OS like Ubunto when they have no rust compiler preinstalled)
 - 2. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install curl to install the current rust tolchain: "sudo apt install curl"
