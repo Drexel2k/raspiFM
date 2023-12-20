@@ -23,6 +23,10 @@ class Vlc:
     @property
     def currentstation(self) -> RadioStation:
         return self.__station
+
+    @currentstation.setter
+    def currentstation(self, value) -> None:
+        self.__station = value
     
     @property
     def currentvolum(self) -> int:
@@ -65,9 +69,10 @@ class Vlc:
 
     def stop(self) -> None:
         self.__state = PlayerState.Stopped
-        self.__vlcplayer.stop()
-        vlc.libvlc_media_player_release(self.__vlcplayer)
-        vlc.libvlc_media_release(self.__vlcmedia)
+        if(self.__vlcplayer):
+            self.__vlcplayer.stop()
+            vlc.libvlc_media_player_release(self.__vlcplayer)
+            vlc.libvlc_media_release(self.__vlcmedia)
 
     def getmeta(self) -> str:     
         if(self.isplaying):

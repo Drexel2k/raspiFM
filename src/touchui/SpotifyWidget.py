@@ -26,14 +26,20 @@ class SpotifyWidget(QWidget):
         layout.addWidget(self.__artlabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
         self.__lbl_title = MarqueeLabel()
+        self.__lbl_title.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.__lbl_title.setMaximumWidth(self.width() - 40) # If not done, UI will do jerk on time, when widget is opened.
         self.__lbl_title.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
         layout.addWidget(self.__lbl_title, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.__lbl_artists = MarqueeLabel()
+        self.__lbl_artists.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.__lbl_artists.setMaximumWidth(self.width() - 40) # If not done, UI will do jerk on time, when widget is opened.
         self.__lbl_artists.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
         layout.addWidget(self.__lbl_artists, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.__lbl_album = MarqueeLabel()
+        self.__lbl_album.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.__lbl_album.setMaximumWidth(self.width() - 40) # If not done, UI will do jerk on time, when widget is opened.
         self.__lbl_album.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
         layout.addWidget(self.__lbl_album, alignment=Qt.AlignmentFlag.AlignHCenter)
 
@@ -69,6 +75,10 @@ class SpotifyWidget(QWidget):
             renderer.render(painter)
             painter.end()
             qx.convertFromImage(image)
+
+            self.__lbl_title.setText(None)
+            self.__lbl_artists.setText(None)
+            self.__lbl_album.setText(None)
 
         self.__artlabel.setPixmap(qx.scaledToHeight(270, Qt.TransformationMode.SmoothTransformation))
 

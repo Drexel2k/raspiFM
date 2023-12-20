@@ -122,10 +122,19 @@ class MainWindow(QMainWindow):
     @pyqtSlot(QtDBus.QDBusMessage)
     def __spotifyd_propertieschanged(self, msg:QtDBus.QDBusMessage) -> None:
         changeproperties = msg.arguments()[1]
-        metadata = changeproperties["Metadata"]
+
+        #Sometimes, not reproducable, not alle infos are in the changeproperties, onyl one attribute like volume is in it.
+        #Normaly after that another propertieschange signal comes in with the full infos.
+        if(not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties):
+            return
+            #interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
+            #msg = interface.call(dbusstrings.dbusmethodgetall, dbusstrings.spotifydinterface)
+            #changeproperties = msg.arguments()[0]
+
+        metadata = changeproperties[dbusstrings.spotifydpropertymetadata]
         Spotify().currentlyplaying = SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl])
         
-        if(changeproperties["PlaybackStatus"] == "Playing"):
+        if(changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing"):
             #no radio widget update necessary, if Plabackstatus is changed from not playing, then SpotifyWidget will be shown.
             #Therefore if the user clicks back to radio, it loads in correct current state
             Vlc().stop()
@@ -137,6 +146,8 @@ class MainWindow(QMainWindow):
                     spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
                     self.__closewidgetitem(widgetitem)
+                else:
+                    self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
         else:
             if(Spotify().isplaying):
                 Spotify().isplaying = False

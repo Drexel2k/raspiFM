@@ -51,15 +51,11 @@ class RadioWidget(QWidget):
 
                 self.__nostations = False
 
-            station = Vlc().currentstation
-            if(not station):
-                station = RaspiFM().favorites_getdefaultlist().stations[0]
+            if(not Vlc().currentstation):
+                Vlc().currentstation = defaultlist.stations[0]
 
             if(startplaying and not Vlc().isplaying):
-                if (Vlc().currentstation == None):
-                    Vlc().play(station)
-                else:
-                    Vlc().play()                  
+                Vlc().play()                  
 
                 if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
                     stationapi.send_stationclicked(station.uuid)
@@ -93,7 +89,7 @@ class RadioWidget(QWidget):
             else:
                 self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
 
-            if(station.faviconb64):
+            if(Vlc().currentstation.faviconb64):
                 qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
             else:
                 renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
