@@ -51,10 +51,12 @@ class RadioWidget(QWidget):
 
                 self.__nostations = False
 
+            station = Vlc().currentstation
+            if(not station):
+                station = RaspiFM().favorites_getdefaultlist().stations[0]
+
             if(startplaying and not Vlc().isplaying):
-                station = Vlc().currentstation
-                if(not station):
-                    station = RaspiFM().favorites_getdefaultlist().stations[0]
+                if (Vlc().currentstation == None):
                     Vlc().play(station)
                 else:
                     Vlc().play()                  
@@ -85,21 +87,14 @@ class RadioWidget(QWidget):
             layout.addWidget(volslider)
 
             qx = QPixmap()
-            if(Vlc().isplaying):   
-                if(station.faviconb64):
-                    qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
-                else:
-                    renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
-                    image = QImage(180, 180, QImage.Format.Format_ARGB32)
-                    image.fill(0x00000000)
-                    painter = QPainter(image)
-                    renderer.render(painter)
-                    painter.end()
-                    qx.convertFromImage(image)
-
- 
+            if(Vlc().isplaying): 
                 self.__btn_playcontrol.setIcon(QIcon("src/webui/static/stop-fill-blue.svg"))
                 self.__startmetagetter()
+            else:
+                self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
+
+            if(station.faviconb64):
+                qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
             else:
                 renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
                 image = QImage(180, 180, QImage.Format.Format_ARGB32)
@@ -108,8 +103,6 @@ class RadioWidget(QWidget):
                 renderer.render(painter)
                 painter.end()
                 qx.convertFromImage(image)
-
-                self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
 
             stationimagelabel.setPixmap(qx.scaledToHeight(180, Qt.TransformationMode.SmoothTransformation))
         else:

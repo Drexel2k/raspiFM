@@ -17,7 +17,10 @@ class Spotify:
     
     @isplaying.setter
     def isplaying(self, value) -> None:
-        self.__state = value
+        if(value):
+            self.__state = PlayerState.Playing
+        else:
+            self.__state = PlayerState.Stopped
     
     @property
     def currentlyplaying(self) -> SpotifyInfo:

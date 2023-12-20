@@ -122,10 +122,13 @@ class MainWindow(QMainWindow):
     @pyqtSlot(QtDBus.QDBusMessage)
     def __spotifyd_propertieschanged(self, msg:QtDBus.QDBusMessage) -> None:
         changeproperties = msg.arguments()[1]
+        metadata = changeproperties["Metadata"]
+        Spotify().currentlyplaying = SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl])
+        
         if(changeproperties["PlaybackStatus"] == "Playing"):
             #no radio widget update necessary, if Plabackstatus is changed from not playing, then SpotifyWidget will be shown.
             #Therefore if the user clicks back to radio, it loads in correct current state
-            Vlc().stop
+            Vlc().stop()
             
             if(not Spotify().isplaying):
                 Spotify().isplaying = True
@@ -134,20 +137,12 @@ class MainWindow(QMainWindow):
                     spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
                     self.__closewidgetitem(widgetitem)
-
-            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
-                metadata = changeproperties["Metadata"]
-                Spotify().currentlyplaying = SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl])
-                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
         else:
-            self.__spotifystopped()
+            if(Spotify().isplaying):
+                Spotify().isplaying = False
 
-    def __spotifystopped(self) -> None:
-        if(Spotify().isplaying):
-            Spotify().isplaying = False
-
-            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
-                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
+                if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                    self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
     
     def __stopspotify(self) -> None:
         interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.spotifydinterface, self.__system_dbusconnection)
@@ -157,6 +152,7 @@ class MainWindow(QMainWindow):
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
             radiowidget = RadioWidget(not Spotify().isplaying)
             radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            radiowidget.playstarting.connect(self.__stopspotify)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
             self.__closewidgetitem(widgetitem)
 
@@ -177,6 +173,10 @@ class MainWindow(QMainWindow):
 
     def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
         widget = widgetitem.widget()
+
+        if(isinstance(widget, RadioWidget)):
+            widget.playstarting.disconnect()
+
         if(isinstance(widget, FavoritesWidget)):
             widget.favclicked.disconnect()
 
