@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from . import requestbase
-from .data import RadioStationApi
+from .data.RadioStationApi import RadioStationApi
 from ...json.JsonDeserializer import JsonDeserializer
 
 def query_stations_advanced(name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> dict:

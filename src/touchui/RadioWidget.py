@@ -28,8 +28,12 @@ class RadioWidget(QWidget):
     def __init__(self, startplaying:bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.__threadpool = QThreadPool()
         self.setLayout(QVBoxLayout())
+
+        self.__btn_playcontrol = None
+        self.__lbl_nowplaying = None
+        self.__vlcgetmeta_enabled = None
+        self.__threadpool = None
 
         self.__nostations = False
         self.__init(startplaying)
@@ -50,6 +54,8 @@ class RadioWidget(QWidget):
                         item.widget().setParent(None)
 
                 self.__nostations = False
+
+            self.__threadpool = QThreadPool()
 
             if(not Vlc().currentstation):
                 Vlc().currentstation = defaultlist.stations[0]
@@ -169,7 +175,10 @@ class RadioWidget(QWidget):
 
     def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
-        self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
+
+        #is null if no stations are configured yet.
+        if(self.__lbl_nowplaying):
+            self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
 
     def closeEvent(self, event) -> None:
         self.__vlcgetmeta_enabled = False
