@@ -167,11 +167,19 @@ class MainWindow(QMainWindow):
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
             self.__closewidgetitem(widgetitem)
 
+    def __favoritelicked(self) -> None:
+        self.__stopspotify()
+        radiowidget = RadioWidget(True)
+        radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        radiowidget.playstarting.connect(self.__stopspotify)
+        widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
+        self.__closewidgetitem(widgetitem)
+
     def __favoritesclicked(self) -> None:
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
             favoriteswdidget = FavoritesWidget()
             favoriteswdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            favoriteswdidget.favclicked.connect(self.__radioclicked)
+            favoriteswdidget.favclicked.connect(self.__favoritelicked)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), favoriteswdidget)
             self.__closewidgetitem(widgetitem)
 

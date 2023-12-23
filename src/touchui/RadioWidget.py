@@ -60,6 +60,8 @@ class RadioWidget(QWidget):
             if(not Vlc().currentstation):
                 Vlc().currentstation = defaultlist.stations[0]
 
+            station = Vlc().currentstation
+
             if(startplaying and not Vlc().isplaying):
                 Vlc().play()                  
 
@@ -95,8 +97,8 @@ class RadioWidget(QWidget):
             else:
                 self.__btn_playcontrol.setIcon(QIcon("src/webui/static/play-fill-blue.svg"))
 
-            if(Vlc().currentstation.faviconb64):
-                qx.loadFromData(base64.b64decode(Vlc().currentstation.faviconb64), Vlc().currentstation.faviconextension)
+            if(station.faviconb64):
+                qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
             else:
                 renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
                 image = QImage(180, 180, QImage.Format.Format_ARGB32)
