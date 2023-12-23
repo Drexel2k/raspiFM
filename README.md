@@ -17,7 +17,7 @@ Do a `sudo apt update` first.
 To use the Spotify conncet feature, spotifyd needs to be installed. Unfortunetally, spotifyd delivers only 32 bit binaries,
 so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS).
 To build a 64bit binary and set up the daemon:
-- 1. Uninstall current rust compiler, it may be to old: `sudo apt remove rustc` (may not be needed on other Linux distributions than Raspberry Pi OS like Ubunto when they have no rust compiler preinstalled)
+- 1. Uninstall current rust compiler if one is installed, it may be to old, e.g. by: `sudo apt remove rustc` or `rustup self uninstall`
 - 2. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install curl to install the current rust tolchain: `sudo apt install curl`
 - 3. Install current rust toolchain, select option 1: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 - 4. Setup environment variable: `source "$HOME/.cargo/env"`
@@ -26,17 +26,17 @@ To build a 64bit binary and set up the daemon:
 - 7. Install required packages: `sudo apt install libasound2-dev libdbus-1-dev`, on other Linux distributions than Raspberry, e.g. Ubuntu you may need to install further packages to compile spotifyd, `sudo apt install build-essential pkg-config`
 - 8. Switch to spotifyd folder: `cd spotifyd`
 - 9. If you do not want to compile the latest commit, but the latest release, look up the latest release tag: https://github.com/Spotifyd/spotifyd/releases or https://github.com/Spotifyd/spotifyd/tags and do: `git checkout tags/v0.3.5` e.g.
-- 10. Build spotifyd with DBus support: `cargo build --release --features dbus_mpris`, this takes some minutes
+- 10. Build spotifyd with DBus support: `cargo build --release --features dbus_mpris,pulseaudio_backend`, this takes some minutes
 - 11. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spotifyd /usr/bin`
 - 12. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp /path/to/raspifm-folder/configs/spotifyd.conf /etc`
-- 13. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp /path/to/raspifm-folder/configs/spotifyd.service /etc/systemd/system`
+- 13. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp /path/to/raspifm-folder/configs/spotifyd.service /etc/systemd/user`
 - 14. Enable the daemon/autostart: `sudo systemctl enable spotifyd.service`
 - 15. Allow the spotifyd daemon to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: `sudo cp /path/to/raspifm-folder/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`
 - 16. Reboot
 
 ## IDE Setup / Build instructions for Raspberry Pi OS/Linux
 - 1. Install Visual Studio Code with Python Extension,`sudo apt install code` (on Ubuntu from Ubuntu Software), Python extension in the extension manager of VSC
-- 2. Install Qt (touch ui), `sudo apt install qt6-base-dev`
+- 2. Install Qt (touch ui), `sudo apt install qt6-base-dev qt6-wayland`, on Ubuntu 22.04 `sudo apt install qt6-base-dev` is sufficient, as it uses x11
 - 3. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install build packages and VLC media player, `sudo apt install build-essential pkg-config libdbus-1-dev libglib2.0-dev python3-dev vlc`
 - 4. Install PyQt6 from apt repository (a) or if it isn't available (on Ubuntu 22.04 e.g.), if you want the latest version or if you want it as .venv package, take it from the lib folder (b) or install from source (c)
   - a) `sudo apt install python3-pyqt6`
