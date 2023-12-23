@@ -15,7 +15,7 @@ Do a `sudo apt update` first.
 
 ## Requirements for Spotify connect for Raspberry Pi OS/Linux
 To use the Spotify conncet feature, spotifyd needs to be installed. Unfortunetally, spotifyd delivers only 32 bit binaries,
-so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS).
+so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS) with step 1 to 10 or use the file from the [libs] folder (start from stepp 11).
 To build a 64bit binary and set up the daemon:
 - 1. Uninstall current rust compiler if one is installed, it may be to old, e.g. by: `sudo apt remove rustc` or `rustup self uninstall`
 - 2. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install curl to install the current rust tolchain: `sudo apt install curl`
@@ -27,7 +27,9 @@ To build a 64bit binary and set up the daemon:
 - 8. Switch to spotifyd folder: `cd spotifyd`
 - 9. If you do not want to compile the latest commit, but the latest release, look up the latest release tag: https://github.com/Spotifyd/spotifyd/releases or https://github.com/Spotifyd/spotifyd/tags and do: `git checkout tags/v0.3.5` e.g.
 - 10. Build spotifyd with DBus support: `cargo build --release --features dbus_mpris,pulseaudio_backend`, this takes some minutes
-- 11. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spotifyd /usr/bin`
+- 11. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spotifyd /usr/bin` or use the file from libs(spotifyd-0.3.5-dbus-pulse_aarch64): 
+  - x64:
+  - arm64: `sudo cp /path/to/raspifm-folder/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 12. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp /path/to/raspifm-folder/configs/spotifyd.conf /etc`
 - 13. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp /path/to/raspifm-folder/configs/spotifyd.service /etc/systemd/user`
 - 14. Enable the daemon/autostart: `sudo systemctl enable spotifyd.service`
