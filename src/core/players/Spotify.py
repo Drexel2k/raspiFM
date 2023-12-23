@@ -5,10 +5,9 @@ from .PlayerState import PlayerState
 from ...core.business.RadioStation import RadioStation
 
 class Spotify:
-    __slots__ = ["__state", "__volume", "__spotifyinfo"]
-    __instance:Vlc = None
+    __slots__ = ["__state", "__spotifyinfo"]
+    __instance:Spotify = None
     __state:PlayerState
-    __volume:int
     __spotifyinfo:SpotifyInfo
 
     @property
@@ -32,10 +31,6 @@ class Spotify:
     @currentlyplaying.setter
     def currentlyplaying(self, value) -> None:
         self.__spotifyinfo = value
-    
-    @property
-    def currentvolum(self) -> int:
-        return self.__volume
 
     def __new__(cls, info:SpotifyInfo = None):
         if cls.__instance is None:
@@ -45,8 +40,6 @@ class Spotify:
         return cls.__instance
     
     def __init(self, info:SpotifyInfo):
-        self.__volume = 50
-
         if(info == None):
             self.__state = PlayerState.Stopped
         else:
@@ -55,12 +48,3 @@ class Spotify:
 
     def stop(self) -> None:
         self.__state = PlayerState.Stopped
-    
-    def setvolume(self, volume:int) -> None:
-        if(volume < 0):
-            volume = 0
-
-        if(volume > 100):
-            volume = 100
-
-        self.__volume = volume

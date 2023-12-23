@@ -32,7 +32,7 @@ To build a 64bit binary and set up the daemon:
   - arm64: `sudo cp /path/to/raspifm-folder/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 12. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp /path/to/raspifm-folder/configs/spotifyd.conf /etc`
 - 13. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp /path/to/raspifm-folder/configs/spotifyd.service /etc/systemd/user`
-- 14. Enable the daemon/autostart: `sudo systemctl enable spotifyd.service`
+- 14. Enable the daemon/autostart: `systemctl --user enable spotifyd.service`
 - 15. Allow the spotifyd daemon to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: `sudo cp /path/to/raspifm-folder/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`
 - 16. Reboot
 
