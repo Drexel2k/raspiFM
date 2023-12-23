@@ -38,12 +38,12 @@ To build a 64bit binary and set up the daemon:
 
 ## IDE Setup / Build instructions for Raspberry Pi OS/Linux
 - 1. Install Visual Studio Code with Python Extension,`sudo apt install code` (on Ubuntu from Ubuntu Software), Python extension in the extension manager of VSC
-- 2. Install Qt (touch ui), `sudo apt install qt6-base-dev qt6-wayland`, on Ubuntu 22.04 `sudo apt install qt6-base-dev` is sufficient, as it uses x11
-- 3. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install build packages and VLC media player, `sudo apt install build-essential pkg-config libdbus-1-dev libglib2.0-dev python3-dev vlc`
+- 2. Install Qt (touch ui), `sudo apt install qt6-base-dev libqt6svg6-dev qt6-wayland`, on Ubuntu 22.04 `sudo apt install qt6-base-dev` is sufficient, as it uses x11
+- 3. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install build packages and VLC media player, `sudo apt install build-essential pkg-config libdbus-1-dev libglib2.0-dev python3-dev vlc`, some of these packages may also already be installed during spotifyd build.
 - 4. Install PyQt6 from apt repository (a) or if it isn't available (on Ubuntu 22.04 e.g.), if you want the latest version or if you want it as .venv package, take it from the lib folder (b) or install from source (c)
   - a) `sudo apt install python3-pyqt6`
   - b) Further steps follow on stepp 10
-  - c) Install further libs needed `sudo apt install libqt6svg6-dev`, on Ubuntu `sudo apt install mesa-common-dev`
+  - c) Install further libs needed on Ubuntu `sudo apt install mesa-common-dev`
     - On Ubunutu 22.04 you need to set up a workaround for Qt6 to be found by QtChooser an make it the default Qt version:
     - qtchooser -install qt6 $(which qmake6)
     - sudo mv ~/.config/qtchooser/qt6.conf /usr/share/qtchooser/qt6.conf

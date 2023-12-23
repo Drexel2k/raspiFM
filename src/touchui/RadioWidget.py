@@ -5,7 +5,7 @@ from types import MethodType
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem, QLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem, QSpacerItem
 
 from ..core.RaspiFM import RaspiFM
 from ..utils import utils
@@ -44,10 +44,10 @@ class RadioWidget(QWidget):
             #remove no favorites warning if warning was set before. 
             #todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
             #to delete also all sub widgets
-            if(self.__nostations): 
-                layoutitem = self.layout().takeAt(0)
-                while layoutitem.count() > 0:
-                    item = layoutitem.takeAt(0)
+            if(self.__nostations):
+                while (self.layout().count() > 0):
+                    item = self.layout().takeAt(0)
+
                     #QSpaceritem/QLayoutItem have no parents
                     if(isinstance(item, QWidgetItem)):
                         item.widget().close()
