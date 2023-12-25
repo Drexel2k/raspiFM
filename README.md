@@ -28,7 +28,7 @@ To build a 64bit binary and set up the daemon:
 - 9. If you do not want to compile the latest commit, but the latest release, look up the latest release tag: https://github.com/Spotifyd/spotifyd/releases or https://github.com/Spotifyd/spotifyd/tags and do: `git checkout tags/v0.3.5` e.g.
 - 10. Build spotifyd with DBus support: `cargo build --release --features dbus_mpris,pulseaudio_backend`, this takes some minutes
 - 11. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spotifyd /usr/bin` or use the file from libs(spotifyd-0.3.5-dbus-pulse_aarch64): 
-  - x64:
+  - x64: `sudo cp /path/to/raspifm-folder/libs/spotifyd-0.3.5-dbus-pulse_x86_64 /usr/bin/spotifyd`
   - arm64: `sudo cp /path/to/raspifm-folder/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 12. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp /path/to/raspifm-folder/configs/spotifyd.conf /etc`
 - 13. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp /path/to/raspifm-folder/configs/spotifyd.service /etc/systemd/user`
