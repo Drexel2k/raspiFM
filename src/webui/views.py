@@ -102,6 +102,13 @@ def taglist() -> str:
         return render_template("taglist.html", tags=taglist)
     except BaseException as e:
         return get_errorresponse(e)
+    
+@app.route("/settings")
+def settings() -> str:
+    try:
+        return render_template("settings.html")
+    except BaseException as e:
+        return get_errorresponse(e)
 
 #from here are ajax endpoints:
 #ajax

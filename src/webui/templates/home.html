@@ -2,9 +2,10 @@
 {% set active_page = 0 %}
 
 {% block title %}
-Status
+raspiFM
 {% endblock %}
 {% block content %}
-<h1>Status</h1>
-<p>tbd</p>
+<h1>raspiFM</h1>
+<p>Welcome to raspiFM, an open source internet radio for Raspberry Pi!</p>
+<p>Start with <a href="{{ url_for('stationsearch') }}">searching radio stations</a> and adding them to <a href="{{ url_for('favorites') }}">favorite lists</a>.</p>
 {% endblock %}
