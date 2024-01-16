@@ -57,7 +57,7 @@ class FavoritesWidget(QWidget):
                 qx = QPixmap()
                 qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
             else:
-                renderer =  QSvgRenderer("src/webui/static/broadcast-pin-blue.svg")
+                renderer =  QSvgRenderer("src/touchui/images/broadcast-pin-blue.svg")
                 image = QImage(42, 42, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)
@@ -77,7 +77,7 @@ class FavoritesWidget(QWidget):
     def __buttonclicked(self):
         Vlc().play(self.sender().data)
         
-        if(RaspiFM().settings.touch_runontouch): #otherwise we are on dev most propably so we don't send a click on every play
+        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(self.sender().data.uuid)
 
         self.favclicked.emit()

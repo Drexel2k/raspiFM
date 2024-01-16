@@ -18,7 +18,7 @@ class FavoriteList:
         return self.__name
     
     @name.setter
-    def name(self, value) -> None:
+    def name(self, value: str) -> None:
         self.__name = value
     
     @property
@@ -26,7 +26,7 @@ class FavoriteList:
         return self.__isdefault
     
     @isdefault.setter
-    def isdefault(self, value) -> None:
+    def isdefault(self, value : bool) -> None:
         self.__isdefault = value
 
     @property

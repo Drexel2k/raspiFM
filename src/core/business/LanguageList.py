@@ -3,6 +3,8 @@ from datetime import datetime
 class LanguageList:
     __slots__ = ["__lastupdate", "__languagelist"]
     __lastupdate:datetime
+
+    #Key is name, value is code, as code can be None for exotic languages and dialects
     __languagelist:dict
 
     @property

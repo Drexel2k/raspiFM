@@ -3,6 +3,8 @@ from datetime import datetime
 class CountryList:
     __slots__ = ["__lastupdate", "__countrylist"]
     __lastupdate:datetime
+
+    #Key is name, value is code to unify with LanguageList, see LanguageList
     __countrylist:dict
 
     @property

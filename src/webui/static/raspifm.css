@@ -90,5 +90,10 @@
 }
 
 .suppress-carot:after {
-   content: none;
+  content: none;
 }
+
+.nav-link {
+  text-align: center;
+  font-size: 14px;
+} 

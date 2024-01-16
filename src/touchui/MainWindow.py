@@ -42,22 +42,22 @@ class MainWindow(QMainWindow):
     
         radiobutton = PushButtonMain()
         radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
-        radiobutton.setIcon(QIcon("src/webui/static/broadcast-pin-blue.svg"))
+        radiobutton.setIcon(QIcon("src/touchui/images/broadcast-pin-blue.svg"))
         radiobutton.clicked.connect(self.__radioclicked)
 
         favoritesbutton = PushButtonMain()
         favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        favoritesbutton.setIcon(QIcon("src/webui/static/star-blue.svg"))
+        favoritesbutton.setIcon(QIcon("src/touchui/images/star-blue.svg"))
         favoritesbutton.clicked.connect(self.__favoritesclicked)
 
         spotifybutton = PushButtonMain()
         spotifybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        spotifybutton.setIcon(QIcon("src/webui/static/spotify-blue.svg"))
+        spotifybutton.setIcon(QIcon("src/touchui/images/spotify-blue.svg"))
         spotifybutton.clicked.connect(self.__spotifyclicked)
 
         settingsbutton = PushButtonMain()
         settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        settingsbutton.setIcon(QIcon("src/webui/static/gear-blue.svg"))
+        settingsbutton.setIcon(QIcon("src/touchui/images/gear-blue.svg"))
 
         left_layout_vertical.addWidget(radiobutton)
         left_layout_vertical.addWidget(favoritesbutton)

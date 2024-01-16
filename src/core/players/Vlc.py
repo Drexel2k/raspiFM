@@ -25,7 +25,7 @@ class Vlc:
         return self.__station
 
     @currentstation.setter
-    def currentstation(self, value) -> None:
+    def currentstation(self, value: RadioStation) -> None:
         self.__station = value
     
     @property

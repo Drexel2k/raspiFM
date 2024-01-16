@@ -326,6 +326,51 @@ function registerFavLinks(removetablerow = false)
     });
 }
 
+function initSettingsMgmt()
+{
+    $("#slcountry").on("change", function(e)
+    {   
+        $.ajax(
+            {   
+                url:"changesettings",
+                method:"POST",
+                data:{property:"country", value:$("#slcountry").val()},
+                success:function(data)
+                {
+
+                },
+                error:function(xhr)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+
+    $("#sllang").on("change", function(e)
+    {   
+        $.ajax(
+            {
+                url:"changesettings",
+                method:"POST",
+                data:{property:"lang", value:$("#sllang").val()},
+                success:function(data)
+                {
+
+                },
+                error:function(xhr)
+                {
+                    $("#errortoastContent").text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById("errortoast"));
+                    errortoast.show()
+                }
+            }
+        );
+    });
+}
+
 function initToolTips()
 {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')

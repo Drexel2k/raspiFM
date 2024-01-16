@@ -39,7 +39,7 @@ def stationsearch() -> str:
         countries = RaspiFM().countries_get()
         languages = RaspiFM().languages_get()
 
-        selected = {"name":None, "country":RaspiFM().settings.usersettings.web_defaultcountry, "language":RaspiFM().settings.usersettings.web_defaultlanguage, "tags":[], "orderby":"clickcount", "order":"desc", "favoritelist":RaspiFM().favorites_getdefaultlist() }
+        selected = {"name":None, "country":RaspiFM().settings_web_defaultcountry(), "language":RaspiFM().settings_web_defaultlanguage(), "tags":[], "orderby":"clickcount", "order":"desc", "favoritelist":RaspiFM().favorites_getdefaultlist() }
 
         pagelast=1
         pagenext=2
@@ -106,7 +106,15 @@ def taglist() -> str:
 @app.route("/settings")
 def settings() -> str:
     try:
-        return render_template("settings.html")
+        countries = RaspiFM().countries_get()
+        languages = RaspiFM().languages_get()
+
+        selected = {"country":RaspiFM().settings_web_defaultcountry(), "language":RaspiFM().settings_web_defaultlanguage()}
+
+        return render_template("settings.html",
+                                countries=countries,
+                                languages=languages,
+                                selected=selected)
     except BaseException as e:
         return get_errorresponse(e)
 
@@ -196,6 +204,18 @@ def getfavoritelistcontent() -> str:
         favoritelist=RaspiFM().favorites_getlist(UUID(form["favlistuuid"]))
         return render_template("favoritelistcontent.html",
                                 favoritelist=favoritelist)
+    except BaseException as e:
+        return get_errorresponse(e)
+    
+#ajax
+@app.route("/changesettings", methods=["POST"])
+def changesettings() -> Response:
+    try:
+        form = request.form
+        RaspiFM().settings_changeproperty(form["property"], form["value"])
+        response = make_response("", 204)
+        response.mimetype = "application/json"
+        return response
     except BaseException as e:
         return get_errorresponse(e)
 

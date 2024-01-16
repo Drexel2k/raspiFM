@@ -23,35 +23,11 @@ from .business.FavoriteList import FavoriteList
 from ..utils import utils
 
 class RaspiFM:
-    __slots__ = ["__favorites_obj", "__radiostations_obj", "__settings"]
+    __slots__ = ["__favorites", "__radiostations", "__settings"]
     __instance:RaspiFM = None
-    __radiostations_obj:RadioStations
-    __favorites_obj:Favorites
+    __radiostations:RadioStations
+    __favorites:Favorites
     __settings:Settings
-
-    @property
-    def __radiostations(self) -> RadioStations:
-        if(not self.__radiostations_obj):
-            stations = JsonDeserializer().get_radiostations()
-            if(not stations):
-                stations = RadioStations()
-            self.__radiostations_obj = stations
-
-        return self.__radiostations_obj
-    
-    @property
-    def __favorites(self) -> Favorites:
-        if(not self.__favorites_obj):
-            favorites = JsonDeserializer().get_favorites(self.__radiostations)
-            if(not favorites):
-                favorites = Favorites()
-            self.__favorites_obj = favorites
-
-        return self.__favorites_obj
-    
-    @property
-    def settings(self) -> Settings:
-        return self.__settings
     
     def __new__(cls):
         if cls.__instance is None:
@@ -70,12 +46,18 @@ class RaspiFM:
             
         JsonSerializer(self.__settings.serialization_directory)
         JsonDeserializer(self.__settings.serialization_directory)
-        self.__radiostations_obj = None
-        self.__favorites_obj = None
+
+        self.__radiostations = JsonDeserializer().get_radiostations()
+        if(not self.__radiostations):
+            self.__radiostations = RadioStations()
+
+        self.__favorites = JsonDeserializer().get_favorites(self.__radiostations)
+        if(not self.__favorites):
+            self.__favorites = Favorites()
 
         usersettings = JsonDeserializer().get_usersettings()
         if(usersettings):
-            self.__settings.usersettings = usersettings        
+            self.__settings.usersettings = usersettings
     
     def stations_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
@@ -92,7 +74,7 @@ class RaspiFM:
 
         return countrylist
     
-    def languages_get(self) -> CountryList:
+    def languages_get(self) -> LanguageList:
         languagelist = JsonDeserializer().get_languagelist()
 
         sevendays = timedelta(days=7)
@@ -175,7 +157,7 @@ class RaspiFM:
     def favorites_getlist(self, listuuid:UUID) -> FavoriteList:
         return self.__favorites.get_list(listuuid)
     
-    def favorites_changelistproperty(self, uuid:UUID, property:str, value:str):
+    def favorites_changelistproperty(self, uuid:UUID, property:str, value:str) -> None:
         if property == "isdefault":
             self.__favorites.change_default(uuid, True if value.strip().lower() == "true" else False)
         elif property == "name":
@@ -185,6 +167,31 @@ class RaspiFM:
             raise TypeError(f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_favorites(self.__favorites)
+
+    def settings_runontouch(self) -> bool:
+        return self.__settings.usersettings.touch_runontouch
+    
+    def settings_web_defaultlanguage(self) -> bool:
+        return self.__settings.usersettings.web_defaultlanguage
+    
+    def settings_web_defaultcountry(self) -> bool:
+        return self.__settings.usersettings.web_defaultcountry
+    
+    def settings_changeproperty(self, property:str, value:str) -> None:
+        if property == "country":
+            countrylist = self.countries_get()
+
+            if (value in countrylist.countrylist.values()):
+                self.__settings.usersettings.web_defaultcountry = value
+        elif property == "lang":
+            languagelist = self.languages_get()
+
+            if (value in languagelist.languagelist):
+                self.__settings.usersettings.web_defaultlanguage = value
+        else: 
+            raise TypeError(f"Change of property \"{property}\" supported.")
+        
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)

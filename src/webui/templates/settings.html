@@ -1,10 +1,33 @@
 {% extends "layout.html" %}
-{% set active_page = 0 %}
+{% set active_page = "settings" %}
 
 {% block title %}
 Settings
 {% endblock %}
 {% block content %}
 <h1>Settings</h1>
-<p>tbd</p>
+<hr/>
+  <form id="fmsettings">
+    <div>
+      <div class="d-sm-inline-block">
+        <label for="slcountry" class="form-label"><small>default country</small></label>
+        <select name="country" id="slcountry" class="form-control max-width-12-sm">
+          <option {% if selectedcountry=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
+          {% for countryname, countrycode in countries.countrylist.items() %}
+              <option {% if selected["country"]==countrycode|upper %}selected{% endif %} value="{{countrycode}}" >{{countryname}} ({{countrycode}})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="d-sm-inline-block">
+        <label for="sllang" class="form-label"><small>default language</small></label>
+        <select name="lang" id="sllang" class="form-control max-width-12-sm">
+          <option {% if selectedlang=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
+          {% for languagename, languacecode in languages.languagelist.items() %}
+              <option {% if selected["language"]==languagename|lower %}selected{% endif %} value="{{languagename}}" >{{languagename}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>  
+  </form>
 {% endblock %}
