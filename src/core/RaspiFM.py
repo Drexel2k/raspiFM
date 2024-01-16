@@ -181,12 +181,12 @@ class RaspiFM:
         if property == "country":
             countrylist = self.countries_get()
 
-            if (value in countrylist.countrylist.values()):
+            if (value in countrylist.countrylist.values() or value == "nofilter"):
                 self.__settings.usersettings.web_defaultcountry = value
         elif property == "lang":
             languagelist = self.languages_get()
 
-            if (value in languagelist.languagelist):
+            if (value in languagelist.languagelist or value == "nofilter"):
                 self.__settings.usersettings.web_defaultlanguage = value
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
