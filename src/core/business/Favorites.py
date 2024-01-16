@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID
 
 from .FavoriteList import FavoriteList
@@ -12,20 +13,34 @@ class Favorites:
         #ensure only Favorites class can edit the list
         return tuple(self.__favoritelists)
 
-    def __init__(self, serializationdata:list=None):
-        if(serializationdata):
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in RadioStation serialization data.")
-                
-                self.__setattr__(f"_Favorites{slot[1]}", serializationdata[dictkey])
-        else:
-            self.__favoritelists = [FavoriteList("Default")]
-            self.__favoritelists[0].isdefault = True
+    @classmethod
+    def from_default(cls) -> Favorites:
+        obj = cls()
+
+        favlist = FavoriteList.from_default("Default")
+        favlist.isdefault = True
+        obj.__setattr__(f"_Favorites__favoritelists", [favlist])
+
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> Favorites:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for Favorites deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in Favorites serialization data.")
+
+            obj.__setattr__(f"_Favorites{slot}", serializationdata[dictkey])
+
+        return obj
 
     def add_favoritelist(self) -> FavoriteList:
-        favoritelist = FavoriteList()
+        favoritelist = FavoriteList.from_default()
         self.__favoritelists.append(favoritelist)
         return favoritelist
     

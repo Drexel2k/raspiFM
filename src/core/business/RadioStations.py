@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID
 
 from .RadioStation import RadioStation
@@ -11,16 +12,29 @@ class RadioStations:
         #ensure only Favorites class can edit the list
         return tuple(self.__stationlist)
 
-    def __init__(self, serializationdata:dict=None):
-        if(serializationdata):
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in RadioStations serialization data.")
-                
-                self.__setattr__(f"_RadioStations{slot[1]}", serializationdata[dictkey])
-        else:
-            self.__stationlist = []
+    @classmethod
+    def from_default(cls) -> RadioStations:        
+        obj = cls()
+
+        obj.__setattr__(f"_RadioStations__stationlist", [])
+
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> RadioStations:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for RadioStations deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in RadioStations serialization data.")
+
+            obj.__setattr__(f"_RadioStations{slot}", serializationdata[dictkey])
+
+        return obj
 
     def get_station(self, stationuuid:UUID) -> RadioStation:
         return next((station for station in self.__stationlist if station.uuid == stationuuid), None)

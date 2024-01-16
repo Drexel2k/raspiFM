@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 
 class LanguageList:
@@ -15,21 +16,33 @@ class LanguageList:
     def languagelist(self) -> dict:
         return self.__languagelist
 
-    def __init__(self, languagelist:dict=None, serializationdata:dict=None):
-        if(serializationdata):
-            self.__languagelist = {}
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in LanguageList serialization data.")
-                
-                self.__setattr__(f"_LanguageList{slot[1]}", serializationdata[dictkey])
-        else:
-            if(not languagelist):
-                raise ValueError("languagelist must not be null for LanguageList.")
+    @classmethod
+    def from_default(cls, languagelist:dict) -> LanguageList:
+        if(not languagelist):
+            raise ValueError("languagelist must not be null for LanguageList.")
+        
+        obj = cls()
 
-            self.__lastupdate = datetime.now()
-            self.__languagelist = dict(sorted(languagelist.items()))
+        obj.__setattr__(f"_LanguageList__lastupdate", datetime.now())
+        obj.__setattr__(f"_LanguageList__languagelist", languagelist)
+
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> LanguageList:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for LanguageList deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in LanguageList serialization data.")
+
+            obj.__setattr__(f"_LanguageList{slot}", serializationdata[dictkey])
+
+        return obj
 
 
 

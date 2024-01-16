@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID, uuid4
 
 from .RadioStation import RadioStation
@@ -7,7 +8,7 @@ class FavoriteList:
     __uuid:UUID
     __name:str
     __isdefault:bool
-    __stations:[]
+    __stations:list
 
     @property
     def uuid(self) -> UUID:
@@ -34,20 +35,32 @@ class FavoriteList:
         #ensure only FavoriteList class can edit the list
         return tuple(self.__stations)
 
-    def __init__(self, name:str=None, serializationdata:dict=None):
-        self.__stations = []
+    @classmethod
+    def from_default(cls, name:str=None) -> FavoriteList:
+        obj = cls()
 
-        if(serializationdata):
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in FavoriteList serialization data.")
+        obj.__setattr__(f"_FavoriteList__uuid", uuid4())
+        obj.__setattr__(f"_FavoriteList__name", name)
+        obj.__setattr__(f"_FavoriteList__isdefault", False)
+        obj.__setattr__(f"_FavoriteList__stations", [])
 
-                self.__setattr__(f"_FavoriteList{slot[1]}", serializationdata[dictkey])
-        else:
-            self.__uuid = uuid4()
-            self.__name = name
-            self.__isdefault = False
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> FavoriteList:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for FavoriteList deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in FavoriteList serialization data.")
+
+            obj.__setattr__(f"_FavoriteList{slot}", serializationdata[dictkey])
+
+        return obj
 
     def addstation(self, station:RadioStation) -> None:
         if(not station in self.__stations):

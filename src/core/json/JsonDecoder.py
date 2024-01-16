@@ -18,7 +18,7 @@ class CountryListDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "CountryList":
             obj["lastupdate"] =  datetime.fromisoformat(obj["lastupdate"])
-            return CountryList(serializationdata=obj)
+            return CountryList.deserialize(obj)
         
         return obj
     
@@ -43,7 +43,7 @@ class FavoriteListDecoder(json.JSONDecoder):
 
             obj["stations"] = stations
 
-            return FavoriteList(serializationdata=obj)
+            return FavoriteList.deserialize(obj)
         
         return obj
     
@@ -57,7 +57,7 @@ class FavoritesDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "Favorites":
-            return Favorites(serializationdata=obj)
+            return Favorites.deserialize(obj)
         
         if "__type__" in obj and obj["__type__"] == "FavoriteList":
             return FavoriteListDecoder(stations=self.__radiostations).object_hook(obj)
@@ -71,7 +71,7 @@ class LanguageListDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "LanguageList":
             obj["lastupdate"] =  datetime.fromisoformat(obj["lastupdate"])
-            return LanguageList(serializationdata=obj)
+            return LanguageList.deserialize(obj)
         
         return obj
     
@@ -82,7 +82,7 @@ class RadioStationDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "RadioStation":
             obj["uuid"] = UUID(obj["uuid"])
-            return RadioStation(serializationdata=obj)
+            return RadioStation.deserialize(obj)
         
         return obj
     
@@ -92,7 +92,7 @@ class RadioStationsDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "RadioStations":
-            return RadioStations(serializationdata=obj)
+            return RadioStations.deserialize(obj)
         
         if "__type__" in obj and obj["__type__"] == "RadioStation":
             return RadioStationDecoder().object_hook(obj)
@@ -106,7 +106,7 @@ class TagListDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "TagList":
             obj["lastupdate"] =  datetime.fromisoformat(obj["lastupdate"])
-            return TagList(serializationdata=obj)
+            return TagList.deserialize(obj)
         
         return obj
     
@@ -116,6 +116,6 @@ class UserSettingsDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "UserSettings":
-            return UserSettings(serializationdata=obj)
+            return UserSettings.deserialize(obj)
         
         return obj

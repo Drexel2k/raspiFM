@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 
 class UserSettings:
@@ -27,18 +28,31 @@ class UserSettings:
     def web_defaultcountry(self, value: str) -> None:
         self.__web_defaultcountry = value
 
-    def __init__(self, serializationdata = None):
-        if(serializationdata):
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in UserSettings serialization data.")
+    @classmethod
+    def from_default(cls) -> UserSettings:    
+        obj = cls()
 
-                self.__setattr__(f"_UserSettings{slot[1]}", serializationdata[dictkey])
-        else:
-            self.__touch_runontouch = False
-            self.__web_defaultlanguage="german"
-            self.__web_defaultcountry="DE"
+        obj.__setattr__(f"_UserSettings__touch_runontouch", False)
+        obj.__setattr__(f"_UserSettings__web_defaultlanguage", "german")
+        obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
+
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> UserSettings:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for UserSettings deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in UserSettings serialization data.")
+
+            obj.__setattr__(f"_UserSettings{slot}", serializationdata[dictkey])
+
+        return obj
 
 class Settings:
     __slots__ = ["__serialization_directory", "__usersettings"]
@@ -59,5 +73,5 @@ class Settings:
         self.__usersettings = value
 
     def __init__(self):
-        self.__usersettings = UserSettings()
+        self.__usersettings = UserSettings.from_default()
         self.__serialization_directory = os.path.expanduser('~/raspifm')

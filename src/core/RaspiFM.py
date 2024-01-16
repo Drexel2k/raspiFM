@@ -49,11 +49,11 @@ class RaspiFM:
 
         self.__radiostations = JsonDeserializer().get_radiostations()
         if(not self.__radiostations):
-            self.__radiostations = RadioStations()
+            self.__radiostations = RadioStations.from_default()
 
         self.__favorites = JsonDeserializer().get_favorites(self.__radiostations)
         if(not self.__favorites):
-            self.__favorites = Favorites()
+            self.__favorites = Favorites.from_default()
 
         usersettings = JsonDeserializer().get_usersettings()
         if(usersettings):
@@ -69,7 +69,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if (not countrylist or countrylist.lastupdate + sevendays < datetime.now()):
             countrylistapi = listapi.query_countrylist()
-            countrylist = CountryList({ country["name"] : country["iso_3166_1"] for country in countrylistapi })
+            countrylist = CountryList.from_default({ country["name"] : country["iso_3166_1"] for country in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
 
         return countrylist
@@ -80,7 +80,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if (not languagelist or languagelist.lastupdate + sevendays < datetime.now()):
             languagelistapi = listapi.query_languagelist()
-            languagelist = LanguageList({ language["name"] : language["iso_639"] for language in languagelistapi })
+            languagelist = LanguageList.from_default({ language["name"] : language["iso_639"] for language in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
 
         return languagelist
@@ -91,7 +91,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if (not taglist or taglist.lastupdate + sevendays < datetime.now()):
             taglistapi = listapi.query_taglist()
-            taglist = TagList([ tag["name"] for tag in taglistapi ])
+            taglist = TagList.from_default([ tag["name"] for tag in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
         if filter:
@@ -105,15 +105,15 @@ class RaspiFM:
         if not station:
             radiostationapi = stationapi.query_station(stationuuid)
 
-            station = RadioStation(radiostationapi.stationuuid,
+            station = RadioStation.from_default(radiostationapi.stationuuid,
                                    radiostationapi.name,
                                    radiostationapi.url_resolved,
+                                   radiostationapi.codec,                                   
                                    radiostationapi.countrycode,
                                    radiostationapi.languagecodes,
                                    radiostationapi.homepage,
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else httpcontent.get_urlbinary_contentasb64(radiostationapi.favicon),
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else path.splitext(radiostationapi.favicon)[1][1:],
-                                   radiostationapi.codec,
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))
             

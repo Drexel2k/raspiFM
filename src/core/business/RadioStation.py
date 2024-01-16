@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID
 
 class RadioStation:
@@ -58,26 +59,39 @@ class RadioStation:
     def tags(self) -> list:
         return self.__tags
 
-    def __init__(self, uuid:str=None, name:str=None, url:str=None, countrycode:str=None, languagecodes:str=None, homepage:str=None, faviconb64:str=None, faviconextension:str=None, codec:str=None, bitrate:int=None, tags:list=None, serializationdata:dict=None):
-        if(serializationdata):
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in RadioStation serialization data.")
+    @classmethod
+    def from_default(cls, uuid:str, name:str, url:str, codec:str, countrycode:str=None, languagecodes:str=None, homepage:str=None, faviconb64:str=None, faviconextension:str=None, bitrate:int=None, tags:list=None) -> RadioStation:
+        if(not uuid or not name or not url or not codec):
+            raise ValueError("uuid, name or url must not be null for RadioStation.")
+        
+        obj = cls()
 
-                self.__setattr__(f"_RadioStation{slot[1]}", serializationdata[dictkey])
-        else:
-            if(not uuid or not name or not url or not codec):
-                raise ValueError("uuid, name or url must not be null for RadioStation.")
-            self.__uuid = UUID(uuid)
-            self.__name = name
-            self.__url = url
-            self.__countrycode = countrycode
-            self.__languagecodes = languagecodes
-            self.__homepage = homepage
-            self.__faviconb64 = faviconb64
-            self.__faviconextension = faviconextension
-            self.__codec = codec
-            self.__bitrate = bitrate
-            self.__tags = tags
+        obj.__setattr__(f"_RadioStation__uuid", UUID(uuid))
+        obj.__setattr__(f"_RadioStation__name", name)
+        obj.__setattr__(f"_RadioStation__url", url)
+        obj.__setattr__(f"_RadioStation__codec", codec)
+        obj.__setattr__(f"_RadioStation__countrycode", countrycode)
+        obj.__setattr__(f"_RadioStation__languagecodes", languagecodes)
+        obj.__setattr__(f"_RadioStation__homepage", homepage)
+        obj.__setattr__(f"_RadioStation__faviconb64", faviconb64)
+        obj.__setattr__(f"_RadioStation__faviconextension", faviconextension)
+        obj.__setattr__(f"_RadioStation__bitrate", bitrate)
+        obj.__setattr__(f"_RadioStation__tags", tags)
 
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> RadioStation:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for RadioStation deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in RadioStation serialization data.")
+
+            obj.__setattr__(f"_RadioStation{slot}", serializationdata[dictkey])
+
+        return obj

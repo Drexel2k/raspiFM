@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 
 class CountryList:
@@ -15,20 +16,28 @@ class CountryList:
     def countrylist(self) -> dict:
         return self.__countrylist
 
-    def __init__(self, countrylist:list=None, serializationdata:dict=None):
-        if(serializationdata):
-            self.__countrylist = {}
-            for slot in enumerate(self.__slots__):
-                dictkey = slot[1][2:]
-                if(not(dictkey in serializationdata)):
-                    raise TypeError(f"{dictkey} key not found in CountryList serialization data.")
-                
-                self.__setattr__(f"_CountryList{slot[1]}", serializationdata[dictkey])
-        else:
-            if(not countrylist):
-                raise ValueError("countrylist must not be null for CountryList.")
+    @classmethod
+    def from_default(cls, countrylist:list) -> CountryList:
+        if(not countrylist):
+            raise ValueError("countrylist must not be null for CountryList.")
+        
+        obj = cls()
+        obj.__setattr__("_CountryList__countrylist", countrylist)
+        obj.__setattr__("_CountryList__lastupdate", datetime.now())
+        return obj
+
+    @classmethod
+    def deserialize(cls, serializationdata:dict) -> CountryList:
+        if (not serializationdata):
+            raise TypeError("Argument serializationdata must be given for CountryList deserialization.")
+
+        obj = cls()
+
+        for slot in cls.__slots__:
+            dictkey = slot[2:]
+            if(not(dictkey in serializationdata)):
+                raise TypeError(f"{dictkey} key not found in CountryList serialization data.")
             
-            self.__lastupdate = datetime.now()
-            self.__countrylist = dict(sorted(countrylist.items()))
+            obj.__setattr__(f"_CountryList{slot}", serializationdata[dictkey])
 
-
+        return obj
