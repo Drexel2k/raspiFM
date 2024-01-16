@@ -1,7 +1,7 @@
 from PyQt6 import QtDBus, QtCore
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QLabel, QPushButton, QWidgetItem, QLayout
+from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
 from ..core.players.SpotifyInfo import SpotifyInfo
 from ..core.players.Spotify import Spotify
@@ -25,11 +25,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("raspiFM touch")
         self.scroll = QScrollArea()
         
-        widget = QWidget()
-        self.__mainwidget = widget
-        widget.setLayout(QHBoxLayout())
+        self.__mainwidget = QWidget()
+        self.__mainwidget.setLayout(QHBoxLayout())
 
-        self.scroll.setWidget(widget)
+        self.scroll.setWidget(self.__mainwidget)
         self.setCentralWidget(self.scroll)
 
         self.__spotify_dbusname = None

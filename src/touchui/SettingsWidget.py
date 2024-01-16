@@ -17,6 +17,7 @@ class SettingsWidget(QWidget):
         self.setLayout(layout)
         
         lbl_startwith = QLabel("Start with:")
+        lbl_startwith.setStyleSheet("QLabel { font-size:28px;}") #Font-size ist set in qt-material css and can only be overriden in css 
         layout.addWidget(lbl_startwith)
         
         self.__cbo_startwith = QComboBox()

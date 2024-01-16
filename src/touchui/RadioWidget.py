@@ -5,7 +5,7 @@ from types import MethodType
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem, QSpacerItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
 from ..core.RaspiFM import RaspiFM
 from ..utils import utils
@@ -83,6 +83,12 @@ class RadioWidget(QWidget):
             
             stationimagelabel = QLabel()
             layout.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+
+            stationnamelabel = MarqueeLabel(station.name)
+            stationnamelabel.setStyleSheet("QLabel { font-size:28px;}") #Font-size ist set in qt-material css and can only be overriden in css 
+            layout.addWidget(stationnamelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+
+            layout.insertSpacing(2, 20)
 
             self.__lbl_nowplaying = MarqueeLabel()
             self.__lbl_nowplaying.setStyleSheet("QLabel { font-size:36px; }") #Font-size ist set in qt-material css and can only be overriden in css  
