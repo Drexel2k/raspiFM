@@ -17,8 +17,8 @@ class CountryApi:
         return self.__stationcount
 
     def __init__(self, apidict:dict):
-        for slot in enumerate(self.__slots__):
-            dictkey = slot[1][2:]
+        for slot in self.__slots__:
+            dictkey = slot[2:]
             if(not(dictkey in apidict)):
                raise TypeError(f"{dictkey} key not found in country api response dictionary.")
-            self.__setattr__(f"_RadioStationApi{slot[1]}", apidict[dictkey])
+            self.__setattr__(f"_RadioStationApi{slot}", apidict[dictkey])

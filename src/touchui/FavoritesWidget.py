@@ -29,13 +29,13 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
         for list in RaspiFM().favorites_getlists():
             self.__cbo_favoritelists.addItem(list.name, list)
-        self.__cbo_favoritelists.currentIndexChanged.connect(self.__selectionchange)
+        self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
         self.__layout.addWidget(self.__cbo_favoritelists)
         self.__layout.addStretch()
 
         self.__updatefavoritesbuttons()
 
-    def __selectionchange(self):
+    def __favoritelists_selectionchanged(self):
         self.__updatefavoritesbuttons()
 
     def __updatefavoritesbuttons(self) -> None:

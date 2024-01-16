@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID
 from os import path
 
+from ..core.StartWith import StartWith
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
 from .Settings import Settings
@@ -159,7 +160,7 @@ class RaspiFM:
     
     def favorites_changelistproperty(self, uuid:UUID, property:str, value:str) -> None:
         if property == "isdefault":
-            self.__favorites.change_default(uuid, True if value.strip().lower() == "true" else False)
+            self.__favorites.change_defaultan_enum(uuid, True if value.strip().lower() == "true" else False)
         elif property == "name":
             changelist = self.__favorites.get_list(uuid)
             changelist.name = value
@@ -188,6 +189,8 @@ class RaspiFM:
 
             if (value in languagelist.languagelist or value == "nofilter"):
                 self.__settings.usersettings.web_defaultlanguage = value
+        elif property == "startwith":
+            self.__settings.usersettings.touch_startwith = StartWith[value]
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
         

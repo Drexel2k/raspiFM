@@ -1,12 +1,15 @@
 from __future__ import annotations
 import os
 
+from ..core.StartWith import StartWith
+
 class UserSettings:
-    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry"]
+    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith"]
 
     __touch_runontouch:bool
     __web_defaultlanguage:str
     __web_defaultcountry:str
+    __touch_startwith:StartWith
 
     @property
     def touch_runontouch(self) -> bool:
@@ -28,6 +31,14 @@ class UserSettings:
     def web_defaultcountry(self, value: str) -> None:
         self.__web_defaultcountry = value
 
+    @property
+    def touch_startwith(self) -> StartWith:
+        return self.__touch_startwith
+    
+    @touch_startwith.setter
+    def touch_startwith(self, value: StartWith) -> None:
+        self.__touch_startwith = value
+
     @classmethod
     def from_default(cls) -> UserSettings:    
         obj = cls()
@@ -35,6 +46,7 @@ class UserSettings:
         obj.__setattr__(f"_UserSettings__touch_runontouch", False)
         obj.__setattr__(f"_UserSettings__web_defaultlanguage", "german")
         obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
+        obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)
 
         return obj
 

@@ -10,6 +10,7 @@ from ..business.LanguageList import LanguageList
 from ..business.RadioStation import RadioStation
 from ..business.RadioStations import RadioStations
 from ..business.TagList import TagList
+from ..StartWith import StartWith
 
 class CountryListDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
@@ -116,6 +117,7 @@ class UserSettingsDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "UserSettings":
+            obj["touch_startwith"] =  StartWith[obj["touch_startwith"]]
             return UserSettings.deserialize(obj)
         
         return obj

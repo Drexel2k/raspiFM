@@ -10,6 +10,7 @@ from ..core.players.Vlc import Vlc
 from .FavoritesWidget import FavoritesWidget
 from .RadioWidget import RadioWidget
 from .SpotifyWidget import SpotifyWidget
+from .SettingsWidget import SettingsWidget
 from .PushButtonMain import PushButtonMain
 from. import dbusstrings
 
@@ -58,6 +59,7 @@ class MainWindow(QMainWindow):
         settingsbutton = PushButtonMain()
         settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         settingsbutton.setIcon(QIcon("src/touchui/images/gear-blue.svg"))
+        settingsbutton.clicked.connect(self.__settingsclicked)
 
         left_layout_vertical.addWidget(radiobutton)
         left_layout_vertical.addWidget(favoritesbutton)
@@ -188,6 +190,13 @@ class MainWindow(QMainWindow):
             spotifywdidget = SpotifyWidget()
             spotifywdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywdidget)
+            self.__closewidgetitem(widgetitem)
+
+    def __settingsclicked(self) -> None:
+        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SettingsWidget)):
+            settingswdiget = SettingsWidget()
+            settingswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), settingswdiget)
             self.__closewidgetitem(widgetitem)
 
     def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
