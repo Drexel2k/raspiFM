@@ -40,7 +40,7 @@ class RadioStations:
         return next((station for station in self.__stationlist if station.uuid == stationuuid), None)
     
     def add_station(self, station:RadioStation) -> None:
-        if(not station in self.__stationlist):
+        if(not any(currentstation.uuid == station.uuid for currentstation in self.__stationlist)):
             self.__stationlist.append(station)
 
     def remove_station(self, station:RadioStation) -> None:

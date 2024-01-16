@@ -9,10 +9,11 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, 
 
 from ..core.RaspiFM import RaspiFM
 from ..utils import utils
-from..core.players.Vlc import Vlc
+from ..core.players.Vlc import Vlc
 from .MarqueeLabel import MarqueeLabel 
 from ..core.http.radiobrowserapi import stationapi
 from ..core.RaspiFM import RaspiFM
+from ..core.StartWith import StartWith
 
 class RadioWidget(QWidget):
     __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying", "__nostations"]
@@ -58,7 +59,17 @@ class RadioWidget(QWidget):
             self.__threadpool = QThreadPool()
 
             if(not Vlc().currentstation):
-                Vlc().currentstation = defaultlist.stations[0]
+                station = defaultlist.stations[0]
+
+                if(RaspiFM().settings_touch_startwith() == StartWith.LastStation):
+                    laststation_uuid = RaspiFM().settings_touch_laststation()
+                    if (laststation_uuid):
+                        laststation = RaspiFM().station_get(laststation_uuid)
+                        if(laststation):
+                            station = laststation
+
+                Vlc().currentstation = station
+                RaspiFM().settings_changeproperty("laststation", str(station.uuid))
 
             station = Vlc().currentstation
 

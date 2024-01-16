@@ -25,6 +25,9 @@ class SettingsWidget(QWidget):
         self.__cbo_startwith.addItem("Last Radiostation", StartWith.LastStation)
         self.__cbo_startwith.addItem("Default Favorite List", StartWith.DefaultList)
 
+        if(RaspiFM().settings_touch_startwith() == StartWith.DefaultList):
+            self.__cbo_startwith.setCurrentIndex(1)
+
         self.__cbo_startwith.currentIndexChanged.connect(self.__startwith_selectionchanges)
         layout.addWidget(self.__cbo_startwith)
         layout.addStretch()

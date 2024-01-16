@@ -118,6 +118,7 @@ class UserSettingsDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "UserSettings":
             obj["touch_startwith"] =  StartWith[obj["touch_startwith"]]
+            obj["touch_laststation"] = UUID(obj["touch_laststation"]) if obj["touch_laststation"] else None
             return UserSettings.deserialize(obj)
         
         return obj

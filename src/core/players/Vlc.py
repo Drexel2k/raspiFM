@@ -29,7 +29,7 @@ class Vlc:
         self.__station = value
     
     @property
-    def currentvolum(self) -> int:
+    def currentvolume(self) -> int:
         return self.__volume
 
     def __new__(cls, station = None):

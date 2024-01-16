@@ -12,7 +12,7 @@ from .RadioWidget import RadioWidget
 from .SpotifyWidget import SpotifyWidget
 from .SettingsWidget import SettingsWidget
 from .PushButtonMain import PushButtonMain
-from. import dbusstrings
+from . import dbusstrings
 
 class MainWindow(QMainWindow):
     __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection"]

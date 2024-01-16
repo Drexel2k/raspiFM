@@ -73,7 +73,7 @@ def stationsearch() -> str:
             
             pagenext= page + 1
 
-            for stationapi in RaspiFM().stations_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
+            for stationapi in RaspiFM().stationapis_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
                 if(not stationapi.hls):
                     if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
                         stations.append(RadioStationView(stationapi, True))

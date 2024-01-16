@@ -9,7 +9,7 @@ from os import path
 from ..core.StartWith import StartWith
 from .json.JsonSerializer import JsonSerializer
 from .json.JsonDeserializer import JsonDeserializer
-from .Settings import Settings
+from .Settings import Settings, UserSettings
 from .http.radiobrowserapi import stationapi
 from .http.radiobrowserapi.data.RadioStationApi import RadioStationApi
 from .http.radiobrowserapi import listapi
@@ -23,6 +23,7 @@ from .business.RadioStation import RadioStation
 from .business.FavoriteList import FavoriteList
 from ..utils import utils
 
+#todo: maybe split public core interface in several classes
 class RaspiFM:
     __slots__ = ["__favorites", "__radiostations", "__settings"]
     __instance:RaspiFM = None
@@ -57,12 +58,14 @@ class RaspiFM:
             self.__favorites = Favorites.from_default()
 
         usersettings = JsonDeserializer().get_usersettings()
-        if(usersettings):
-            self.__settings.usersettings = usersettings
+        self.__settings.usersettings = usersettings if usersettings else UserSettings()
     
-    def stations_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
+    def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
                    stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
+    
+    def station_get(self, uuid:UUID) -> RadioStation:
+        return self.__radiostations.get_station(uuid)
     
     def countries_get(self) -> CountryList:
         countrylist = JsonDeserializer().get_countrylist()
@@ -117,7 +120,8 @@ class RaspiFM:
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else path.splitext(radiostationapi.favicon)[1][1:],
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))
-            
+
+
             self.__radiostations.add_station(station)
             JsonSerializer().serialize_radiostations(self.__radiostations)
 
@@ -178,6 +182,13 @@ class RaspiFM:
     def settings_web_defaultcountry(self) -> bool:
         return self.__settings.usersettings.web_defaultcountry
     
+    def settings_touch_startwith(self) -> StartWith:
+        return self.__settings.usersettings.touch_startwith
+
+    def settings_touch_laststation(self) -> UUID:
+        return self.__settings.usersettings.touch_laststation
+    
+    #todo: overwork...
     def settings_changeproperty(self, property:str, value:str) -> None:
         if property == "country":
             countrylist = self.countries_get()
@@ -191,6 +202,8 @@ class RaspiFM:
                 self.__settings.usersettings.web_defaultlanguage = value
         elif property == "startwith":
             self.__settings.usersettings.touch_startwith = StartWith[value]
+        elif property == "laststation":
+            self.__settings.usersettings.touch_laststation = UUID(value)
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
         

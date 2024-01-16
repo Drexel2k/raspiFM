@@ -95,7 +95,8 @@ class UserSettingsEncoder(json.JSONEncoder):
                     "web_defaultlanguage":obj.web_defaultlanguage,
                     "web_defaultcountry":obj.web_defaultcountry,
                     "touch_runontouch":obj.touch_runontouch,
-                    "touch_startwith":obj.touch_startwith.name}
+                    "touch_startwith":obj.touch_startwith.name,
+                    "touch_laststation":str(obj.touch_laststation) if obj.touch_laststation else None}
     
         return json.JSONEncoder.default(self, obj)
     

@@ -1,15 +1,17 @@
 from __future__ import annotations
 import os
+from uuid import UUID
 
 from ..core.StartWith import StartWith
 
 class UserSettings:
-    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith"]
+    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation"]
 
     __touch_runontouch:bool
     __web_defaultlanguage:str
     __web_defaultcountry:str
     __touch_startwith:StartWith
+    __touch_laststation:UUID
 
     @property
     def touch_runontouch(self) -> bool:
@@ -39,6 +41,14 @@ class UserSettings:
     def touch_startwith(self, value: StartWith) -> None:
         self.__touch_startwith = value
 
+    @property
+    def touch_laststation(self) -> UUID:
+        return self.__touch_laststation
+    
+    @touch_laststation.setter
+    def touch_laststation(self, value: UUID) -> None:
+        self.__touch_laststation = value
+
     @classmethod
     def from_default(cls) -> UserSettings:    
         obj = cls()
@@ -47,6 +57,7 @@ class UserSettings:
         obj.__setattr__(f"_UserSettings__web_defaultlanguage", "german")
         obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
         obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)
+        obj.__setattr__(f"_UserSettings__touch_laststation", None)
 
         return obj
 
@@ -85,5 +96,5 @@ class Settings:
         self.__usersettings = value
 
     def __init__(self):
-        self.__usersettings = UserSettings.from_default()
+        self.__usersettings = None
         self.__serialization_directory = os.path.expanduser('~/raspifm')
