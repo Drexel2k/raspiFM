@@ -1,4 +1,4 @@
-from ...core.business.FavoriteList import FavoriteList
+from core.business.FavoriteList import FavoriteList
 
 class FavoriteListView:
     __slots__ = ["__favoritelist"]

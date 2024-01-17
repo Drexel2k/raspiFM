@@ -2,8 +2,8 @@ import os
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel
 
-from ..core.RaspiFM import RaspiFM
-from ..core.StartWith import StartWith
+from core.RaspiFM import RaspiFM
+from core.StartWith import StartWith
 
 class SettingsWidget(QWidget):
     __slots__ = ["__cbo_startwith"]

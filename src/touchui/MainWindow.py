@@ -3,16 +3,16 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
-from ..core.players.SpotifyInfo import SpotifyInfo
-from ..core.players.Spotify import Spotify
-from ..utils import utils
-from ..core.players.Vlc import Vlc
-from .FavoritesWidget import FavoritesWidget
-from .RadioWidget import RadioWidget
-from .SpotifyWidget import SpotifyWidget
-from .SettingsWidget import SettingsWidget
-from .PushButtonMain import PushButtonMain
-from . import dbusstrings
+from core.players.SpotifyInfo import SpotifyInfo
+from core.players.Spotify import Spotify
+from utils import utils
+from core.players.Vlc import Vlc
+from touchui.FavoritesWidget import FavoritesWidget
+from touchui.RadioWidget import RadioWidget
+from touchui.SpotifyWidget import SpotifyWidget
+from touchui.SettingsWidget import SettingsWidget
+from touchui.PushButtonMain import PushButtonMain
+from touchui import dbusstrings
 
 class MainWindow(QMainWindow):
     __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection"]
@@ -42,22 +42,22 @@ class MainWindow(QMainWindow):
     
         radiobutton = PushButtonMain()
         radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
-        radiobutton.setIcon(QIcon("src/touchui/images/broadcast-pin-blue.svg"))
+        radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
         radiobutton.clicked.connect(self.__radioclicked)
 
         favoritesbutton = PushButtonMain()
         favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        favoritesbutton.setIcon(QIcon("src/touchui/images/star-blue.svg"))
+        favoritesbutton.setIcon(QIcon("touchui/images/star-blue.svg"))
         favoritesbutton.clicked.connect(self.__favoritesclicked)
 
         spotifybutton = PushButtonMain()
         spotifybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        spotifybutton.setIcon(QIcon("src/touchui/images/spotify-blue.svg"))
+        spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
         spotifybutton.clicked.connect(self.__spotifyclicked)
 
         settingsbutton = PushButtonMain()
         settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        settingsbutton.setIcon(QIcon("src/touchui/images/gear-blue.svg"))
+        settingsbutton.setIcon(QIcon("touchui/images/gear-blue.svg"))
         settingsbutton.clicked.connect(self.__settingsclicked)
 
         left_layout_vertical.addWidget(radiobutton)

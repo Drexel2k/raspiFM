@@ -3,11 +3,11 @@ from .web import app
 from flask import Response, make_response, render_template, request
 from uuid import UUID
 
-from ..core.RaspiFM import RaspiFM
-from ..utils import utils
-from .ViewProxies.RadioStationView import RadioStationView
-from ..core.business.Exceptions import InvalidOperationException
-from .ViewProxies.FavoriteListView import FavoriteListView
+from core.RaspiFM import RaspiFM
+from utils import utils
+from webui.ViewProxies.RadioStationView import RadioStationView
+from core.business.Exceptions import InvalidOperationException
+from webui.ViewProxies.FavoriteListView import FavoriteListView
 
 @app.route("/")
 def home() -> str:

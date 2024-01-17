@@ -5,51 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Web+Touch",
+            "name": "raspiFM",
             "type": "python",
             "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "src.app",
-                "FLASK_DEBUG": "1"
-            },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
-            ],
-            "jinja": true,
-            "justMyCode": true
-        },    
-        {
-            "name": "Python: WebUI/Flask",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "src.webui.web",
-                "FLASK_DEBUG": "1"
-            },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
-            ],
-            "jinja": true,
-            "justMyCode": true
-        },        
-        {
-            "name": "Python: TouchUI",
-            "type": "python",
-            "request": "launch",
-            "module": "src.touchui.touch",
-            "justMyCode": true,
-        },
-        {
-            "name": "Python: Core Module",
-            "type": "python",
-            "request": "launch",
-            "module": "src.core.raspifmcore",
+            "cwd": "${workspaceFolder}/src",
+            "purpose": ["debug-in-terminal"],
+            "program": "${workspaceFolder}/src/app.py",
+            "console": "integratedTerminal",
             "justMyCode": true
         }
     ]

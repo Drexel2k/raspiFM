@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 from uuid import UUID
 
-from ..core.StartWith import StartWith
+from core.StartWith import StartWith
 
 class UserSettings:
     __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation"]
@@ -53,7 +53,7 @@ class UserSettings:
     def from_default(cls) -> UserSettings:    
         obj = cls()
 
-        obj.__setattr__(f"_UserSettings__touch_runontouch", False)
+        obj.__setattr__(f"_UserSettings__touch_runontouch", True)
         obj.__setattr__(f"_UserSettings__web_defaultlanguage", "german")
         obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
         obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)

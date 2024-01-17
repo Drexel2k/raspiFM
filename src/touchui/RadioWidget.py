@@ -7,13 +7,13 @@ from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
-from ..core.RaspiFM import RaspiFM
-from ..utils import utils
-from ..core.players.Vlc import Vlc
-from .MarqueeLabel import MarqueeLabel 
-from ..core.http.radiobrowserapi import stationapi
-from ..core.RaspiFM import RaspiFM
-from ..core.StartWith import StartWith
+from core.RaspiFM import RaspiFM
+from utils import utils
+from core.players.Vlc import Vlc
+from touchui.MarqueeLabel import MarqueeLabel 
+from core.http.radiobrowserapi import stationapi
+from core.RaspiFM import RaspiFM
+from core.StartWith import StartWith
 
 class RadioWidget(QWidget):
     __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying", "__nostations"]
@@ -109,15 +109,15 @@ class RadioWidget(QWidget):
 
             qx = QPixmap()
             if(Vlc().isplaying): 
-                self.__btn_playcontrol.setIcon(QIcon("src/touchui/images/stop-fill-blue.svg"))
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
                 self.__startmetagetter()
             else:
-                self.__btn_playcontrol.setIcon(QIcon("src/touchui/images/play-fill-blue.svg"))
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
 
             if(station.faviconb64):
                 qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
             else:
-                renderer =  QSvgRenderer("src/touchui/images/broadcast-pin-blue.svg")
+                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
                 image = QImage(180, 180, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)
@@ -149,12 +149,12 @@ class RadioWidget(QWidget):
             self.__vlcgetmeta_enabled = False
             Vlc().stop()
             self.__btn_playcontrol.setText(None)
-            self.__btn_playcontrol.setIcon(QIcon("src/touchui/images/play-fill-blue.svg"))
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
             self.playstarting.emit()
             Vlc().play()
-            self.__btn_playcontrol.setIcon(QIcon("ssrc/touchui/images/stop-fill-blue.svg"))
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
             self.__startmetagetter()
 
     def __volslider_moved(self, value:int) -> None:

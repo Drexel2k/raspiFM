@@ -6,10 +6,10 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QScrollArea, QLabel
 
-from ..core.http.radiobrowserapi import stationapi
-from ..core.players.Vlc import Vlc
-from .PushButtonData import PushButtonData
-from ..core.RaspiFM import RaspiFM
+from core.http.radiobrowserapi import stationapi
+from core.players.Vlc import Vlc
+from touchui.PushButtonData import PushButtonData
+from core.RaspiFM import RaspiFM
 
 class FavoritesWidget(QWidget):
     __slots__ = ["__cbo_favoritelists", "__scrolllayout"]
@@ -69,7 +69,7 @@ class FavoritesWidget(QWidget):
             if(station.faviconb64):
                 qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
             else:
-                renderer =  QSvgRenderer("src/touchui/images/broadcast-pin-blue.svg")
+                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
                 image = QImage(42, 42, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)

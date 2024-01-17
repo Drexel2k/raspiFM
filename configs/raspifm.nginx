@@ -1,0 +1,22 @@
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name raspifm;
+
+        # To password protect the web interface uncomment the lines starting with auth_basic and auth_basic_user_file
+        # Generate a user and password with (replace user with desired username) enter the following commands on a command prompt:
+            # sudo sh -c "echo -n 'user:' >> /etc/nginx/.htpasswd"
+            # sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+        #auth_basic           "raspiFM web interface";
+        #auth_basic_user_file /etc/nginx/.htpasswd;
+
+    location / {
+        include proxy_params;
+        proxy_pass unix:/usr/bin/local/raspifm/raspifm.sock;
+    }
+
+    location /static {
+        root /usr/bin/local/raspifm/webui;
+    }
+}

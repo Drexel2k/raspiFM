@@ -1,4 +1,4 @@
-from ...core.business.RadioStation import RadioStation
+from core.business.RadioStation import RadioStation
 
 class RadioStationView:
     __slots__ = ["__radiostation", "__isinfavoritelist"]

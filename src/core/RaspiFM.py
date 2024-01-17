@@ -6,22 +6,22 @@ from pathlib import Path
 from uuid import UUID
 from os import path
 
-from ..core.StartWith import StartWith
-from .json.JsonSerializer import JsonSerializer
-from .json.JsonDeserializer import JsonDeserializer
-from .Settings import Settings, UserSettings
-from .http.radiobrowserapi import stationapi
-from .http.radiobrowserapi.data.RadioStationApi import RadioStationApi
-from .http.radiobrowserapi import listapi
-from .http.basics import httpcontent
-from .business.CountryList import CountryList
-from .business.LanguageList import LanguageList
-from .business.TagList import TagList
-from .business.Favorites import Favorites
-from .business.RadioStations import RadioStations
-from .business.RadioStation import RadioStation
-from .business.FavoriteList import FavoriteList
-from ..utils import utils
+from core.StartWith import StartWith
+from core.json.JsonSerializer import JsonSerializer
+from core.json.JsonDeserializer import JsonDeserializer
+from core.Settings import Settings, UserSettings
+from core.http.radiobrowserapi import stationapi
+from core.http.radiobrowserapi.data.RadioStationApi import RadioStationApi
+from core.http.radiobrowserapi import listapi
+from core.http.basics import httpcontent
+from core.business.CountryList import CountryList
+from core.business.LanguageList import LanguageList
+from core.business.TagList import TagList
+from core.business.Favorites import Favorites
+from core.business.RadioStations import RadioStations
+from core.business.RadioStation import RadioStation
+from core.business.FavoriteList import FavoriteList
+from utils import utils
 
 #todo: maybe split public core interface in several classes
 class RaspiFM:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from . import SpotifyInfo
-from .PlayerState import PlayerState
-from ...core.business.RadioStation import RadioStation
+from core.players.SpotifyInfo import SpotifyInfo
+from core.players.PlayerState import PlayerState
+from core.business.RadioStation import RadioStation
 
 class Spotify:
     __slots__ = ["__state", "__spotifyinfo"]
