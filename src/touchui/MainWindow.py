@@ -23,13 +23,13 @@ class MainWindow(QMainWindow):
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("raspiFM touch")
-        self.scroll = QScrollArea()
+        scroll = QScrollArea()
         
         self.__mainwidget = QWidget()
         self.__mainwidget.setLayout(QHBoxLayout())
 
-        self.scroll.setWidget(self.__mainwidget)
-        self.setCentralWidget(self.scroll)
+        scroll.setWidget(self.__mainwidget)
+        self.setCentralWidget(scroll)
 
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
