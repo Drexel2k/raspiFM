@@ -58,7 +58,7 @@ class RaspiFM:
             self.__favorites = Favorites.from_default()
 
         usersettings = JsonDeserializer().get_usersettings()
-        self.__settings.usersettings = usersettings if usersettings else UserSettings()
+        self.__settings.usersettings = usersettings if usersettings else UserSettings.from_default()
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
