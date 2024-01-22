@@ -13,6 +13,13 @@ Current standard and tested setup is:
 
 If not mentioned otherwise, setup instructions refer to this setup.
 
+## Set up HifiBerry MiniAmp for Raspberry Pi OS (Bookworm, Raspberry Pi 4)
+- 1. Make a backup of config.txt file to your current folder: `cp /boot/config.txt ./`
+- 2. Edit config.txt: `sudo nano /boot/config.txt`
+- 3. Disable the line `dtparam=audio=on` to `# dtparam=audio=on`
+- 4. Edit the line `dtoverlay=vc4-kms-v3d` to `dtoverlay=vc4-kms-v3d,noaudio`
+- 5. Add lines `dtoverlay=hifiberry-dac` and `force_eeprom_read=0` before the first filter section (cm4)
+
 ## Download the repository from github
 - 1. Create a new directory for the repository: `mkdir ~/raspifm_repo` and switch to the directory: `cd ~/raspifm_repo`.
 - 2. Clone the repository: `git clone https://github.com/Drexel2k/raspiFM .`
@@ -42,3 +49,5 @@ If not mentioned otherwise, setup instructions refer to this setup.
 - 7. Setup autostart for raspiFM:
   - Create the autostart directory: `mkdir -p ~/.config/autostart`
   - Copy the desktop file to the autostart directory: `cp ~/raspifm_repo/configs/raspifm.desktop ~/.config/autostart`
+
+  Reboot.
