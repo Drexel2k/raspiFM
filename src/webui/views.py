@@ -48,10 +48,10 @@ def stationsearch() -> str:
             if("name" in args and not utils.str_isnullorwhitespace(args["name"])):
                 selected["name"]=args["name"]
 
-            if("country" in args and not utils.str_isnullorwhitespace(args["country"]) and not args["country"]=="nofilter"):
+            if("country" in args and not utils.str_isnullorwhitespace(args["country"])):
                 selected["country"]=args["country"]
             
-            if("lang" in args and not utils.str_isnullorwhitespace(args["lang"]) and not args["lang"]=="nofilter"):
+            if("lang" in args and not utils.str_isnullorwhitespace(args["lang"])):
                 selected["language"]=args["lang"]
 
             if("tags" in args and not utils.str_isnullorwhitespace(args["tags"])):
@@ -73,7 +73,11 @@ def stationsearch() -> str:
             
             pagenext= page + 1
 
-            for stationapi in RaspiFM().stationapis_get(selected["name"], selected["country"], selected["language"], selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
+            country = selected["country"] if selected["country"] != "nofilter" else None
+
+            language = selected["language"] if selected["language"] != "nofilter" else None
+
+            for stationapi in RaspiFM().stationapis_get(selected["name"], country, language, selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
                 if(not stationapi.hls):
                     if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
                         stations.append(RadioStationView(stationapi, True))
