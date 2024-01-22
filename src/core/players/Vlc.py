@@ -64,8 +64,8 @@ class Vlc:
         self.__vlcplayer = self.__vlcinstance.media_player_new()
         self.__vlcmedia = self.__vlcinstance.media_new(self.__station.url)
         self.__vlcplayer.set_media(self.__vlcmedia)
-        self.setvolume(self.__volume)
         self.__vlcplayer.play()
+        self.setvolume(self.__volume)
 
     def stop(self) -> None:
         self.__state = PlayerState.Stopped

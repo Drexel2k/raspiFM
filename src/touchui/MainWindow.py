@@ -214,6 +214,8 @@ class MainWindow(QMainWindow):
         if (event.key() == QtCore.Qt.Key.Key_Escape):
             if(self.isFullScreen()):
                 self.showNormal() 
+            else:
+                self.showFullScreen()
     
     def resizeEvent(self, event):
         QMainWindow.resizeEvent(self, event)

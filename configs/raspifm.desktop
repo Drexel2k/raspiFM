@@ -1,4 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=raspiFM
-Exec=sh -c "cd /usr/bin/local/raspifm; /usr/bin/local/raspifm/.venv/bin/python3 -m gunicorn --workers 1 --bind unix:/usr/bin/local/raspifm/raspifm.sock -m 007 app:app"
+Exec=sh -c "sleep 3; cd /usr/bin/local/raspifm; /usr/bin/local/raspifm/.venv/bin/python3 -m gunicorn --workers 1 --bind unix:/usr/bin/local/raspifm/raspifm.sock -m 007 app:app"
+
+# With logging:
+# sudo mkdir /var/log/raspifm
+# sudo chown raspifm:raspifm /var/log/raspifm
+#Exec=sh -c "sleep 3; cd /usr/bin/local/raspifm; /usr/bin/local/raspifm/.venv/bin/python3 -m gunicorn --error-log /var/log/raspifm/error.log --access-logfile /var/log/raspifm/access.log --log-level debug --workers 1 --bind unix:/usr/bin/local/raspifm/raspifm.sock -m 007 app:app"

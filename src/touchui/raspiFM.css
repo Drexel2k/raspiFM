@@ -1,3 +1,16 @@
 *{{
     font-size: 30px;
 }}
+
+QSlider {{
+    height: 40px;
+    }}
+QSlider::groove:horizontal {{
+    height: 5px;
+    }}
+QSlider::handle:horizontal {{
+    height: 40px;
+    width: 40px;
+    margin: -15px 0px;
+    }}
+
