@@ -61,11 +61,12 @@ class Vlc:
         self.setvolume(self.__volume)
 
     def stop(self) -> None:
-        self.__state = PlayerState.Stopped
-        if(self.__vlcplayer):
-            self.__vlcplayer.stop()
-            vlc.libvlc_media_player_release(self.__vlcplayer)
-            vlc.libvlc_media_release(self.__vlcmedia)
+        if(self.__state != PlayerState.Stopped):
+            self.__state = PlayerState.Stopped
+            if(self.__vlcplayer):
+                self.__vlcplayer.stop()
+                vlc.libvlc_media_player_release(self.__vlcplayer)
+                vlc.libvlc_media_release(self.__vlcmedia)
 
     def getmeta(self) -> str:     
         if(self.isplaying):

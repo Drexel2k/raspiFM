@@ -147,7 +147,8 @@ class MainWindow(QMainWindow):
                     spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
                     self.__closewidgetitem(widgetitem)
-                else:
+            else:
+                if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
                     self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
         else:
             if(Spotify().isplaying):

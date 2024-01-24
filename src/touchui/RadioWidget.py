@@ -69,7 +69,6 @@ class RadioWidget(QWidget):
                             station = laststation
 
                 RaspiFM().player_set_currentstation(station)
-                RaspiFM().settings_set_touch_laststation(station.uuid)
 
             station = RaspiFM().player_currentstation()
 

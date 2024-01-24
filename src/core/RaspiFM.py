@@ -193,10 +193,6 @@ class RaspiFM:
     def settings_touch_laststation(self) -> UUID:
         return self.__settings.usersettings.touch_laststation
     
-    def settings_set_touch_laststation(self, uuid:UUID) -> None:
-        self.__settings.usersettings.touch_laststation = uuid
-        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
-
     def settings_changeproperty(self, property:str, value:str) -> None:
         if property == "country":
             countrylist = self.countries_get()
@@ -208,23 +204,20 @@ class RaspiFM:
 
             if (value in languagelist.languagelist or value == "nofilter"):
                 self.__settings.usersettings.web_defaultlanguage = value
-        elif property == "startwith":
-            self.__settings.usersettings.touch_startwith = StartWith[value]
-        elif property == "laststation":
-            self.__settings.usersettings.touch_laststation = UUID(value)
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def player_play(self, station:RadioStation) -> None:
+    def player_play(self, station:RadioStation = None) -> None:
         Vlc().play(station)
-        self.__settings.usersettings.touch_laststation = station.uuid
 
         if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
         
-        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+        if(station):
+            self.__settings.usersettings.touch_laststation = station.uuid
+            JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def player_stop(self) -> None:
         Vlc().stop()
@@ -237,6 +230,8 @@ class RaspiFM:
 
     def player_set_currentstation(self, station:RadioStation) -> None:
         Vlc().currentstation = station
+        self.__settings.usersettings.touch_laststation = station.uuid
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def player_setvolume(self, volume:int) -> None:
         Vlc().setvolume(volume)
