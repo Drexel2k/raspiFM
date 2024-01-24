@@ -21,9 +21,10 @@ from core.business.Favorites import Favorites
 from core.business.RadioStations import RadioStations
 from core.business.RadioStation import RadioStation
 from core.business.FavoriteList import FavoriteList
+from core.players.Vlc import Vlc
 from utils import utils
 
-#todo: maybe split public core interface in several classes
+#todo: maybe split public core interface in several proxy classes
 class RaspiFM:
     __slots__ = ["__favorites", "__radiostations", "__settings"]
     __instance:RaspiFM = None
@@ -184,11 +185,18 @@ class RaspiFM:
     
     def settings_touch_startwith(self) -> StartWith:
         return self.__settings.usersettings.touch_startwith
+    
+    def settings_set_touch_startwith(self, startwith:StartWith) -> None:
+        self.__settings.usersettings.touch_startwith = startwith
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def settings_touch_laststation(self) -> UUID:
         return self.__settings.usersettings.touch_laststation
     
-    #todo: overwork...
+    def settings_set_touch_laststation(self, uuid:UUID) -> None:
+        self.__settings.usersettings.touch_laststation = uuid
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+
     def settings_changeproperty(self, property:str, value:str) -> None:
         if property == "country":
             countrylist = self.countries_get()
@@ -208,6 +216,36 @@ class RaspiFM:
             raise TypeError(f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+
+    def player_play(self, station:RadioStation) -> None:
+        Vlc().play(station)
+        self.__settings.usersettings.touch_laststation = station.uuid
+
+        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
+            stationapi.send_stationclicked(station.uuid)
+        
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+
+    def player_stop(self) -> None:
+        Vlc().stop()
+
+    def player_isplaying(self) -> bool:
+        return Vlc().isplaying
+    
+    def player_currentstation(self) -> RadioStation:
+        return Vlc().currentstation
+
+    def player_set_currentstation(self, station:RadioStation) -> None:
+        Vlc().currentstation = station
+
+    def player_setvolume(self, volume:int) -> None:
+        Vlc().setvolume(volume)
+
+    def player_getmeta(self) -> str:
+        Vlc().getmeta()
+
+    def player_shutdown(self) -> None:
+        Vlc().shutdown()
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)

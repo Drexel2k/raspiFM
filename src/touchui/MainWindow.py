@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
+from core.RaspiFM import RaspiFM
 from core.players.SpotifyInfo import SpotifyInfo
 from core.players.Spotify import Spotify
 from utils import utils
@@ -35,7 +36,6 @@ class MainWindow(QMainWindow):
         self.__system_dbusconnection = None
 
         self.__initializespotify()
-        Vlc()
 
         left_layout_vertical = QVBoxLayout()
         self.__mainwidget.layout().addLayout(left_layout_vertical, stretch=1)
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         if(changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing"):
             #no radio widget update necessary, if Plabackstatus is changed from not playing, then SpotifyWidget will be shown.
             #Therefore if the user clicks back to radio, it loads in correct current state
-            Vlc().stop()
+            RaspiFM().player_stop()
             
             if(not Spotify().isplaying):
                 Spotify().isplaying = True
@@ -226,6 +226,6 @@ class MainWindow(QMainWindow):
         widget = self.__mainwidget.layout().itemAt(1).widget()
         widget.close()
         widget.setParent(None)
-        Vlc().shutdown()
+        RaspiFM().player_shutdown()
         
        

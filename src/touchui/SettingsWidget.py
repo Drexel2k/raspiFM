@@ -36,4 +36,4 @@ class SettingsWidget(QWidget):
         layout.addStretch()       
 
     def __startwith_selectionchanges(self):
-        RaspiFM().settings_changeproperty("startwith", self.__cbo_startwith.currentData().name)
+        RaspiFM().settings_set_touch_startwith(self.__cbo_startwith.currentData())

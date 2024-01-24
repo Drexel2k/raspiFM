@@ -58,7 +58,7 @@ class RadioWidget(QWidget):
 
             self.__threadpool = QThreadPool()
 
-            if(not Vlc().currentstation):
+            if(not RaspiFM().player_currentstation()):
                 station = defaultlist.stations[0]
 
                 if(RaspiFM().settings_touch_startwith() == StartWith.LastStation):
@@ -68,13 +68,13 @@ class RadioWidget(QWidget):
                         if(laststation):
                             station = laststation
 
-                Vlc().currentstation = station
-                RaspiFM().settings_changeproperty("laststation", str(station.uuid))
+                RaspiFM().player_set_currentstation(station)
+                RaspiFM().settings_set_touch_laststation(station.uuid)
 
-            station = Vlc().currentstation
+            station = RaspiFM().player_currentstation()
 
-            if(startplaying and not Vlc().isplaying):
-                Vlc().play()                  
+            if(startplaying and not RaspiFM().player_isplaying()):
+                RaspiFM().player_play(station)
 
                 if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
                     stationapi.send_stationclicked(station.uuid)
@@ -108,7 +108,7 @@ class RadioWidget(QWidget):
             layout.addWidget(volslider)
 
             qx = QPixmap()
-            if(Vlc().isplaying): 
+            if(RaspiFM().player_isplaying()): 
                 self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
                 self.__startmetagetter()
             else:
@@ -145,20 +145,20 @@ class RadioWidget(QWidget):
         self.__init(False)
 
     def __playcontrol_clicked(self) -> None:
-        if(Vlc().isplaying):
+        if(RaspiFM().player_isplaying()):
             self.__vlcgetmeta_enabled = False
-            Vlc().stop()
+            RaspiFM().player_stop()
             self.__btn_playcontrol.setText(None)
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
         else:
             self.playstarting.emit()
-            Vlc().play()
+            RaspiFM().player_play()
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
             self.__startmetagetter()
 
     def __volslider_moved(self, value:int) -> None:
-       Vlc().setvolume(value)
+       RaspiFM().player_setvolume(value)
 
     @pyqtSlot(str)
     def __updateinfo(self, info:str):
@@ -181,12 +181,12 @@ class RadioWidget(QWidget):
                     sleepticks = 20
 
                 sleeptickcount = 0
-                info = Vlc().getmeta()
-                if(Vlc().isplaying):
+                info = RaspiFM().player_getmeta()
+                if(RaspiFM().player_isplaying()):
                     if(info != previnfo and self.__vlcgetmeta_enabled):
                         previnfo = info
                         if(utils.str_isnullorwhitespace(info)):
-                            info = Vlc().currentstation.name
+                            info = RaspiFM().player_currentstation().name
 
                         self.__inforeceived.emit(info)
   

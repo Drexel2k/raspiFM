@@ -18,7 +18,7 @@ class Vlc:
 
     @property
     def isplaying(self) -> bool:
-            return self.__state == PlayerState.Playing
+        return self.__state == PlayerState.Playing
     
     @property
     def currentstation(self) -> RadioStation:
@@ -27,28 +27,21 @@ class Vlc:
     @currentstation.setter
     def currentstation(self, value: RadioStation) -> None:
         self.__station = value
-    
-    @property
-    def currentvolume(self) -> int:
-        return self.__volume
 
-    def __new__(cls, station = None):
+    def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(Vlc, cls).__new__(cls)
-            cls.__instance.__init(station)
+            cls.__instance.__init()
 
         return cls.__instance
     
-    def __init(self, station:RadioStation):
+    def __init(self):
         self.__vlcinstance = vlc.Instance()
         self.__vlcplayer = None
         self.__vlcmedia = None
         self.__station = None
         self.__volume = 50
         self.__state = PlayerState.Stopped
-
-        if(station):
-            self.play(station)
 
     def play(self, station:RadioStation = None) -> None:
         if (not station and not self.__station):

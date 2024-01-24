@@ -20,7 +20,6 @@ def home() -> str:
 def favorites() -> str:
     try:
         favoritelists = []
-        obj = RaspiFM()
         for favoritelist in RaspiFM().favorites_getlists():
             favoritelists.append(FavoriteListView(favoritelist))
 

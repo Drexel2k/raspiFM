@@ -87,10 +87,7 @@ class FavoritesWidget(QWidget):
 
     @pyqtSlot()
     def __buttonclicked(self):
-        Vlc().play(self.sender().data)
-        
-        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
-            stationapi.send_stationclicked(self.sender().data.uuid)
+        RaspiFM().player_play(self.sender().data)
 
         self.favclicked.emit()
 
