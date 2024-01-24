@@ -211,13 +211,15 @@ class RaspiFM:
 
     def player_play(self, station:RadioStation = None) -> None:
         Vlc().play(station)
-
-        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
-            stationapi.send_stationclicked(station.uuid)
         
         if(station):
             self.__settings.usersettings.touch_laststation = station.uuid
             JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+        else:
+            station = Vlc().currentstation
+
+        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
+            stationapi.send_stationclicked(station.uuid)
 
     def player_stop(self) -> None:
         Vlc().stop()
