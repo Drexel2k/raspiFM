@@ -1,6 +1,7 @@
 import base64
 import time
 from types import MethodType
+#import debugpy
 
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
@@ -169,7 +170,10 @@ class RadioWidget(QWidget):
         self.__inforeceived.connect(self.__updateinfo)
         self.__threadpool.start(mediametagetter)
 
-    def __getmeta(self) -> None: 
+    
+    def __getmeta(self) -> None:
+        # To debug remove comment on next line and in import statement for debugpy at beginning of file
+        #debugpy.debug_this_thread()
         previnfo= "-1"
         sleepticks = 4
         sleeptickcount = 1
@@ -209,5 +213,5 @@ class MediaMetaGetter(QRunnable):
         super().__init__()
         self.__execute = execute
 
-    def run(self) ->None:
+    def run(self) -> None:
         self.__execute()

@@ -239,7 +239,7 @@ class RaspiFM:
         Vlc().setvolume(volume)
 
     def player_getmeta(self) -> str:
-        Vlc().getmeta()
+        return Vlc().getmeta()
 
     def player_shutdown(self) -> None:
         Vlc().shutdown()
