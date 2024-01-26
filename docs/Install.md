@@ -14,7 +14,7 @@ Current standard and tested setup is:
 If not mentioned otherwise, setup instructions refer to this setup.
 
 ## Set up HifiBerry MiniAmp for Raspberry Pi OS (Bookworm, Raspberry Pi 4)
-- 1. Make a backup of config.txt file to your current folder: `cp /boot/config.txt ./`
+- 1. Make a backup of config.txt file to your current directory: `cp /boot/config.txt ./`
 - 2. Edit config.txt: `sudo nano /boot/config.txt`
 - 3. Disable the line `dtparam=audio=on` to `# dtparam=audio=on`
 - 4. Edit the line `dtoverlay=vc4-kms-v3d` to `dtoverlay=vc4-kms-v3d,noaudio`
