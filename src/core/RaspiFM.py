@@ -21,6 +21,8 @@ from core.business.Favorites import Favorites
 from core.business.RadioStations import RadioStations
 from core.business.RadioStation import RadioStation
 from core.business.FavoriteList import FavoriteList
+from core.players.Spotify import Spotify
+from core.players.SpotifyInfo import SpotifyInfo
 from core.players.Vlc import Vlc
 from utils import utils
 
@@ -250,6 +252,18 @@ class RaspiFM:
 
     def player_shutdown(self) -> None:
         Vlc().shutdown()
+
+    def spotify_isplaying(self) -> bool:
+        return Spotify().isplaying
+    
+    def spotify_set_isplaying(self, playing:bool) -> None:
+        Spotify().isplaying = playing
+
+    def spotify_currentplaying(self) -> SpotifyInfo:
+        return Spotify().currentlyplaying
+    
+    def spotify_set_currentplaying(self, info:SpotifyInfo) -> None:
+        Spotify().currentlyplaying = info
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)
