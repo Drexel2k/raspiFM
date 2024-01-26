@@ -104,7 +104,7 @@ class RadioWidget(QWidget):
 
             volslider = QSlider(Qt.Orientation.Horizontal)
             volslider.sliderMoved.connect(self.__volslider_moved)
-            volslider.setValue(50)
+            volslider.setValue(RaspiFM().player_getvolume())
             layout.addWidget(volslider)
 
             qx = QPixmap()

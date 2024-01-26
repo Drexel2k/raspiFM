@@ -60,6 +60,8 @@ class RaspiFM:
 
         usersettings = JsonDeserializer().get_usersettings()
         self.__settings.usersettings = usersettings if usersettings else UserSettings.from_default()
+
+        Vlc().volume = self.__settings.usersettings.touch_volume
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
@@ -236,7 +238,12 @@ class RaspiFM:
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def player_setvolume(self, volume:int) -> None:
-        Vlc().setvolume(volume)
+        Vlc().volume = volume
+        self.__settings.usersettings.touch_volume = volume
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+
+    def player_getvolume(self) -> int:
+        return Vlc().volume
 
     def player_getmeta(self) -> str:
         return Vlc().getmeta()

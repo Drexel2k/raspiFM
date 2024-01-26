@@ -21,6 +21,23 @@ class Vlc:
         return self.__state == PlayerState.Playing
     
     @property
+    def volume(self) -> int:
+        return self.__volume
+
+    @volume.setter
+    def volume(self, value: int) -> None:
+        if(value < 0):
+            value = 0
+
+        if(value > 100):
+            value = 100
+
+        self.__volume = value
+
+        if(self.__vlcplayer):
+            self.__vlcplayer.audio_set_volume(self.__volume)
+    
+    @property
     def currentstation(self) -> RadioStation:
         return self.__station
 
@@ -57,16 +74,21 @@ class Vlc:
         self.__vlcplayer = self.__vlcinstance.media_player_new()
         self.__vlcmedia = self.__vlcinstance.media_new(self.__station.url)
         self.__vlcplayer.set_media(self.__vlcmedia)
+        self.__vlcplayer.audio_set_volume(self.__volume)
         self.__vlcplayer.play()
-        self.setvolume(self.__volume)
 
     def stop(self) -> None:
         if(self.__state != PlayerState.Stopped):
             self.__state = PlayerState.Stopped
             if(self.__vlcplayer):
                 self.__vlcplayer.stop()
+
                 vlc.libvlc_media_player_release(self.__vlcplayer)
+                self.__vlcplayer = None
+
                 vlc.libvlc_media_release(self.__vlcmedia)
+                self.__vlcmedia = None
+
 
     def getmeta(self) -> str:     
         if(self.isplaying):
@@ -98,19 +120,10 @@ class Vlc:
             #print(f'URL: {self.__vlcmedia.get_meta(vlc.Meta.URL)}')
             #print(datetime.now())
             return self.__vlcmedia.get_meta(vlc.Meta.NowPlaying)
-    
-    def setvolume(self, volume:int) -> None:
-        if(volume < 0):
-            volume = 0
-
-        if(volume > 100):
-            volume = 100
-
-        self.__volume = volume
-        self.__vlcplayer.audio_set_volume(self.__volume)
 
     def shutdown(self) -> None:
         if(self.__state == PlayerState.Playing):
             self.stop()
 
         vlc.libvlc_release(self.__vlcinstance)
+        self.__vlcinstance = None

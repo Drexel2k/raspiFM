@@ -5,13 +5,14 @@ from uuid import UUID
 from core.StartWith import StartWith
 
 class UserSettings:
-    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation"]
+    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation", "__touch_volume"]
 
     __touch_runontouch:bool
     __web_defaultlanguage:str
     __web_defaultcountry:str
     __touch_startwith:StartWith
     __touch_laststation:UUID
+    __touch_volume:int
 
     @property
     def touch_runontouch(self) -> bool:
@@ -49,6 +50,14 @@ class UserSettings:
     def touch_laststation(self, value: UUID) -> None:
         self.__touch_laststation = value
 
+    @property
+    def touch_volume(self) -> int:
+        return self.__touch_volume
+    
+    @touch_volume.setter
+    def touch_volume(self, value: int) -> None:
+        self.__touch_volume = value
+
     @classmethod
     def from_default(cls) -> UserSettings:    
         obj = cls()
@@ -58,6 +67,7 @@ class UserSettings:
         obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
         obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)
         obj.__setattr__(f"_UserSettings__touch_laststation", None)
+        obj.__setattr__(f"_UserSettings__touch_volume", 50)
 
         return obj
 
