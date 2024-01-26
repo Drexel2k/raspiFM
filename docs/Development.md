@@ -59,7 +59,7 @@ In Visual Studio Code:
 
 ## Requirements for Spotify Connect for Raspberry Pi OS/Linux
 To use the Spotify conncet feature, spotifyd needs to be installed. Unfortunetally, spotifyd delivers only 32 bit binaries,
-so we have to build a 64 bit verion by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS) with step 1 to 10 or use the file from the [libs] directory (start from stepp 11).
+so we have to build a 64 bit version by ourselves (or setup a 32 bit environment in the 64 bit raspberry pi OS) with step 1 to 10 or use the file from the [libs] directory (start from stepp 10).
 To build a 64bit binary and set up the daemon:
 - 1. Uninstall current rust compiler if one is installed, it may be to old, e.g. by: `sudo apt remove rustc` or `rustup self uninstall`
 - 2. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install curl to install the current rust tolchain: `sudo apt install curl`
