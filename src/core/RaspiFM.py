@@ -21,6 +21,8 @@ from core.business.Favorites import Favorites
 from core.business.RadioStations import RadioStations
 from core.business.RadioStation import RadioStation
 from core.business.FavoriteList import FavoriteList
+from core.players.Spotify import Spotify
+from core.players.SpotifyInfo import SpotifyInfo
 from core.players.Vlc import Vlc
 from utils import utils
 
@@ -60,6 +62,8 @@ class RaspiFM:
 
         usersettings = JsonDeserializer().get_usersettings()
         self.__settings.usersettings = usersettings if usersettings else UserSettings.from_default()
+
+        Vlc().volume = self.__settings.usersettings.touch_volume
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
@@ -193,10 +197,6 @@ class RaspiFM:
     def settings_touch_laststation(self) -> UUID:
         return self.__settings.usersettings.touch_laststation
     
-    def settings_set_touch_laststation(self, uuid:UUID) -> None:
-        self.__settings.usersettings.touch_laststation = uuid
-        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
-
     def settings_changeproperty(self, property:str, value:str) -> None:
         if property == "country":
             countrylist = self.countries_get()
@@ -208,23 +208,22 @@ class RaspiFM:
 
             if (value in languagelist.languagelist or value == "nofilter"):
                 self.__settings.usersettings.web_defaultlanguage = value
-        elif property == "startwith":
-            self.__settings.usersettings.touch_startwith = StartWith[value]
-        elif property == "laststation":
-            self.__settings.usersettings.touch_laststation = UUID(value)
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def player_play(self, station:RadioStation) -> None:
+    def player_play(self, station:RadioStation = None) -> None:
         Vlc().play(station)
-        self.__settings.usersettings.touch_laststation = station.uuid
+        
+        if(station):
+            self.__settings.usersettings.touch_laststation = station.uuid
+            JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+        else:
+            station = Vlc().currentstation
 
         if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
-        
-        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def player_stop(self) -> None:
         Vlc().stop()
@@ -237,15 +236,34 @@ class RaspiFM:
 
     def player_set_currentstation(self, station:RadioStation) -> None:
         Vlc().currentstation = station
+        self.__settings.usersettings.touch_laststation = station.uuid
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def player_setvolume(self, volume:int) -> None:
-        Vlc().setvolume(volume)
+        Vlc().volume = volume
+        self.__settings.usersettings.touch_volume = volume
+        JsonSerializer().serialize_usersettings(self.__settings.usersettings)
+
+    def player_getvolume(self) -> int:
+        return Vlc().volume
 
     def player_getmeta(self) -> str:
-        Vlc().getmeta()
+        return Vlc().getmeta()
 
     def player_shutdown(self) -> None:
         Vlc().shutdown()
+
+    def spotify_isplaying(self) -> bool:
+        return Spotify().isplaying
+    
+    def spotify_set_isplaying(self, playing:bool) -> None:
+        Spotify().isplaying = playing
+
+    def spotify_currentplaying(self) -> SpotifyInfo:
+        return Spotify().currentlyplaying
+    
+    def spotify_set_currentplaying(self, info:SpotifyInfo) -> None:
+        Spotify().currentlyplaying = info
 
     def get_serialzeduuids(self, uuids:list) -> str:
         return JsonSerializer().serialize_uuids(uuids)

@@ -1,12 +1,10 @@
-from types import MethodType
-
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
 
+from core.RaspiFM import RaspiFM
 from core.http.basics import httpcontent
-from core.players.Spotify import Spotify
 from touchui.MarqueeLabel import MarqueeLabel
 
 class SpotifyWidget(QWidget):
@@ -51,10 +49,11 @@ class SpotifyWidget(QWidget):
 
     def __updatecontentwidgets(self) -> None:
         qx = QPixmap()
-        if(Spotify().isplaying):
-            if(Spotify().currentlyplaying):
-                if(Spotify().currentlyplaying.arturl):
-                    qx.loadFromData(httpcontent.get_urlbinary_content(Spotify().currentlyplaying.arturl))
+        if(RaspiFM().spotify_isplaying()):
+            if(RaspiFM().spotify_currentplaying()):
+                currentplaying = RaspiFM().spotify_currentplaying()
+                if(currentplaying.arturl):
+                    qx.loadFromData(httpcontent.get_urlbinary_content(currentplaying.arturl))
                 else:
                     renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")
                     image = QImage(270, 270, QImage.Format.Format_ARGB32)
@@ -64,9 +63,9 @@ class SpotifyWidget(QWidget):
                     painter.end()
                     qx.convertFromImage(image)
 
-            self.__lbl_title.setText(Spotify().currentlyplaying.title)
-            self.__lbl_artists.setText(Spotify().currentlyplaying.artists)
-            self.__lbl_album.setText(Spotify().currentlyplaying.album)
+            self.__lbl_title.setText(currentplaying.title)
+            self.__lbl_artists.setText(currentplaying.artists)
+            self.__lbl_album.setText(currentplaying.album)
         else:
             renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")
             image = QImage(180, 180, QImage.Format.Format_ARGB32)

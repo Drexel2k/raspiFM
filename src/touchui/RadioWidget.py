@@ -1,6 +1,7 @@
 import base64
 import time
 from types import MethodType
+#import debugpy
 
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
@@ -69,7 +70,6 @@ class RadioWidget(QWidget):
                             station = laststation
 
                 RaspiFM().player_set_currentstation(station)
-                RaspiFM().settings_set_touch_laststation(station.uuid)
 
             station = RaspiFM().player_currentstation()
 
@@ -82,6 +82,19 @@ class RadioWidget(QWidget):
             layout = self.layout()
             
             stationimagelabel = QLabel()
+            qx = QPixmap()
+            if(station.faviconb64):
+                qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
+            else:
+                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
+                image = QImage(180, 180, QImage.Format.Format_ARGB32)
+                image.fill(0x00000000)
+                painter = QPainter(image)
+                renderer.render(painter)
+                painter.end()
+                qx.convertFromImage(image)
+
+            stationimagelabel.setPixmap(qx.scaledToHeight(180, Qt.TransformationMode.SmoothTransformation))
             layout.addWidget(stationimagelabel, alignment = Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
             stationnamelabel = MarqueeLabel(station.name)
@@ -100,32 +113,19 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.clicked.connect(self.__playcontrol_clicked)
             self.__btn_playcontrol.setFixedSize(QSize(80, 60))
             self.__btn_playcontrol.setIconSize(QSize(80, 80))
-            layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
-
-            volslider = QSlider(Qt.Orientation.Horizontal)
-            volslider.sliderMoved.connect(self.__volslider_moved)
-            volslider.setValue(50)
-            layout.addWidget(volslider)
-
-            qx = QPixmap()
+            
             if(RaspiFM().player_isplaying()): 
                 self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
                 self.__startmetagetter()
             else:
                 self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
 
-            if(station.faviconb64):
-                qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
-            else:
-                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
-                image = QImage(180, 180, QImage.Format.Format_ARGB32)
-                image.fill(0x00000000)
-                painter = QPainter(image)
-                renderer.render(painter)
-                painter.end()
-                qx.convertFromImage(image)
+            layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
-            stationimagelabel.setPixmap(qx.scaledToHeight(180, Qt.TransformationMode.SmoothTransformation))
+            volslider = QSlider(Qt.Orientation.Horizontal)
+            volslider.sliderMoved.connect(self.__volslider_moved)
+            volslider.setValue(RaspiFM().player_getvolume())
+            layout.addWidget(volslider)
         else:
             self.__nostations = True
             layout = self.layout()
@@ -170,7 +170,10 @@ class RadioWidget(QWidget):
         self.__inforeceived.connect(self.__updateinfo)
         self.__threadpool.start(mediametagetter)
 
-    def __getmeta(self) -> None: 
+    
+    def __getmeta(self) -> None:
+        # To debug remove comment on next line and in import statement for debugpy at beginning of file
+        #debugpy.debug_this_thread()
         previnfo= "-1"
         sleepticks = 4
         sleeptickcount = 1
@@ -210,5 +213,5 @@ class MediaMetaGetter(QRunnable):
         super().__init__()
         self.__execute = execute
 
-    def run(self) ->None:
+    def run(self) -> None:
         self.__execute()
