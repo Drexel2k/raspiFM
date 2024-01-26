@@ -1,6 +1,6 @@
 # Setup development environment / IDE
 
-## Hardware
+## Hardware & system setup
 Current standard and tested setup is:
 - Raspberry Pi 4 Model B
 - Official 7" touchscreen
@@ -8,6 +8,8 @@ Current standard and tested setup is:
 - ICY BOX Dual Raspberry Pi Gpio Header
 - Visaton FRS 8M speakers
 - ATX Power On Off Switch
+
+- User name `raspifm`
 
 If not mentioned otherwise, setup instructions refer to this setup.
 
