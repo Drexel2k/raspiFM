@@ -134,18 +134,20 @@ class MainWindow(QMainWindow):
         RaspiFM().spotify_set_currentplaying(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
         
         if(changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing"):
-            #no radio widget update necessary, if Plabackstatus is changed from not playing, then SpotifyWidget will be shown.
-            #Therefore if the user clicks back to radio, it loads in correct current state
-            RaspiFM().player_stop()
-            
-            if(not spotify_wasplaying):
-                if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
-                    self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
-                else:
+            RaspiFM().radio_stop()
+
+            #If spotify widget is active simply update the information.
+            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
+            else:
+                #If spotify playback was jsut startet switch to spotify widget. If Spotify was already playing
+                #the user switched manually to another widget before, so leave this widget as it is.
+                if(not spotify_wasplaying):
                     spotifywidget = SpotifyWidget()
                     spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
                     self.__closewidgetitem(widgetitem)
+
         else:
             if(RaspiFM().spotify_isplaying()):
                 RaspiFM().spotify_set_isplaying(False)
@@ -223,6 +225,6 @@ class MainWindow(QMainWindow):
         widget = self.__mainwidget.layout().itemAt(1).widget()
         widget.close()
         widget.setParent(None)
-        RaspiFM().player_shutdown()
+        RaspiFM().radio_shutdown()
         
        

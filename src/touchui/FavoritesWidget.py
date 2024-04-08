@@ -87,7 +87,7 @@ class FavoritesWidget(QWidget):
 
     @pyqtSlot()
     def __buttonclicked(self):
-        RaspiFM().player_play(self.sender().data)
+        RaspiFM().radio_play(self.sender().data)
 
         self.favclicked.emit()
 

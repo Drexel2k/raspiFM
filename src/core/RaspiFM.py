@@ -213,7 +213,7 @@ class RaspiFM:
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def player_play(self, station:RadioStation = None) -> None:
+    def radio_play(self, station:RadioStation = None) -> None:
         Vlc().play(station)
         
         if(station):
@@ -225,32 +225,32 @@ class RaspiFM:
         if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
 
-    def player_stop(self) -> None:
+    def radio_stop(self) -> None:
         Vlc().stop()
 
-    def player_isplaying(self) -> bool:
+    def radio_isplaying(self) -> bool:
         return Vlc().isplaying
     
-    def player_currentstation(self) -> RadioStation:
+    def radio_currentstation(self) -> RadioStation:
         return Vlc().currentstation
 
-    def player_set_currentstation(self, station:RadioStation) -> None:
+    def radio_set_currentstation(self, station:RadioStation) -> None:
         Vlc().currentstation = station
         self.__settings.usersettings.touch_laststation = station.uuid
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def player_setvolume(self, volume:int) -> None:
+    def radio_setvolume(self, volume:int) -> None:
         Vlc().volume = volume
         self.__settings.usersettings.touch_volume = volume
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def player_getvolume(self) -> int:
+    def radio_getvolume(self) -> int:
         return Vlc().volume
 
-    def player_getmeta(self) -> str:
+    def radio_getmeta(self) -> str:
         return Vlc().getmeta()
 
-    def player_shutdown(self) -> None:
+    def radio_shutdown(self) -> None:
         Vlc().shutdown()
 
     def spotify_isplaying(self) -> bool:
