@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, 
 
 from core.RaspiFM import RaspiFM
 from utils import utils
-from core.players.Vlc import Vlc
 from touchui.MarqueeLabel import MarqueeLabel 
 from core.http.radiobrowserapi import stationapi
 from core.RaspiFM import RaspiFM
@@ -25,7 +24,8 @@ class RadioWidget(QWidget):
     __nostations:bool
     __inforeceived = pyqtSignal(str)
 
-    playstarting = pyqtSignal()
+    beforeplaystarting = pyqtSignal()
+    playstopped = pyqtSignal()
 
     def __init__(self, startplaying:bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -151,8 +151,9 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setText(None)
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
             self.__lbl_nowplaying.setText(None)
+            self.playstopped.emit()
         else:
-            self.playstarting.emit()
+            self.beforeplaystarting.emit()
             RaspiFM().radio_play()
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
             self.__startmetagetter()

@@ -9,5 +9,5 @@ class PushButtonMain(QPushButton):
         dimension = self.size().height()
         if self.size().width()  < dimension:
             dimension = self.size().width()
-        dimension = int(dimension * 0.6)
+        dimension = int(dimension * 0.9)
         self.setIconSize(QSize(dimension, dimension))

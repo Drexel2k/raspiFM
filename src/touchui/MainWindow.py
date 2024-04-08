@@ -1,3 +1,5 @@
+import os
+
 from PyQt6 import QtDBus, QtCore
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
@@ -14,7 +16,7 @@ from touchui.PushButtonMain import PushButtonMain
 from touchui import dbusstrings
 
 class MainWindow(QMainWindow):
-    __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection"]
+    __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor"]
     __mainwidget:QWidget
     __spotify_dbusname:str
     __system_dbusconnection:QtDBus.QDBusConnection
@@ -35,40 +37,57 @@ class MainWindow(QMainWindow):
 
         self.__initializespotify()
 
+        #Create background color from qt-material primary color
+        hexColor = os.environ["QTMATERIAL_PRIMARYCOLOR"][1:]
+        self.__activebackgroundcolor = "rgba("
+        for i in (0, 2, 4):
+            self.__activebackgroundcolor += str(int(hexColor[i:i+2], 16)) +", "
+
+        self.__activebackgroundcolor += "0.2)"
+
         left_layout_vertical = QVBoxLayout()
         self.__mainwidget.layout().addLayout(left_layout_vertical, stretch=1)
     
-        radiobutton = PushButtonMain()
-        radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
-        radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
-        radiobutton.clicked.connect(self.__radioclicked)
+        self.__radiobutton = PushButtonMain()
+        self.__radiobutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) 
+        self.__radiobutton.clicked.connect(self.__radioclicked)
 
-        favoritesbutton = PushButtonMain()
-        favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        favoritesbutton.setIcon(QIcon("touchui/images/star-blue.svg"))
-        favoritesbutton.clicked.connect(self.__favoritesclicked)
+        self.__favoritesbutton = PushButtonMain()
+        self.__favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        #Size of icon is set PushButtonMain class!!!
+        self.__favoritesbutton.setIcon(QIcon("touchui/images/star-blue.svg"))
+        self.__favoritesbutton.clicked.connect(self.__favoritesclicked)
 
-        spotifybutton = PushButtonMain()
-        spotifybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
-        spotifybutton.clicked.connect(self.__spotifyclicked)
+        self.__spotifybutton = PushButtonMain()
+        self.__spotifybutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.__spotifybutton.clicked.connect(self.__spotifyclicked)
 
-        settingsbutton = PushButtonMain()
-        settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        settingsbutton.setIcon(QIcon("touchui/images/gear-blue.svg"))
-        settingsbutton.clicked.connect(self.__settingsclicked)
+        self.__settingsbutton = PushButtonMain()
+        self.__settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.__settingsbutton.setIcon(QIcon("touchui/images/gear-blue.svg"))
+        self.__settingsbutton.clicked.connect(self.__settingsclicked)
 
-        left_layout_vertical.addWidget(radiobutton)
-        left_layout_vertical.addWidget(favoritesbutton)
-        left_layout_vertical.addWidget(spotifybutton)
-        left_layout_vertical.addWidget(settingsbutton)
+        left_layout_vertical.addWidget(self.__radiobutton)
+        left_layout_vertical.addWidget(self.__favoritesbutton)
+        left_layout_vertical.addWidget(self.__spotifybutton)
+        left_layout_vertical.addWidget(self.__settingsbutton)
 
         if(RaspiFM().spotify_isplaying()):
-            self.__mainwidget.layout().addWidget(SpotifyWidget(), stretch=4)
+            self.__changeIconsSpotifyPlaying()
+            self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+            self.__activebutton = self.__spotifybutton
+
+            self.__mainwidget.layout().addWidget(SpotifyWidget(), stretch=4)            
         else:
+            self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
+            self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
+            self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+            self.__activebutton = self.__radiobutton
+
             RaspiFM()
             radiowidget = RadioWidget(True)
-            radiowidget.playstarting.connect(self.__stopspotify)
+            radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
+            radiowidget.playstopped.connect(self.__changeIconRadioStopped)
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4)
         
     def __initializespotify(self) -> None:
@@ -136,6 +155,8 @@ class MainWindow(QMainWindow):
         if(changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing"):
             RaspiFM().radio_stop()
 
+            self.__changeIconsSpotifyPlaying()
+
             #If spotify widget is active simply update the information.
             if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
                 self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
@@ -143,6 +164,9 @@ class MainWindow(QMainWindow):
                 #If spotify playback was jsut startet switch to spotify widget. If Spotify was already playing
                 #the user switched manually to another widget before, so leave this widget as it is.
                 if(not spotify_wasplaying):
+                    self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+                    self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+                    self.__activebutton = self.__spotifybutton
                     spotifywidget = SpotifyWidget()
                     spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
@@ -150,32 +174,49 @@ class MainWindow(QMainWindow):
 
         else:
             if(RaspiFM().spotify_isplaying()):
+                #Not only triggered when Spotify stopped via app, but also when radio
+                #was manually started again, so this is no sign of nothing is playing!
+                self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
                 RaspiFM().spotify_set_isplaying(False)
 
                 if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
                     self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
     
+    def __radiostartsPlaying(self) -> None:
+        self.__stopspotify()
+        #Spotify Icon is changed on Spotify stopped playing DBus message
+        self.__changeIconRadioPlaying()
+
     def __stopspotify(self) -> None:
         interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.spotifydinterface, self.__system_dbusconnection)
         interface.call(dbusstrings.spotifydmethodpause)
 
     def __radioclicked(self) -> None:
+        self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+        self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__activebutton = self.__radiobutton
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
             radiowidget = RadioWidget(False)
             radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            radiowidget.playstarting.connect(self.__stopspotify)
+            radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
+            radiowidget.playstopped.connect(self.__changeIconRadioStopped)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
             self.__closewidgetitem(widgetitem)
 
     def __favoritelicked(self) -> None:
-        self.__stopspotify()
+        self.__radiostartsPlaying()
+
         radiowidget = RadioWidget(True)
         radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        radiowidget.playstarting.connect(self.__stopspotify)
+        radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
+        radiowidget.playstopped.connect(self.__changeIconRadioStopped)
         widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), radiowidget)
         self.__closewidgetitem(widgetitem)
 
     def __favoritesclicked(self) -> None:
+        self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+        self.__favoritesbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__activebutton = self.__favoritesbutton
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
             favoriteswdidget = FavoritesWidget()
             favoriteswdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -184,6 +225,9 @@ class MainWindow(QMainWindow):
             self.__closewidgetitem(widgetitem)
 
     def __spotifyclicked(self) -> None:
+        self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+        self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__activebutton = self.__spotifybutton
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
             spotifywdidget = SpotifyWidget()
             spotifywdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -191,17 +235,30 @@ class MainWindow(QMainWindow):
             self.__closewidgetitem(widgetitem)
 
     def __settingsclicked(self) -> None:
+        self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+        self.__settingsbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__activebutton = self.__settingsbutton
         if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SettingsWidget)):
             settingswdiget = SettingsWidget()
             settingswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), settingswdiget)
             self.__closewidgetitem(widgetitem)
+    
+    def __changeIconsSpotifyPlaying(self) -> None:
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
+        self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-music-blue.svg"))
+
+    def __changeIconRadioPlaying(self) -> None:
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
+
+    def __changeIconRadioStopped(self) -> None:
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
 
     def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
         widget = widgetitem.widget()
 
         if(isinstance(widget, RadioWidget)):
-            widget.playstarting.disconnect()
+            widget.beforeplaystarting.disconnect()
 
         if(isinstance(widget, FavoritesWidget)):
             widget.favclicked.disconnect()
@@ -226,5 +283,3 @@ class MainWindow(QMainWindow):
         widget.close()
         widget.setParent(None)
         RaspiFM().radio_shutdown()
-        
-       

@@ -68,7 +68,7 @@ class SpotifyWidget(QWidget):
             self.__lbl_album.setText(currentplaying.album)
         else:
             renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")
-            image = QImage(180, 180, QImage.Format.Format_ARGB32)
+            image = QImage(320, 220, QImage.Format.Format_ARGB32)
             image.fill(0x00000000)
             painter = QPainter(image)
             renderer.render(painter)

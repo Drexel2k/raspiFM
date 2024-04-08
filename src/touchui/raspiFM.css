@@ -1,7 +1,9 @@
+/* Make font size bigger for better toch use and readability */
 *{{
     font-size: 30px;
 }}
 
+/* Make volume slider on radio widget bigger */
 QSlider {{
     height: 40px;
     }}
@@ -13,4 +15,9 @@ QSlider::handle:horizontal {{
     width: 40px;
     margin: -15px 0px;
     }}
+
+/* No background for focus on button, focus is lost from main side menu
+   when pushing a button on a content widget, stop radio e.g. 
+   So background is manually set to stay on the active main menu button  */
+QPushButton::focus {{ background-color: transparent; }}
 
