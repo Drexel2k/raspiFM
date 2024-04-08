@@ -1,14 +1,7 @@
 # Setup development environment / IDE
 
-## Hardware & system setup
-Current standard and tested setup is:
-- Raspberry Pi 4 Model B
-- Official 7" touchscreen
-- HiFiBerry MiniAmp
-- ICY BOX Dual Raspberry Pi Gpio Header
-- Visaton FRS 8M speakers
-- ATX Power On Off Switch
-
+## Development system
+- Raspberry Pi 4 Model B  With Raspberry OS Bookworm or Ubuntu 22.04 LTS VM on Hyper-V/Windows 11
 - User name `raspifm`
 
 If not mentioned otherwise, setup instructions refer to this setup.
@@ -16,13 +9,8 @@ If not mentioned otherwise, setup instructions refer to this setup.
 ## Update your package repository
 Do a `sudo apt update` first.
 
-## Set up HifiBerry MiniAmp for Raspberry Pi OS (Bookworm, Raspberry Pi 4)
-- 1. Make a backup of config.txt file to your current directory: `cp /boot/config.txt ./`
-- 2. Edit config.txt: `sudo nano /boot/config.txt`
-- 3. Disable the line `dtparam=audio=on` to `# dtparam=audio=on`
-- 4. Edit the line `dtoverlay=vc4-kms-v3d` to `dtoverlay=vc4-kms-v3d,noaudio`
-- 5. Add lines `dtoverlay=hifiberry-dac` and `force_eeprom_read=0` before the first filter section (cm4)
-- 6. Reboot
+## Hardware setup
+- If you develop on the Raspberry and want to attach parts of the full hardware setup, e.g. the MiniAmp with speakers, see [installation documentation](Install.md) for hardware installation
 
 ## IDE Setup / Build instructions for Raspberry Pi OS/Linux
 - 1. On other Linux distributions than Raspberry Pi OS, e.g. Ubuntu you may need to install git: `sudo apt install git`
@@ -35,7 +23,7 @@ Do a `sudo apt update` first.
   - a) `sudo apt install python3-pyqt6`
   - b) Further steps follow on stepp 10
   - c) Install further libs needed on Ubuntu `sudo apt install mesa-common-dev`
-    - On Ubunutu 22.04 you need to set up a workaround for Qt6 to be found by QtChooser an make it the default Qt version:
+    - On Ubuntu 22.04 you need to set up a workaround for Qt6 to be found by QtChooser an make it the default Qt version:
     - qtchooser -install qt6 $(which qmake6)
     - sudo mv ~/.config/qtchooser/qt6.conf /usr/share/qtchooser/qt6.conf
     - sudo mkdir -p /usr/lib/$(uname -p)-linux-gnu/qt-default/qtchooser
@@ -54,7 +42,7 @@ In Visual Studio Code:
 - 11. If you have chosen 4c:
   - Download source from https://pypi.org/project/PyQt6/#files, extract with `tar -xzf PyQt6-6.6.1.tar.gz` e.g.
   - Install sip tools: `pip install PyQt-builder`
-  - Add path to qmake directory to path environment variable: `export PATH="$PATH:/usr/lib/qt6/bin"` (not required on Ubunutu)
+  - Add path to qmake directory to path environment variable: `export PATH="$PATH:/usr/lib/qt6/bin"` (not required on Ubuntu)
   - Change terminal directory to the path of tthe source: `cd /path/to/extraded/archive/PyQt6-6.6.1`
   - Build wheel from the source: `sip-wheel --confirm-license --verbose --qmake-setting 'QMAKE_LIBS_LIBATOMIC = -latomic'`, this takes some hours on Raspberry
   - Install the wheel: `pip install ./PyQt6-6.6.1-cp38-abi3-manylinux_2_28_x86_64.whl` or whatever the outputfile is called

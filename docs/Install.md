@@ -2,23 +2,38 @@
 
 ## Hardware & system setup
 Current standard and tested setup is:
-- Raspberry Pi 4 Model B
+- Raspberry Pi 4 Model B Raspberry Pi OS Bookworm
 - Official 7" touchscreen
 - HiFiBerry MiniAmp
-- ICY BOX Dual Raspberry Pi Gpio Header
+- ICY BOX Dual Raspberry Pi GPIO Header
 - Visaton FRS 8M speakers
-- ATX Power On Off Switch
+- ATX Power On Off Switch with Power LED for ATX mainboards (4 cables)
 
 - User & group name `raspifm`
 
 If not mentioned otherwise, setup instructions refer to this setup.
 
-## Set up HifiBerry MiniAmp for Raspberry Pi OS (Bookworm, Raspberry Pi 4)
+NO WARRANTIES AT ALL, BUT ESPECIALLY NOT ON ANY HARDWARE SETUP/CONNECTION/MODIFCATION!
+
+## Update your package repository
+Do a `sudo apt update` first.
+
+## Set up HifiBerry MiniAmp
+- 1. Mount the MiniAmp on the GPIO header and the header to the Raspberry board, so that that unused GPIO Pins still can be used
 - 1. Make a backup of config.txt file to your current directory: `cp /boot/config.txt ./`
 - 2. Edit config.txt: `sudo nano /boot/config.txt`
 - 3. Disable the line `dtparam=audio=on` to `# dtparam=audio=on`
 - 4. Edit the line `dtoverlay=vc4-kms-v3d` to `dtoverlay=vc4-kms-v3d,noaudio`
 - 5. Add lines `dtoverlay=hifiberry-dac` and `force_eeprom_read=0` before the first filter section (cm4)
+
+## Set up touchscreen
+- 1. Connect DSI and power cables (to the GPIO header), official documentation on [www.raspberrypi.com](https://www.raspberrypi.com/documentation/accessories/display.html)
+- 2. I connected 5V to Pin 2/5V and Ground to Pin 14/Ground as I took Pin 6/Ground for the Power Switch (see next section)
+
+## Setup Power Switch/LED
+- 1. Connect Power LED + to Pin 7/GPIO 4, Power LED - to Pin 9/Ground and the Power Switch cables over Pin 5/GPIO 3 and Pin 6/Ground
+- 2. Edit config.txt: `sudo nano /boot/config.txt` (backup done in MiniAmp setup, if not do it now!)
+- 3. Add lines `dtoverlay=gpio-shutdown,gpio_pin=3` and `gpio=4=op,dh` before the first filter section (cm4)
 
 ## Download the repository from github
 - 1. Create a new directory for the repository: `mkdir ~/raspifm_repo` and switch to the directory: `cd ~/raspifm_repo`.
