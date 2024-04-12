@@ -1,7 +1,10 @@
 from __future__ import annotations
 from uuid import UUID, uuid4
 
+from core.business.Direction import Direction
+from core.business.Exceptions import InvalidOperationException
 from core.business.RadioStation import RadioStation
+from core.business.ViewProxies.RadioStationFavoriteEntry import RadioStationFavoriteEntry
 
 class FavoriteList:
     __slots__ = ["__uuid", "__name", "__isdefault", "__stations", "__displayorder"]
@@ -72,16 +75,57 @@ class FavoriteList:
 
         return obj
 
-    def addstation(self, station:RadioStation) -> None:
-        if not station in self.__stations:
-            self.__stations.append(station)
+    def add_station(self, station:RadioStation) -> None:
+        found = False
+        for stationentry in self.__stations:
+            if stationentry.radiostation == station:
+                found = True
+                break
 
-    def removestation(self, station:RadioStation) -> None:
-        if station in self.__stations:
-            self.__stations.remove(station)
+        if not found:
+            displayorder = 0
+            if len(self.__stations) > 0:
+                displayorder=max(self.__stations, key=lambda stationinternal: stationinternal.displayorder).displayorder + 1
+
+            self.__stations.append(RadioStationFavoriteEntry(station, displayorder))
+
+    def remove_station(self, station:RadioStation) -> None:
+        station_index = next((index for index, stationinternal in enumerate(self.__stations) if stationinternal.radiostation  == station), -1)
+        if station_index >= 0:
+            self.__stations.pop(station_index)
 
     def contains(self, stationuuid:UUID) -> bool:
         return any(station.uuid == stationuuid for station in self.__stations)
+    
+    def move_station(self, stationuuid:UUID, direction:Direction) -> None:
+        radiostation = next((stationinternal for stationinternal in self.__stations if stationinternal.radiostation.uuid == stationuuid), None)
+        if not radiostation is None:
+            ordered_stations = sorted(self.__stations, key=lambda station: station.displayorder)
+            currentindex = ordered_stations.index(radiostation)
+
+            if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_stations) - 1 and direction == Direction.Down):
+                raise InvalidOperationException("Cannot move first station up oder last station down.")
+
+            ordered_stations.pop(currentindex)
+
+            newindex = 0
+            if direction == Direction.Up:
+                newindex = currentindex - 1
+            else:
+                newindex = currentindex + 1
+
+            if newindex < 0:
+                newindex = 0
+
+            if newindex > len(ordered_stations) -1:
+                ordered_stations.append(radiostation)
+            else:
+                ordered_stations.insert(newindex, radiostation)
+
+            position = 0
+            for station_inorder in ordered_stations:
+                station_inorder.displayorder = position
+                position += 1
             
 
 

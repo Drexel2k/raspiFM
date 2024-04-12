@@ -144,17 +144,16 @@ class RaspiFM:
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))
 
+        self.__favorites.get_list(favlistuuid).add_station(station)
+        self.__radiostations.add_station(station)
 
-            self.__radiostations.add_station(station)
-            JsonSerializer().serialize_radiostations(self.__radiostations)
-
-        self.__favorites.get_list(favlistuuid).addstation(station)
+        JsonSerializer().serialize_radiostations(self.__radiostations)
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def favorites_delete_stationfromlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
+    def favorites_remove_stationfromlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
         station = self.__radiostations.get_station(stationuuid)
 
-        self.__favorites.get_list(favlistuuid).removestation(station)
+        self.__favorites.get_list(favlistuuid).remove_station(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
         self.stations_deletestation(station.uuid)
@@ -171,8 +170,8 @@ class RaspiFM:
         favlist = self.__favorites.get_list(uuid)
         station_uuids = []
         if not favlist is None:
-            for station in favlist.stations:
-                station_uuids.append(station.uuid)
+            for stationentry in favlist.stations:
+                station_uuids.append(stationentry.radiostation.uuid)
 
         self.__favorites.delete_favoritelist(uuid)
         JsonSerializer().serialize_favorites(self.__favorites)
@@ -201,7 +200,13 @@ class RaspiFM:
 
     def favorites_movelist(self, uuid:UUID, direction:str) -> None:
         direction = Direction[direction]
-        self.__favorites.move(uuid, direction)
+        self.__favorites.move_list(uuid, direction)
+        
+        JsonSerializer().serialize_favorites(self.__favorites)
+
+    def favorites_move_station_in_list(self, favlistuuid:UUID, stationuuid:UUID, direction:str) -> None:
+        direction = Direction[direction]
+        self.__favorites.move_station_in_list(favlistuuid, stationuuid, direction)
         
         JsonSerializer().serialize_favorites(self.__favorites)
 

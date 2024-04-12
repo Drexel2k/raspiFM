@@ -22,47 +22,47 @@
           </tr>
         </thead>
         <tbody class="text-break table-group-divider">
-        {% for station in favoritelist.stations %}
-          <tr id="favrow-{{station.uuid|string}}">
-            <td class="align-middle"><img class="fav" src="{% if station.faviconb64 %} data:image/png;base64, {{station.faviconb64}}{% endif %}" /></td>
-            <td class="align-middle"><a class="link-primary" href="{{station.homepage}}" target="_blank"><img src="{{url_for("static", filename="house-fill.svg")}}" width="50em" height="50em" /></a>  {{station.name}}</td>
-            <td class="align-middle"><audio controls style="width:100%"><source src="{{station.url}}" type="audio/{{station.codec}}"></audio></td>
+        {% for station in favoritelist.stations|sort(attribute='displayorder') %}
+          <tr id="favrow-{{station.radiostation.uuid|string}}">
+            <td class="align-middle"><img class="fav" src="{% if station.radiostation.faviconb64 %} data:image/png;base64, {{station.radiostation.faviconb64}}{% endif %}" /></td>
+            <td class="align-middle"><a class="link-primary" href="{{station.radiostation.homepage}}" target="_blank"><img src="{{url_for("static", filename="house-fill.svg")}}" width="50em" height="50em" /></a>  {{station.radiostation.name}}</td>
+            <td class="align-middle"><audio controls style="width:100%"><source src="{{station.radiostation.url}}" type="audio/{{station.radiostation.codec}}"></audio></td>
 
             <td class="align-middle">
-              {% if station.votes %}
-                <span class="badge text-bg-primary text-wrap">votes: {{station.votes}}</span>
+              {% if station.radiostation.votes %}
+                <span class="badge text-bg-primary text-wrap">votes: {{station.radiostation.votes}}</span>
               {% endif %}
-              {% if station.clickcount %}
-              <span class="badge text-bg-primary text-wrap mt-1">clicks: {{station.clickcount}}</span>
+              {% if station.radiostation.clickcount %}
+              <span class="badge text-bg-primary text-wrap mt-1">clicks: {{station.radiostation.clickcount}}</span>
               {% endif %}
-              {% if station.clicktrend %}
-                <span class="badge text-bg-primary text-wrap mt-1">trend: {{station.clicktrend}}</span>
+              {% if station.radiostation.clicktrend %}
+                <span class="badge text-bg-primary text-wrap mt-1">trend: {{station.radiostation.clicktrend}}</span>
               {% endif %}
-              {% if station.languagecodes %}
-              <span class="badge text-bg-primary text-wrap mt-1">langs: {{station.languagecodes}}</span>
+              {% if station.radiostation.languagecodes %}
+              <span class="badge text-bg-primary text-wrap mt-1">langs: {{station.radiostation.languagecodes}}</span>
               {% endif %}
-              {% if station.countrycode %}
-                <span class="badge text-bg-primary text-wrap mt-1">countries: {{station.countrycode}}</span>
+              {% if station.radiostation.countrycode %}
+                <span class="badge text-bg-primary text-wrap mt-1">countries: {{station.radiostation.countrycode}}</span>
               {% endif %}
-              {% if station.codec %}
-                <span class="badge text-bg-primary text-wrap mt-1">codec: {{station.codec}}</span>
+              {% if station.radiostation.codec %}
+                <span class="badge text-bg-primary text-wrap mt-1">codec: {{station.radiostation.codec}}</span>
               {% endif %}
-              {% if station.bitrate %}
-                <span class="badge text-bg-primary text-wrap mt-1">bits: {{station.bitrate}}</span>
+              {% if station.radiostation.bitrate %}
+                <span class="badge text-bg-primary text-wrap mt-1">bits: {{station.radiostation.bitrate}}</span>
               {% endif %}
-              {% if station.tags %}
-                <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.tags)}}</span>
+              {% if station.radiostation.tags %}
+                <span class="badge text-bg-primary text-wrap mt-1">tags: {{", ".join(station.radiostation.tags)}}</span>
               {% endif %}
             </td>
             <td class="align-middle">
-              <button class="btn btn-primary btn-sm mb-2" data-changetype="Up" data-stationuuid="{{station.uuid|string}}">
+              <button class="btn btn-primary btn-sm mb-2 stationmoveup" data-changetype="Up" data-changetype="Up" data-stationuuid="{{station.radiostation.uuid|string}}"{% if loop.index0==0 %} disabled{% endif %}>
                 <img src="{{url_for("static", filename="arrow-up.svg")}}" width="15em" height="15em" />
               </button>
-              <button class="btn btn-primary btn-sm mb-2" data-changetype="Down" data-stationuuid="{{station.uuid|string}}">
+              <button class="btn btn-primary btn-sm mb-2 stationmovedown" data-changetype="Down" data-changetype="Down" data-stationuuid="{{station.radiostation.uuid|string}}"{% if loop.index0 >= favoritelist.stations|length - 1 %} disabled{% endif %}>
                 <img src="{{url_for("static", filename="arrow-down.svg")}}" width="15em" height="15em" />
               </button>
             </td>
-            <td class="align-middle"><a href="javascript:void(0);" class="link-primary fav-link" data-changetype="remove" data-stationuuid="{{station.uuid|string}}"><img id="favimg-{{station.uuid|string}}" src="{{url_for("static", filename="star-fill.svg")}}" width="40em" height="40em" /></a></td>
+            <td class="align-middle"><a href="javascript:void(0);" class="link-primary fav-link" data-changetype="remove" data-stationuuid="{{station.radiostation.uuid|string}}"><img id="favimg-{{station.radiostation.uuid|string}}" src="{{url_for("static", filename="star-fill.svg")}}" width="40em" height="40em" /></a></td>
           </tr>
         {% endfor %}
         </tbody>

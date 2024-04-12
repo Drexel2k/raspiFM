@@ -212,6 +212,9 @@ class MainWindow(QMainWindow):
 
     def __favoritelicked(self) -> None:
         self.__radiostartsPlaying()
+        self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
+        self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__activebutton = self.__radiobutton
 
         radiowidget = RadioWidget(True)
         radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

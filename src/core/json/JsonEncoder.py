@@ -26,7 +26,7 @@ class FavoriteListEncoder(json.JSONEncoder):
                     "uuid":str(obj.uuid),
                     "name":obj.name,
                     "isdefault":obj.isdefault,
-                    "stations":[str(station.uuid) for station in obj.stations],
+                    "stations":[{"stationuuid":stationentry.radiostation.uuid, "displayorder":stationentry.displayorder} for stationentry in obj.stations],
                     "displayorder":obj.displayorder}
     
         return json.JSONEncoder.default(self, obj)

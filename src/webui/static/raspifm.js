@@ -130,7 +130,7 @@ function initStationSearch()
         );
     });
 
-    registerFavLinks();
+    registerFavLinksStationSearch();
 }
 
 function initFavListMgmt()
@@ -169,7 +169,8 @@ function initFavListMgmt()
                         </td>
                     </tr>`
                     );
-
+                    
+                    $('#tblfavoritelists tbody tr:first .favlistdelete').prop('disabled', false);
                     favlistSelectRow($('#tblfavoritelists tr:last'))
                 },
                 error:function(xhr)
@@ -182,22 +183,22 @@ function initFavListMgmt()
         );
     });
 
-    $('#confirmfavlistremovemodal').on('show.bs.modal', function(e) {
+    $('#confirmfavlistdeletemodal').on('show.bs.modal', function(e) {
         let favListUid = $(e.relatedTarget).attr('data-favlistuuid')
         let favlistName = $(`#favlistrow-${favListUid} td:first`).text()
-        $('#confirmfavlistremovemodalContent').attr('data-favlistuuid', favListUid);
-        $('#confirmfavlistremovemodalContent').text(`Really delete favorite list "${favlistName}"?`);
+        $('#confirmfavlistdeletemodalContent').attr('data-favlistuuid', favListUid);
+        $('#confirmfavlistdeletemodalContent').text(`Really delete favorite list "${favlistName}"?`);
     });
 
-    $('#confirmfavlistremove').on('click', function(e)
+    $('#confirmfavlistdelete').on('click', function(e)
     {
-        let confirmfavlistremovemodal = bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmfavlistremovemodal'));
-        confirmfavlistremovemodal.hide();
+        let confirmfavlistdeletemodal = bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmfavlistdeletemodal'));
+        confirmfavlistdeletemodal.hide();
 
-        let favlistuuidToDelete = $('#confirmfavlistremovemodalContent').attr('data-favlistuuid');
+        let favlistuuidToDelete = $('#confirmfavlistdeletemodalContent').attr('data-favlistuuid');
 
         $.ajax(
-            {   url:'removefavoritelist',
+            {   url:'deletefavoritelist',
                 method:'POST',
                 data:{favlistuuid:favlistuuidToDelete},
                 success:function(data)
@@ -228,6 +229,11 @@ function initFavListMgmt()
                     {
                         favlistSelectRow($('#tblfavoritelists tbody tr:first'))
                     }
+
+                    if(maxIndex <= 1)
+                    {
+                        $('#tblfavoritelists .favlistdelete').prop('disabled', true);
+                    }
                 },
                 error:function(xhr)
                 {
@@ -248,8 +254,152 @@ function initFavListMgmt()
         );
     });
 
-    registerFavlistRows();
-    registerFavLinks(true);
+    $('#tblfavoritelists').on('click', 'tr', function(e)
+    {
+        favlistSelectRow($(this));
+    });   
+
+    $('#tblfavoritelists').on('click', '.favlistmoveup, .favlistmovedown', function(e)
+    {
+        e.stopPropagation();
+
+        let row = $(this).parent().parent();
+        let orgRowIndex = row.index();
+        let maxIndex = $(row.parent()[0]).children().length - 1;
+        let favlistUuidToMove = $(this).attr('data-favlistuuid');
+        let direction = $(this).attr('data-changetype');
+
+        $.ajax(
+            {   
+                url:'movefavoritelist',
+                method:'POST',
+                data:{favlistuuid:favlistUuidToMove, direction:direction},
+                success:function(data)
+                {
+                    if (direction==='Up') {
+                        row.insertBefore(row.prev());
+
+                        if(orgRowIndex===maxIndex)
+                        {
+                            let button = row.find('.favlistmovedown');
+                            button.prop('disabled', false);
+                            button = row.next().find('.favlistmovedown');
+                            button.prop('disabled', true);
+                        }
+
+                        if(row.index()===0)
+                        {
+                            let button = row.find('.favlistmoveup');
+                            button.prop('disabled', true);
+                            button = row.next().find('.favlistmoveup');
+                            button.prop('disabled', false);
+                        }
+                    }
+                    
+                    if (direction==='Down')
+                    {
+                        row.insertAfter(row.next());
+
+                        if(orgRowIndex===0)
+                        {
+                            let button = row.find('.favlistmoveup');
+                            button.prop('disabled', false);
+                            button = row.prev().find('.favlistmoveup');
+                            button.prop('disabled', true);
+                        }
+
+                        if(row.index()===maxIndex)
+                        {
+                            let button = row.find('.favlistmovedown');
+                            button.prop('disabled', true);
+                            button = row.prev().find('.favlistmovedown');
+                            button.prop('disabled', false);
+                        }
+                    }
+                },
+                error:function(xhr)
+                {
+                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
+                    errortoast.show();
+                }
+            }
+        );
+    });
+
+    $('#stationstable').on('click', '.stationmoveup, .stationmovedown', function(e)
+    {
+        let row = $(this).parent().parent();
+        let orgRowIndex = row.index();
+        let maxIndex = $(row.parent()[0]).children().length - 1;
+        let favlistUuidToMove = $('#tblfavoritelists .favlistselected').attr('id').substr(11)
+        let stationUuidToMove = $(this).attr('data-stationuuid');
+        let direction = $(this).attr('data-changetype');
+
+        $.ajax(
+            {   
+                url:'movestationinfavoritelist',
+                method:'POST',
+                data:{favlistuuid:favlistUuidToMove, stationuuid:stationUuidToMove, direction:direction},
+                success:function(data)
+                {
+                    if (direction==='Up') {
+                        row.insertBefore(row.prev());
+
+                        if(orgRowIndex===maxIndex)
+                        {
+                            let button = row.find('.stationmovedown');
+                            button.prop('disabled', false);
+                            button = row.next().find('.stationmovedown');
+                            button.prop('disabled', true);
+                        }
+
+                        if(row.index()===0)
+                        {
+                            let button = row.find('.stationmoveup');
+                            button.prop('disabled', true);
+                            button = row.next().find('.stationmoveup');
+                            button.prop('disabled', false);
+                        }
+                    }
+                    
+                    if (direction==='Down')
+                    {
+                        row.insertAfter(row.next());
+
+                        if(orgRowIndex===0)
+                        {
+                            let button = row.find('.stationmoveup');
+                            button.prop('disabled', false);
+                            button = row.prev().find('.stationmoveup');
+                            button.prop('disabled', true);
+                        }
+
+                        if(row.index()===maxIndex)
+                        {
+                            let button = row.find('.stationmovedown');
+                            button.prop('disabled', true);
+                            button = row.prev().find('.stationmovedown');
+                            button.prop('disabled', false);
+                        }
+                    }
+                },
+                error:function(xhr)
+                {
+                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
+                    errortoast.show();
+                }
+            }
+        );
+    });
+
+    $('#tblfavoritelists').on('click', '.favlistdelete', function(e)
+    {
+        e.stopPropagation();
+    });
+
+    registerFavLinksFavManagement();
 }
 
 function registerFavListEditControls()
@@ -313,7 +463,7 @@ function registerFavListEditControls()
     });
 }
 
-function registerFavLinks(removetablerow = false)
+function registerFavLinksStationSearch()
 {
     $('.fav-link').on('click', function(e)
     {
@@ -327,26 +477,16 @@ function registerFavLinks(removetablerow = false)
                 context:$(this),
                 success:function(data)
                 {   
-                    if (removetablerow)
+                    let img = $('img', this);
+                    if (changetype==='add')
                     {
-                        let row = $(`#favrow-${stationuuid}`);
-                        row.fadeOut(1000, function() {
-                            row.remove();
-                        });
-                    }   
+                        $(this).attr('data-changetype', 'remove');
+                        img.attr('src', img.attr('src').replace('star.svg', 'star-fill.svg'));
+                    }
                     else
                     {
-                        let img = $('img', this);
-                        if (changetype==='add')
-                        {
-                            $(this).attr('data-changetype', 'remove');
-                            img.attr('src', img.attr('src').replace('star.svg', 'star-fill.svg'));
-                        }
-                        else
-                        {
-                            $(this).attr('data-changetype', 'add');
-                            img.attr('src', img.attr('src').replace('star-fill.svg', 'star.svg'));
-                        }
+                        $(this).attr('data-changetype', 'add');
+                        img.attr('src', img.attr('src').replace('star-fill.svg', 'star.svg'));
                     }
                 },
                 error:function(xhr)
@@ -360,70 +500,24 @@ function registerFavLinks(removetablerow = false)
     });
 }
 
-function registerFavlistRows()
+function registerFavLinksFavManagement()
 {
-    $('#tblfavoritelists').on('click', 'tr', function(e)
+    $('.fav-link').on('click', function(e)
     {
-        favlistSelectRow($(this));
-    });   
-
-    $('#tblfavoritelists').on('click', '.favlistmoveup, .favlistmovedown', function(e)
-    {
-        e.stopPropagation();
-
-        let row = $(this).parent().parent();
-        let orgRowIndex = row.index();
-        let maxIndex = $(row.parent()[0]).children().length - 1;
-        let favlistUuidToMove = $(this).attr('data-favlistuuid');
-        let direction = $(this).attr('data-changetype');
-
+        let changetype = $(this).attr('data-changetype');
+        let stationuuid = $(this).attr('data-stationuuid');
+        let tester = $('#tblfavoritelists .favlistselected').attr('id').substr(11);
         $.ajax(
-            {   
-                url:'movefavoritelist',
+            {   url:'changefavorite',
                 method:'POST',
-                data:{favlistuuid:favlistUuidToMove,direction:direction},
+                data:{changetype:changetype, stationuuid:stationuuid, favlistuuid:$('#tblfavoritelists .favlistselected').attr('id').substr(11)},
+                context:$(this),
                 success:function(data)
-                {
-                    if (direction==='Up') {
-                        row.insertBefore(row.prev());
-
-                        if(orgRowIndex===maxIndex)
-                        {
-                            let button = row.find('.favlistmovedown');
-                            button.prop('disabled', false);
-                            button = row.next().find('.favlistmovedown');
-                            button.prop('disabled', true);
-                        }
-
-                        if(row.index()===0)
-                        {
-                            let button = row.find('.favlistmoveup');
-                            button.prop('disabled', true);
-                            button = row.next().find('.favlistmoveup');
-                            button.prop('disabled', false);
-                        }
-                    }
-                    
-                    if (direction==='Down')
-                    {
-                        row.insertAfter(row.next());
-
-                        if(orgRowIndex===0)
-                        {
-                            let button = row.find('.favlistmoveup');
-                            button.prop('disabled', false);
-                            button = row.prev().find('.favlistmoveup');
-                            button.prop('disabled', true);
-                        }
-
-                        if(row.index()===maxIndex)
-                        {
-                            let button = row.find('.favlistmovedown');
-                            button.prop('disabled', true);
-                            button = row.prev().find('.favlistmovedown');
-                            button.prop('disabled', false);
-                        }
-                    }
+                {   
+                    let row = $(`#favrow-${stationuuid}`);
+                    row.fadeOut(1000, function() {
+                        row.remove();
+                    });
                 },
                 error:function(xhr)
                 {
@@ -433,11 +527,6 @@ function registerFavlistRows()
                 }
             }
         );
-    });
-
-    $('#tblfavoritelists').on('click', '.favlistremove', function(e)
-    {
-        e.stopPropagation();
     });
 }
 
@@ -455,7 +544,7 @@ function favlistSelectRow(row)
             success:function(data)
             {
                 $('#favcontent').html(data);
-                registerFavLinks(true);
+                registerFavLinksFavManagement();
                 registerFavListEditControls();
             },
             error:function(xhr)
@@ -489,7 +578,7 @@ function initSettingsMgmt()
                 }
             }
         );
-    });
+    });$('#tblfavoritelists .favlistselected').attr('id').substr(11)
 
     $('#sllang').on('change', function(e)
     {   

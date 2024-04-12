@@ -10,6 +10,7 @@ from core.business.LanguageList import LanguageList
 from core.business.RadioStation import RadioStation
 from core.business.RadioStations import RadioStations
 from core.business.TagList import TagList
+from core.business.ViewProxies.RadioStationFavoriteEntry import RadioStationFavoriteEntry
 from core.StartWith import StartWith
 
 class CountryListDecoder(json.JSONDecoder):
@@ -34,20 +35,11 @@ class FavoriteListDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         if "__type__" in obj and obj["__type__"] == "FavoriteList":
             obj["uuid"] = UUID(obj["uuid"])
-
-            stations = []
-            for stationuuid in obj["stations"]:
-                station = next((station for station in self.__radiostations.stationlist if station.uuid == UUID(stationuuid)), None)
-                if station is None:
-                    raise TypeError("Station in FavoriteList does not exist in Radiostations.")
-                stations.append(station)
-
-            obj["stations"] = stations
-
+            obj["stations"] = [RadioStationFavoriteEntry(self.__radiostations.get_station(UUID(stationentry["stationuuid"])), stationentry["displayorder"]) for stationentry in obj["stations"]]
             return FavoriteList.deserialize(obj)
-        
+
         return obj
-    
+
 class FavoritesDecoder(json.JSONDecoder):
     __slots__ = ["__radiostations"]
     __radiostations:RadioStations

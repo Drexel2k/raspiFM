@@ -79,7 +79,7 @@ def stationsearch() -> str:
 
             for stationapi in RaspiFM().stationapis_get(selected["name"], country, language, selected["tags"], selected["orderby"], False if selected["order"] == "asc" else True, page):
                 if stationapi.hls == 0:
-                    if any(stationcore.uuid == UUID(stationapi.stationuuid) for stationcore in selected["favoritelist"].stations):
+                    if any(stationcoreentry.radiostation.uuid == UUID(stationapi.stationuuid) for stationcoreentry in selected["favoritelist"].stations):
                         stations.append(RadioStationView(stationapi, True))
                     else:
                         stations.append(RadioStationView(stationapi, False))
@@ -142,7 +142,7 @@ def changefavorite() -> Response:
             RaspiFM().favorites_add_stationtolist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         if form["changetype"] == "remove":
-            RaspiFM().favorites_delete_stationfromlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
+            RaspiFM().favorites_remove_stationfromlist(UUID(form["stationuuid"]), UUID(form["favlistuuid"]))
 
         response = make_response("", 204)
         response.mimetype = "application/json"
@@ -156,7 +156,7 @@ def getfavoritelist() -> Response:
     try:
         form = request.form
         favoritlist = RaspiFM().favorites_getlist(UUID(form["favlistuuid"]))
-        stationuuids = [station.uuid for station in favoritlist.stations]
+        stationuuids = [stationentry.radiostation.uuid for stationentry in favoritlist.stations]
 
         response = make_response(RaspiFM().get_serialzeduuids(stationuuids), 200)
         response.mimetype = "application/json"
@@ -189,8 +189,8 @@ def changefavoritelist() -> Response:
         return get_errorresponse(e)
 
 #ajax
-@app.route("/removefavoritelist", methods=["POST"])
-def removefavoritelist() -> Response:
+@app.route("/deletefavoritelist", methods=["POST"])
+def deletefavoritelist() -> Response:
     try:
         form = request.form
         RaspiFM().favorites_deletelist(UUID(form["favlistuuid"]))
@@ -217,6 +217,18 @@ def movefavoritelist() -> Response:
     try:
         form = request.form
         RaspiFM().favorites_movelist(UUID(form["favlistuuid"]), form["direction"])
+        response = make_response("", 204)
+        response.mimetype = "application/json"
+        return response
+    except BaseException as e:
+        return get_errorresponse(e)
+
+#ajax
+@app.route("/movestationinfavoritelist", methods=["POST"])
+def movestationinfavoritelist() -> Response:
+    try:
+        form = request.form
+        RaspiFM().favorites_move_station_in_list(UUID(form["favlistuuid"]), UUID(form["stationuuid"]), form["direction"])
         response = make_response("", 204)
         response.mimetype = "application/json"
         return response

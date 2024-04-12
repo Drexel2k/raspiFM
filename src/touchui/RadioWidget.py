@@ -54,7 +54,7 @@ class RadioWidget(QWidget):
             if RaspiFM().settings_touch_startwith() == StartWith.DefaultList:
                 defaultlist = RaspiFM().favorites_getdefaultlist()
                 if len(defaultlist.stations) > 0:
-                        station = defaultlist.stations[0]
+                        station = defaultlist.stations[0].radiostation
 
             if station is None:
                 if not self.__nostations:
@@ -87,7 +87,7 @@ class RadioWidget(QWidget):
                     self.__nostations = False
 
                 RaspiFM().radio_set_currentstation(station)
-                RaspiFM().radio_play(station)
+                RaspiFM().radio_play()
 
                 if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
                     stationapi.send_stationclicked(station.uuid)

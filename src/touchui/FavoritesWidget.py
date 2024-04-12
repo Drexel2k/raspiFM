@@ -60,7 +60,8 @@ class FavoritesWidget(QWidget):
             btn.setParent(None)
 
         favoritelist = self.__cbo_favoritelists.currentData()
-        for station in favoritelist.stations: 
+        for station in favoritelist.stations:
+            station = station.radiostation
             button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             button.setMaximumWidth(self.width() - 45)

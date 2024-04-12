@@ -81,14 +81,14 @@ class Favorites:
                 changelist.isdefault = False
                 newdefaultlist.isdefault = True
 
-    def move(self, listuuid:UUID, direction:Direction) -> None:
+    def move_list(self, listuuid:UUID, direction:Direction) -> None:
         favoritelist = self.get_list(listuuid)
         if not favoritelist is None:
             ordered_favoritelists = sorted(self.__favoritelists, key=lambda favoritelist: favoritelist.displayorder)
             currentindex = ordered_favoritelists.index(favoritelist)
 
             if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_favoritelists) - 1 and direction == Direction.Down):
-                raise InvalidOperationException("Cannot move first favorite up oder last favorite list down.")
+                raise InvalidOperationException("Cannot move first favorite list up oder last favorite list down.")
 
             ordered_favoritelists.pop(currentindex)
 
@@ -110,3 +110,8 @@ class Favorites:
             for favoritelist_inorder in ordered_favoritelists:
                 favoritelist_inorder.displayorder = position
                 position += 1
+
+    def move_station_in_list(self, favlistuuid:UUID, stationuuid:UUID, direction:Direction) -> None:
+        favlist =   self.get_list(favlistuuid)
+        if not favlist is None:
+            favlist.move_station(stationuuid, direction)
