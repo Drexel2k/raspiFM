@@ -170,8 +170,7 @@ function initFavListMgmt()
                     </tr>`
                     );
 
-                    registerFavlistButtons();
-                    favlistTrSelected($('#tblfavoritelists tbody tr:last'))
+                    favlistSelectRow($('#tblfavoritelists tr:last'))
                 },
                 error:function(xhr)
                 {
@@ -183,12 +182,6 @@ function initFavListMgmt()
         );
     });
 
-    $('#tblfavoritelists tbody tr').on('click', function(e)
-    {
-        favlistTrSelected($(this));
-    });
-
-
     $('#confirmfavlistremovemodal').on('show.bs.modal', function(e) {
         let favListUid = $(e.relatedTarget).attr('data-favlistuuid')
         let favlistName = $(`#favlistrow-${favListUid} td:first`).text()
@@ -196,13 +189,6 @@ function initFavListMgmt()
         $('#confirmfavlistremovemodalContent').text(`Really delete favorite list "${favlistName}"?`);
     });
 
-    registerFavlistButtons();
-    registerFavListEditControls();
-    registerFavLinks(true);
-}
-
-function registerFavListEditControls()
-{
     $('#confirmfavlistremove').on('click', function(e)
     {
         let confirmfavlistremovemodal = bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmfavlistremovemodal'));
@@ -228,25 +214,25 @@ function registerFavListEditControls()
                     let maxIndex = $(rowToRemove.parent()[0]).children().length - 1;
                     
                     rowToRemove.remove();
-                    if(rowIndex == 0)
+                    if(rowIndex === 0)
                     {
                         $('#tblfavoritelists tbody tr:first .favlistmoveup').prop('disabled', true);
                     }
 
-                    if(rowIndex == maxIndex)
+                    if(rowIndex === maxIndex)
                     {
                         $('#tblfavoritelists tr:last .favlistmovedown').prop('disabled', true);
                     }
                     
                     if(wasSelected)
                     {
-                        favlistTrSelected($('#tblfavoritelists tbody tr:first'))
+                        favlistSelectRow($('#tblfavoritelists tbody tr:first'))
                     }
                 },
                 error:function(xhr)
                 {
                     let errorvar = JSON.parse(xhr.responseText);
-                    if (errorvar.errorNo == 1)
+                    if (errorvar.errorNo === 1)
                     {
                         $('#errortoastContent').text(errorvar.error[0]); 
                     }
@@ -262,6 +248,12 @@ function registerFavListEditControls()
         );
     });
 
+    registerFavlistRows();
+    registerFavLinks(true);
+}
+
+function registerFavListEditControls()
+{
     $('#txname').on('keyup', function(e)
     {
         delay(function()
@@ -304,7 +296,7 @@ function registerFavListEditControls()
                 {
                     $('#chdefault').prop('checked', 'checked');
                     let errorvar = JSON.parse(xhr.responseText);
-                    if (errorvar.errorNo == 1)
+                    if (errorvar.errorNo === 1)
                     {
                         $('#errortoastContent').text(errorvar.error[0]); 
                     }
@@ -345,7 +337,7 @@ function registerFavLinks(removetablerow = false)
                     else
                     {
                         let img = $('img', this);
-                        if (changetype=='add')
+                        if (changetype==='add')
                         {
                             $(this).attr('data-changetype', 'remove');
                             img.attr('src', img.attr('src').replace('star.svg', 'star-fill.svg'));
@@ -368,10 +360,17 @@ function registerFavLinks(removetablerow = false)
     });
 }
 
-function registerFavlistButtons()
+function registerFavlistRows()
 {
-    $('.favlistmoveup, .favlistmovedown').on('click', function(e)
+    $('#tblfavoritelists').on('click', 'tr', function(e)
     {
+        favlistSelectRow($(this));
+    });   
+
+    $('#tblfavoritelists').on('click', '.favlistmoveup, .favlistmovedown', function(e)
+    {
+        e.stopPropagation();
+
         let row = $(this).parent().parent();
         let orgRowIndex = row.index();
         let maxIndex = $(row.parent()[0]).children().length - 1;
@@ -385,10 +384,10 @@ function registerFavlistButtons()
                 data:{favlistuuid:favlistUuidToMove,direction:direction},
                 success:function(data)
                 {
-                    if (direction=='Up') {
+                    if (direction==='Up') {
                         row.insertBefore(row.prev());
 
-                        if(orgRowIndex==maxIndex)
+                        if(orgRowIndex===maxIndex)
                         {
                             let button = row.find('.favlistmovedown');
                             button.prop('disabled', false);
@@ -396,7 +395,7 @@ function registerFavlistButtons()
                             button.prop('disabled', true);
                         }
 
-                        if(row.index()==0)
+                        if(row.index()===0)
                         {
                             let button = row.find('.favlistmoveup');
                             button.prop('disabled', true);
@@ -405,11 +404,11 @@ function registerFavlistButtons()
                         }
                     }
                     
-                    if (direction=='Down')
+                    if (direction==='Down')
                     {
                         row.insertAfter(row.next());
 
-                        if(orgRowIndex==0)
+                        if(orgRowIndex===0)
                         {
                             let button = row.find('.favlistmoveup');
                             button.prop('disabled', false);
@@ -417,7 +416,7 @@ function registerFavlistButtons()
                             button.prop('disabled', true);
                         }
 
-                        if(row.index()==maxIndex)
+                        if(row.index()===maxIndex)
                         {
                             let button = row.find('.favlistmovedown');
                             button.prop('disabled', true);
@@ -436,13 +435,13 @@ function registerFavlistButtons()
         );
     });
 
-    $('.favlistremove').on('click', function(e)
+    $('#tblfavoritelists').on('click', '.favlistremove', function(e)
     {
         e.stopPropagation();
     });
 }
 
-function favlistTrSelected(row)
+function favlistSelectRow(row)
 {
     $('#tblfavoritelists .favlistselected').removeClass('table-bg-raspicolor favlistselected');
     row.addClass('favlistselected table-bg-raspicolor');
@@ -457,6 +456,7 @@ function favlistTrSelected(row)
             {
                 $('#favcontent').html(data);
                 registerFavLinks(true);
+                registerFavListEditControls();
             },
             error:function(xhr)
             {

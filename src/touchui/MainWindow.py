@@ -32,9 +32,10 @@ class MainWindow(QMainWindow):
         scroll.setWidget(self.__mainwidget)
         self.setCentralWidget(scroll)
 
+        RaspiFM()
+
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
-
         self.__initializespotify()
 
         #Create background color from qt-material primary color
@@ -79,13 +80,19 @@ class MainWindow(QMainWindow):
 
             self.__mainwidget.layout().addWidget(SpotifyWidget(), stretch=4)            
         else:
-            self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
-            self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
-            self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
             self.__activebutton = self.__radiobutton
 
-            RaspiFM()
             radiowidget = RadioWidget(True)
+
+            #can not be playing of no stations are available on initial start e.g.
+            if RaspiFM().radio_isplaying():
+                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
+            else:
+                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
+
+            self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
+            self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+
             radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
             radiowidget.playstopped.connect(self.__changeIconRadioStopped)
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4)

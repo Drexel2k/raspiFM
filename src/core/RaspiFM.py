@@ -70,8 +70,25 @@ class RaspiFM:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
                    stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
     
-    def station_get(self, uuid:UUID) -> RadioStation:
+    def stations_getstation(self, uuid:UUID) -> RadioStation:
         return self.__radiostations.get_station(uuid)
+    
+    def stations_deletestation(self, uuid:UUID, serialize:bool=True) -> None:
+        station = self.stations_getstation(uuid)
+
+        deletestation = True
+        for favlist in self.__favorites.favoritelists:
+            if station in favlist.stations:
+                deletestation = False
+                break
+        
+        if uuid == self.__settings.usersettings.touch_laststation:
+            deletestation = False
+
+        if deletestation:
+            self.__radiostations.remove_station(station)
+            if serialize:
+                JsonSerializer().serialize_radiostations(self.__radiostations)
     
     def countries_get(self) -> CountryList:
         countrylist = JsonDeserializer().get_countrylist()
@@ -140,15 +157,7 @@ class RaspiFM:
         self.__favorites.get_list(favlistuuid).removestation(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
-        deletestation = True
-        for favlist in self.__favorites.favoritelists:
-            if station in favlist.stations:
-                deletestation = False
-                break
-
-        if deletestation:
-            self.__radiostations.remove_station(station)
-            JsonSerializer().serialize_radiostations(self.__radiostations)
+        self.stations_deletestation(station.uuid)
     
     def favorites_getlists(self) -> tuple:
         return self.__favorites.favoritelists
@@ -159,8 +168,19 @@ class RaspiFM:
         return favoritelist
     
     def favorites_deletelist(self, uuid:UUID) -> FavoriteList:
+        favlist = self.__favorites.get_list(uuid)
+        station_uuids = []
+        if not favlist is None:
+            for station in favlist.stations:
+                station_uuids.append(station.uuid)
+
         self.__favorites.delete_favoritelist(uuid)
         JsonSerializer().serialize_favorites(self.__favorites)
+
+        for station_uuid in station_uuids:
+            self.stations_deletestation(station_uuid, False)
+
+        JsonSerializer().serialize_radiostations(self.__radiostations)
 
     def favorites_getdefaultlist(self) -> FavoriteList:
         return self.__favorites.get_default()

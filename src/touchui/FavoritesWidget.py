@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QScrollArea
 
+from utils import utils
 from core.http.radiobrowserapi import stationapi
 from core.players.Vlc import Vlc
 from touchui.PushButtonData import PushButtonData
@@ -37,7 +38,8 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists.setFixedHeight(50)
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
         for list in RaspiFM().favorites_getlists():
-            self.__cbo_favoritelists.addItem(list.name, list)
+            name = list.name if not utils.str_isnullorwhitespace(list.name) else "{no name}"
+            self.__cbo_favoritelists.addItem(name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
 
         mainlayout.addWidget(self.__cbo_favoritelists)
