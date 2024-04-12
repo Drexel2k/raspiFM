@@ -3,14 +3,14 @@ import json
 from pathlib import Path
 from uuid import UUID
 
-from .JsonEncoder import CountryListEncoder, UserSettingsEncoder, LanguageListEncoder, FavoritesEncoder, TagListEncoder
-from ..Settings import UserSettings
-from ..business.CountryList import CountryList
-from ..business.LanguageList import LanguageList
-from ..business.TagList import TagList
-from ..business.Favorites import Favorites
-from ..business.RadioStations import RadioStations
-from .JsonEncoder import RestParamsEncoder, RadioStationsEncoder
+from core.json.JsonEncoder import CountryListEncoder, UserSettingsEncoder, LanguageListEncoder, FavoritesEncoder, TagListEncoder
+from core.Settings import UserSettings
+from core.business.CountryList import CountryList
+from core.business.LanguageList import LanguageList
+from core.business.TagList import TagList
+from core.business.Favorites import Favorites
+from core.business.RadioStations import RadioStations
+from core.json.JsonEncoder import RestParamsEncoder, RadioStationsEncoder
 
 class JsonSerializer():
     __slots__ = ["__path"]
@@ -19,7 +19,7 @@ class JsonSerializer():
 
     def __new__(cls, path = None):
         if cls.__instance is None:
-            if not path:
+            if path is None:
                 raise TypeError("On first call a path parameter must be given which is the serialization folder.")
 
             cls.__instance = super(JsonSerializer, cls).__new__(cls)

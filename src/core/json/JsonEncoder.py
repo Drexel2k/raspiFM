@@ -1,14 +1,14 @@
 import json
 from uuid import UUID
 
-from ..Settings import UserSettings
-from ..business.CountryList import CountryList
-from ..business.FavoriteList import FavoriteList
-from ..business.Favorites import Favorites
-from ..business.LanguageList import LanguageList
-from ..business.RadioStation import RadioStation
-from ..business.RadioStations import RadioStations
-from ..business.TagList import TagList
+from core.Settings import UserSettings
+from core.business.CountryList import CountryList
+from core.business.FavoriteList import FavoriteList
+from core.business.Favorites import Favorites
+from core.business.LanguageList import LanguageList
+from core.business.RadioStation import RadioStation
+from core.business.RadioStations import RadioStations
+from core.business.TagList import TagList
 
 class CountryListEncoder(json.JSONEncoder):
     def default(self, obj:CountryList):
@@ -23,10 +23,11 @@ class FavoriteListEncoder(json.JSONEncoder):
     def default(self, obj:FavoriteList):
         if isinstance(obj, FavoriteList):
              return {"__type__":"FavoriteList",
-                     "uuid":str(obj.uuid),
-                     "name":obj.name,
-                     "isdefault":obj.isdefault,
-                     "stations":[str(station.uuid) for station in obj.stations]}
+                    "uuid":str(obj.uuid),
+                    "name":obj.name,
+                    "isdefault":obj.isdefault,
+                    "stations":[str(station.uuid) for station in obj.stations],
+                    "displayorder":obj.displayorder}
     
         return json.JSONEncoder.default(self, obj)
     

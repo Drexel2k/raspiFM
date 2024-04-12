@@ -1,14 +1,15 @@
 from __future__ import annotations
 from uuid import UUID, uuid4
 
-from .RadioStation import RadioStation
+from core.business.RadioStation import RadioStation
 
 class FavoriteList:
-    __slots__ = ["__uuid", "__name", "__isdefault", "__stations"]
+    __slots__ = ["__uuid", "__name", "__isdefault", "__stations", "__displayorder"]
     __uuid:UUID
     __name:str
     __isdefault:bool
     __stations:list
+    __displayorder:int
 
     @property
     def uuid(self) -> UUID:
@@ -27,35 +28,44 @@ class FavoriteList:
         return self.__isdefault
     
     @isdefault.setter
-    def isdefault(self, value : bool) -> None:
+    def isdefault(self, value:bool) -> None:
         self.__isdefault = value
 
     @property
     def stations(self) -> tuple:
         #ensure only FavoriteList class can edit the list
         return tuple(self.__stations)
+    
+    @property
+    def displayorder(self) -> bool:
+        return self.__displayorder
+    
+    @displayorder.setter
+    def displayorder(self, value:str) -> None:
+        self.__displayorder = value
 
     @classmethod
-    def from_default(cls, name:str=None) -> FavoriteList:
+    def from_default(cls, name:str=None, displayorder:int=0) -> FavoriteList:
         obj = cls()
 
         obj.__setattr__(f"_FavoriteList__uuid", uuid4())
         obj.__setattr__(f"_FavoriteList__name", name)
         obj.__setattr__(f"_FavoriteList__isdefault", False)
         obj.__setattr__(f"_FavoriteList__stations", [])
+        obj.__setattr__(f"_FavoriteList__displayorder", displayorder)
 
         return obj
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> FavoriteList:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for FavoriteList deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in FavoriteList serialization data.")
 
             obj.__setattr__(f"_FavoriteList{slot}", serializationdata[dictkey])
@@ -63,11 +73,11 @@ class FavoriteList:
         return obj
 
     def addstation(self, station:RadioStation) -> None:
-        if(not station in self.__stations):
+        if not station in self.__stations:
             self.__stations.append(station)
 
     def removestation(self, station:RadioStation) -> None:
-        if(station in self.__stations):
+        if station in self.__stations:
             self.__stations.remove(station)
 
     def contains(self, stationuuid:UUID) -> bool:

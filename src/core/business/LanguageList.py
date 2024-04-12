@@ -18,7 +18,7 @@ class LanguageList:
 
     @classmethod
     def from_default(cls, languagelist:dict) -> LanguageList:
-        if(not languagelist):
+        if languagelist is None:
             raise ValueError("languagelist must not be null for LanguageList.")
         
         obj = cls()
@@ -30,14 +30,14 @@ class LanguageList:
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> LanguageList:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for LanguageList deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in LanguageList serialization data.")
 
             obj.__setattr__(f"_LanguageList{slot}", serializationdata[dictkey])

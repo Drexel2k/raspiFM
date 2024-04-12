@@ -1,7 +1,7 @@
 import socket
 from urllib import request
 import random
-from ...json.JsonSerializer import JsonSerializer
+from core.json.JsonSerializer import JsonSerializer
 
 def get_random_radiobrowser_base_url() -> str:
     hosts = []
@@ -26,7 +26,7 @@ def get_random_radiobrowser_base_url() -> str:
 
 def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
     paramsencoded = None
-    if params:
+    if not params is None:
         paramsencoded = JsonSerializer().serialize_restparams(params)
 
     req = request.Request(get_random_radiobrowser_base_url() + endpoint, paramsencoded)
@@ -40,7 +40,7 @@ def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
     return data
 
 def radiobrowser_get_request(endpoint:str, params:dict):
-    if params:
+    if not params is None:
         paramsencoded = "/".join(key + "/" + value for key, value in params.items())
 
     str = get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded

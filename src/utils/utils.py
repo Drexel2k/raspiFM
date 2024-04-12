@@ -1,5 +1,5 @@
 def str_isnullorwhitespace(arg:str) -> bool:
-    if(not arg):
+    if arg is None:
         return True
     
     return arg.isspace()

@@ -10,7 +10,7 @@ class FavoriteListView:
     
     @property
     def name(self) -> str:
-        if(self.__favoritelist.name):
+        if not self.__favoritelist.name is None:
             return self.__favoritelist.name
         else:
             return "{no name}"

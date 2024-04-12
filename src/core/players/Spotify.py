@@ -15,7 +15,7 @@ class Spotify:
     
     @isplaying.setter
     def isplaying(self, value: bool) -> None:
-        if(value):
+        if value:
             self.__state = PlayerState.Playing
         else:
             self.__state = PlayerState.Stopped
@@ -23,7 +23,7 @@ class Spotify:
     
     @property
     def currentlyplaying(self) -> SpotifyInfo:
-        if(self.__state == PlayerState.Playing):
+        if self.__state == PlayerState.Playing:
             return self.__spotifyinfo
         else:
             return None
@@ -32,7 +32,7 @@ class Spotify:
     def currentlyplaying(self, value: SpotifyInfo) -> None:
         self.__spotifyinfo = value
 
-        if(self.__spotifyinfo):
+        if self.__spotifyinfo:
             self.__state = PlayerState.Playing
         else:
             self.__state = PlayerState.Stopped

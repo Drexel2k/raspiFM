@@ -3,8 +3,8 @@ from __future__ import annotations
 import vlc
 from vlc import MediaPlayer
 
-from .PlayerState import PlayerState
-from ..business.RadioStation import RadioStation
+from core.players.PlayerState import PlayerState
+from core.business.RadioStation import RadioStation
 
 class Vlc:
     __slots__ = ["__vlcinstance", "__vlcplayer", "__vlcmedia", "__state", "__volume", "__station"]
@@ -26,15 +26,15 @@ class Vlc:
 
     @volume.setter
     def volume(self, value: int) -> None:
-        if(value < 0):
+        if value < 0:
             value = 0
 
-        if(value > 100):
+        if value > 100:
             value = 100
 
         self.__volume = value
 
-        if(self.__vlcplayer):
+        if not self.__vlcplayer is None:
             self.__vlcplayer.audio_set_volume(self.__volume)
     
     @property
@@ -61,13 +61,13 @@ class Vlc:
         self.__state = PlayerState.Stopped
 
     def play(self, station:RadioStation = None) -> None:
-        if (not station and not self.__station):
+        if station is None and not self.__station:
             raise ValueError("No station to play.")
 
-        if(station):
+        if not station is None:
             self.__station = station 
 
-        if(self.__state == PlayerState.Playing):
+        if self.__state == PlayerState.Playing:
             self.stop()
 
         self.__state = PlayerState.Playing
@@ -78,9 +78,9 @@ class Vlc:
         self.__vlcplayer.play()
 
     def stop(self) -> None:
-        if(self.__state != PlayerState.Stopped):
+        if self.__state != PlayerState.Stopped:
             self.__state = PlayerState.Stopped
-            if(self.__vlcplayer):
+            if not self.__vlcplayer is None:
                 self.__vlcplayer.stop()
 
                 vlc.libvlc_media_player_release(self.__vlcplayer)
@@ -91,7 +91,7 @@ class Vlc:
 
 
     def getmeta(self) -> str:     
-        if(self.isplaying):
+        if self.isplaying:
             #print(f'Actors: {self.__vlcmedia.get_meta(vlc.Meta.Actors)}')
             #print(f'Album: {self.__vlcmedia.get_meta(vlc.Meta.Album)}')
             #print(f'AlbumArtist: {self.__vlcmedia.get_meta(vlc.Meta.AlbumArtist)}')
@@ -122,7 +122,7 @@ class Vlc:
             return self.__vlcmedia.get_meta(vlc.Meta.NowPlaying)
 
     def shutdown(self) -> None:
-        if(self.__state == PlayerState.Playing):
+        if self.__state == PlayerState.Playing:
             self.stop()
 
         vlc.libvlc_release(self.__vlcinstance)

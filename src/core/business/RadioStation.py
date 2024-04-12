@@ -61,7 +61,7 @@ class RadioStation:
 
     @classmethod
     def from_default(cls, uuid:str, name:str, url:str, codec:str, countrycode:str=None, languagecodes:str=None, homepage:str=None, faviconb64:str=None, faviconextension:str=None, bitrate:int=None, tags:list=None) -> RadioStation:
-        if(not uuid or not name or not url or not codec):
+        if uuid is None or name is None or url is None or codec is None:
             raise ValueError("uuid, name or url must not be null for RadioStation.")
         
         obj = cls()
@@ -82,14 +82,14 @@ class RadioStation:
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> RadioStation:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for RadioStation deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in RadioStation serialization data.")
 
             obj.__setattr__(f"_RadioStation{slot}", serializationdata[dictkey])

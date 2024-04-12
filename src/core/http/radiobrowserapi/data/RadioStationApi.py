@@ -79,9 +79,9 @@ class RadioStationApi:
     def __init__(self, apidict:dict):
         for slot in self.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in apidict)):
+            if not dictkey in apidict:
                raise TypeError(f"{dictkey} key not found in radio station api response dictionary.")
-            if(dictkey != "tags"):
+            if dictkey != "tags":
                 self.__setattr__(f"_RadioStationApi{slot}", apidict[dictkey])
             else:
                 self.__setattr__(f"_RadioStationApi{slot}", apidict[dictkey].split(","))

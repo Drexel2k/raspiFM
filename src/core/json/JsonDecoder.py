@@ -2,15 +2,15 @@ from datetime import datetime
 import json
 from uuid import UUID
 
-from ..Settings import UserSettings
-from ..business.CountryList import CountryList
-from ..business.FavoriteList import FavoriteList
-from ..business.Favorites import Favorites
-from ..business.LanguageList import LanguageList
-from ..business.RadioStation import RadioStation
-from ..business.RadioStations import RadioStations
-from ..business.TagList import TagList
-from ..StartWith import StartWith
+from core.Settings import UserSettings
+from core.business.CountryList import CountryList
+from core.business.FavoriteList import FavoriteList
+from core.business.Favorites import Favorites
+from core.business.LanguageList import LanguageList
+from core.business.RadioStation import RadioStation
+from core.business.RadioStations import RadioStations
+from core.business.TagList import TagList
+from core.StartWith import StartWith
 
 class CountryListDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
@@ -38,7 +38,7 @@ class FavoriteListDecoder(json.JSONDecoder):
             stations = []
             for stationuuid in obj["stations"]:
                 station = next((station for station in self.__radiostations.stationlist if station.uuid == UUID(stationuuid)), None)
-                if(not station):
+                if station is None:
                     raise TypeError("Station in FavoriteList does not exist in Radiostations.")
                 stations.append(station)
 

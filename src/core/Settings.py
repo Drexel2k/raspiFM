@@ -73,14 +73,14 @@ class UserSettings:
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> UserSettings:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for UserSettings deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in UserSettings serialization data.")
 
             obj.__setattr__(f"_UserSettings{slot}", serializationdata[dictkey])

@@ -14,6 +14,7 @@ from core.http.radiobrowserapi import stationapi
 from core.http.radiobrowserapi.data.RadioStationApi import RadioStationApi
 from core.http.radiobrowserapi import listapi
 from core.http.basics import httpcontent
+from core.business.Direction import Direction
 from core.business.CountryList import CountryList
 from core.business.LanguageList import LanguageList
 from core.business.TagList import TagList
@@ -53,11 +54,11 @@ class RaspiFM:
         JsonDeserializer(self.__settings.serialization_directory)
 
         self.__radiostations = JsonDeserializer().get_radiostations()
-        if(not self.__radiostations):
+        if self.__radiostations is None:
             self.__radiostations = RadioStations.from_default()
 
         self.__favorites = JsonDeserializer().get_favorites(self.__radiostations)
-        if(not self.__favorites):
+        if self.__favorites is None:
             self.__favorites = Favorites.from_default()
 
         usersettings = JsonDeserializer().get_usersettings()
@@ -76,7 +77,7 @@ class RaspiFM:
         countrylist = JsonDeserializer().get_countrylist()
 
         sevendays = timedelta(days=7)
-        if (not countrylist or countrylist.lastupdate + sevendays < datetime.now()):
+        if countrylist is None or countrylist.lastupdate + sevendays < datetime.now():
             countrylistapi = listapi.query_countrylist()
             countrylist = CountryList.from_default({ country["name"] : country["iso_3166_1"] for country in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
@@ -87,7 +88,7 @@ class RaspiFM:
         languagelist = JsonDeserializer().get_languagelist()
 
         sevendays = timedelta(days=7)
-        if (not languagelist or languagelist.lastupdate + sevendays < datetime.now()):
+        if languagelist is None or languagelist.lastupdate + sevendays < datetime.now():
             languagelistapi = listapi.query_languagelist()
             languagelist = LanguageList.from_default({ language["name"] : language["iso_639"] for language in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
@@ -98,12 +99,12 @@ class RaspiFM:
         taglist = JsonDeserializer().get_taglist()
 
         sevendays = timedelta(days=7)
-        if (not taglist or taglist.lastupdate + sevendays < datetime.now()):
+        if taglist is None or taglist.lastupdate + sevendays < datetime.now():
             taglistapi = listapi.query_taglist()
             taglist = TagList.from_default([ tag["name"] for tag in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
-        if filter:
+        if not filter is None:
             taglist.filter(filter)
             
         return taglist
@@ -111,7 +112,7 @@ class RaspiFM:
     def favorites_add_stationtolist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
         station = self.__radiostations.get_station(stationuuid)
 
-        if not station:
+        if station is None:
             radiostationapi = stationapi.query_station(stationuuid)
 
             station = RadioStation.from_default(radiostationapi.stationuuid,
@@ -145,7 +146,7 @@ class RaspiFM:
                 deletestation = False
                 break
 
-        if(deletestation):
+        if deletestation:
             self.__radiostations.remove_station(station)
             JsonSerializer().serialize_radiostations(self.__radiostations)
     
@@ -169,12 +170,18 @@ class RaspiFM:
     
     def favorites_changelistproperty(self, uuid:UUID, property:str, value:str) -> None:
         if property == "isdefault":
-            self.__favorites.change_defaultan_enum(uuid, True if value.strip().lower() == "true" else False)
+            self.__favorites.change_default(uuid, True if value.strip().lower() == "true" else False)
         elif property == "name":
             changelist = self.__favorites.get_list(uuid)
             changelist.name = value
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
+        
+        JsonSerializer().serialize_favorites(self.__favorites)
+
+    def favorites_movelist(self, uuid:UUID, direction:str) -> None:
+        direction = Direction[direction]
+        self.__favorites.move(uuid, direction)
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
@@ -201,12 +208,12 @@ class RaspiFM:
         if property == "country":
             countrylist = self.countries_get()
 
-            if (value in countrylist.countrylist.values() or value == "nofilter"):
+            if value in countrylist.countrylist.values() or value == "nofilter":
                 self.__settings.usersettings.web_defaultcountry = value
         elif property == "lang":
             languagelist = self.languages_get()
 
-            if (value in languagelist.languagelist or value == "nofilter"):
+            if value in languagelist.languagelist or value == "nofilter":
                 self.__settings.usersettings.web_defaultlanguage = value
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
@@ -216,13 +223,13 @@ class RaspiFM:
     def radio_play(self, station:RadioStation = None) -> None:
         Vlc().play(station)
         
-        if(station):
+        if not station is None:
             self.__settings.usersettings.touch_laststation = station.uuid
             JsonSerializer().serialize_usersettings(self.__settings.usersettings)
         else:
             station = Vlc().currentstation
 
-        if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
+        if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
 
     def radio_stop(self) -> None:

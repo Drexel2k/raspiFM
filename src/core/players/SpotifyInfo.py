@@ -26,7 +26,7 @@ class SpotifyInfo:
         self.__album = album
 
         self.__artists = ""
-        if(artists and len(artists) > 0):
+        if not artists is None and len(artists) > 0:
             self.__artists = ", ".join(artists)
 
         self.__arturl = arturl

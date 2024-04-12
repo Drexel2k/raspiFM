@@ -14,7 +14,7 @@ apply_stylesheet(app, theme="dark_blue.xml", css_file=f'{os.getcwd()}/touchui/ra
 window = MainWindow()
 window.resize(800, 480)
 
-if(RaspiFM().settings_runontouch()):
+if RaspiFM().settings_runontouch():
     app.setOverrideCursor(Qt.CursorShape.BlankCursor)
     window.showFullScreen()
 

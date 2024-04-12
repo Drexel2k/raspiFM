@@ -1,7 +1,7 @@
 from __future__ import annotations
 from uuid import UUID
 
-from .RadioStation import RadioStation
+from core.business.RadioStation import RadioStation
 
 class RadioStations:
     __slots__ = ["__stationlist"]
@@ -22,14 +22,14 @@ class RadioStations:
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> RadioStations:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for RadioStations deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in RadioStations serialization data.")
 
             obj.__setattr__(f"_RadioStations{slot}", serializationdata[dictkey])
@@ -40,9 +40,9 @@ class RadioStations:
         return next((station for station in self.__stationlist if station.uuid == stationuuid), None)
     
     def add_station(self, station:RadioStation) -> None:
-        if(not any(currentstation.uuid == station.uuid for currentstation in self.__stationlist)):
+        if not any(currentstation.uuid == station.uuid for currentstation in self.__stationlist):
             self.__stationlist.append(station)
 
     def remove_station(self, station:RadioStation) -> None:
-        if(station in self.__stationlist):
+        if station in self.__stationlist:
             self.__stationlist.remove(station)

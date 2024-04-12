@@ -25,7 +25,7 @@ class MarqueeLabel(QLabel):
         self.checkScroll()          
 
     def paintEvent(self, event):
-        if(self.__timer.isActive()):
+        if self.__timer.isActive():
             painter = QPainter(self)
             self.__x -= self.__speed
             if self.__x <= -self.__textLength:
@@ -40,7 +40,7 @@ class MarqueeLabel(QLabel):
         self.setFixedHeight(self.fontMetrics().height())
 
     def checkScroll(self) -> None:
-        if(self.__textLength <= self.width()):
+        if self.__textLength <= self.width():
             self.__timer.stop()
         else:
             self.__x = 70

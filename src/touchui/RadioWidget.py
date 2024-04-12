@@ -42,16 +42,16 @@ class RadioWidget(QWidget):
 
     def __init(self, startplaying:bool) -> None:
         defaultlist = RaspiFM().favorites_getdefaultlist()
-        if(len(defaultlist.stations) > 0):
+        if len(defaultlist.stations) > 0:
             #remove no favorites warning if warning was set before. 
             #todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
             #to delete also all sub widgets
-            if(self.__nostations):
-                while (self.layout().count() > 0):
+            if self.__nostations:
+                while self.layout().count() > 0:
                     item = self.layout().takeAt(0)
 
                     #QSpaceritem/QLayoutItem have no parents
-                    if(isinstance(item, QWidgetItem)):
+                    if isinstance(item, QWidgetItem):
                         item.widget().close()
                         item.widget().setParent(None)
 
@@ -59,31 +59,31 @@ class RadioWidget(QWidget):
 
             self.__threadpool = QThreadPool()
 
-            if(not RaspiFM().radio_currentstation()):
+            if RaspiFM().radio_currentstation() is None:
                 station = defaultlist.stations[0]
 
-                if(RaspiFM().settings_touch_startwith() == StartWith.LastStation):
+                if RaspiFM().settings_touch_startwith() == StartWith.LastStation:
                     laststation_uuid = RaspiFM().settings_touch_laststation()
-                    if (laststation_uuid):
+                    if not laststation_uuid is None:
                         laststation = RaspiFM().station_get(laststation_uuid)
-                        if(laststation):
+                        if not laststation is None:
                             station = laststation
 
                 RaspiFM().radio_set_currentstation(station)
 
             station = RaspiFM().radio_currentstation()
 
-            if(startplaying and not RaspiFM().radio_isplaying()):
+            if startplaying and not RaspiFM().radio_isplaying():
                 RaspiFM().radio_play(station)
 
-                if(RaspiFM().settings_runontouch()): #otherwise we are on dev most propably so we don't send a click on every play
+                if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
                     stationapi.send_stationclicked(station.uuid)
             
             layout = self.layout()
             
             stationimagelabel = QLabel()
             qx = QPixmap()
-            if(station.faviconb64):
+            if not station.faviconb64 is None:
                 qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
@@ -114,7 +114,7 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setFixedSize(QSize(80, 60))
             self.__btn_playcontrol.setIconSize(QSize(80, 80))
             
-            if(RaspiFM().radio_isplaying()): 
+            if RaspiFM().radio_isplaying(): 
                 self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
                 self.__startmetagetter()
             else:
@@ -145,7 +145,7 @@ class RadioWidget(QWidget):
         self.__init(False)
 
     def __playcontrol_clicked(self) -> None:
-        if(RaspiFM().radio_isplaying()):
+        if RaspiFM().radio_isplaying():
             self.__vlcgetmeta_enabled = False
             RaspiFM().radio_stop()
             self.__btn_playcontrol.setText(None)
@@ -180,16 +180,16 @@ class RadioWidget(QWidget):
         sleeptickcount = 1
         while self.__vlcgetmeta_enabled:
             time.sleep(0.5)
-            if(sleeptickcount >= sleepticks):
-                if(sleepticks < 5):
+            if sleeptickcount >= sleepticks:
+                if sleepticks < 5:
                     sleepticks = 20
 
                 sleeptickcount = 0
                 info = RaspiFM().radio_getmeta()
-                if(RaspiFM().radio_isplaying()):
-                    if(info != previnfo and self.__vlcgetmeta_enabled):
+                if RaspiFM().radio_isplaying():
+                    if info != previnfo and self.__vlcgetmeta_enabled:
                         previnfo = info
-                        if(utils.str_isnullorwhitespace(info)):
+                        if utils.str_isnullorwhitespace(info):
                             info = RaspiFM().radio_currentstation().name
 
                         self.__inforeceived.emit(info)
@@ -200,7 +200,7 @@ class RadioWidget(QWidget):
         QWidget.resizeEvent(self, event)
 
         #is null if no stations are configured yet.
-        if(self.__lbl_nowplaying):
+        if not self.__lbl_nowplaying is None:
             self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
 
     def closeEvent(self, event) -> None:

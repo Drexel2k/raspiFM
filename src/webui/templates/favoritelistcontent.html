@@ -1,29 +1,7 @@
 {% if favoritelist %}
   <div class="d-sm-inline-block mb-2">
-    <label for="txname" class="form-label"><small>edit name</small></label>
+    <label for="txname" class="form-label"><small>edit name & default</small></label>
     <input style="min-width:20em;" type="text" id="txname" name="name" class="form-control" placeholder="Enter favorite list name" value="{{ favoritelist.name|default("", true) }}">
-  </div>
-  <div class="btn-group" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete favorite list.">
-    <button class="btn btn-primary btn-sm mb-2" id="favlistremove" type="button" data-bs-toggle="modal" data-bs-target="#confirmfavlistremovemodal">
-      <img src="{{url_for("static", filename="x.svg")}}" width="15em" height="15em" />
-    </button>
-  </div>
-  <div class="modal fade" id="confirmfavlistremovemodal" tabindex="-1" aria-labelledby="confirmfavlistremovemodalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="confirmfavlistremovemodalLabel">Delete confirmation</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div id="confirmfavlistremovemodalContent" class="modal-body">
-          Really delete favorite list "{{favoritelist.name}}"?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="confirmfavlistremove" class="btn btn-primary">Confirm</button>
-        </div>
-      </div>
-    </div>
   </div>
   <div class="form-check form-switch mb-2">
     <input class="form-check-input" type="checkbox" role="switch" id="chdefault" {% if favoritelist.isdefault %}checked{% endif %}>
@@ -77,11 +55,11 @@
               {% endif %}
             </td>
             <td class="align-middle">
-              <button class="btn btn-primary btn-sm mb-2" data-changetype="down" data-stationuuid="{{station.uuid|string}}">
-                <img src="{{url_for("static", filename="arrow-down.svg")}}" width="15em" height="15em" />
-              </button>
-              <button class="btn btn-primary btn-sm mb-2" data-changetype="up" data-stationuuid="{{station.uuid|string}}">
+              <button class="btn btn-primary btn-sm mb-2" data-changetype="Up" data-stationuuid="{{station.uuid|string}}">
                 <img src="{{url_for("static", filename="arrow-up.svg")}}" width="15em" height="15em" />
+              </button>
+              <button class="btn btn-primary btn-sm mb-2" data-changetype="Down" data-stationuuid="{{station.uuid|string}}">
+                <img src="{{url_for("static", filename="arrow-down.svg")}}" width="15em" height="15em" />
               </button>
             </td>
             <td class="align-middle"><a href="javascript:void(0);" class="link-primary fav-link" data-changetype="remove" data-stationuuid="{{station.uuid|string}}"><img id="favimg-{{station.uuid|string}}" src="{{url_for("static", filename="star-fill.svg")}}" width="40em" height="40em" /></a></td>

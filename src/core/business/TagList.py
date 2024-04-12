@@ -16,7 +16,7 @@ class TagList:
 
     @classmethod
     def from_default(cls, tags:list) -> TagList:
-        if(not tags):
+        if tags is None:
             raise ValueError("tags must not be null for TagList.")
         
         obj = cls()
@@ -30,14 +30,14 @@ class TagList:
 
     @classmethod
     def deserialize(cls, serializationdata:dict) -> TagList:
-        if (not serializationdata):
+        if serializationdata is None:
             raise TypeError("Argument serializationdata must be given for TagList deserialization.")
 
         obj = cls()
 
         for slot in cls.__slots__:
             dictkey = slot[2:]
-            if(not(dictkey in serializationdata)):
+            if not dictkey in serializationdata:
                 raise TypeError(f"{dictkey} key not found in TagList serialization data.")
 
             obj.__setattr__(f"_TagList{slot}", serializationdata[dictkey])

@@ -19,7 +19,7 @@ class LanguageApi:
     def __init__(self, apidict:dict):
         for slot in enumerate(self.__slots__):
             dictkey = slot[1][2:]
-            if(not(dictkey in apidict)):
+            if not dictkey in apidict:
                raise TypeError(f"{dictkey} key not found in country api response dictionary.")
             self.__setattr__(f"_RadioStationApi{slot[1]}", apidict[dictkey])
 

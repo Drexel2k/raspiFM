@@ -2,6 +2,10 @@
     background-color: #CD2355;
 }
 
+.table-bg-raspicolor {
+  --bs-table-bg: rgba(205, 35, 85, 0.5);
+}
+
 .bg-color-light, .tagres ul li:hover {
   background-color: #C2DBFE;
 }
@@ -10,20 +14,8 @@
   .max-width-12-sm { max-width: 12em; }
 }
 
-@media (min-width: 768px) {
-  .max-width-12-md { max-width: 12em; }
-}
-
-@media (min-width: 992px) {
-  .max-width-12-lg { max-width: 12em; }
-}
-
-@media (min-width: 1200px) {
-  .max-width-12-xl { max-width: 12em; }
-}
-
-@media (min-width: 1400px) {
-  .max-width-12-xxl { max-width: 12em; }
+@media (min-width: 576px) {
+  .max-width-30-sm { max-width: 30em; }
 }
 
 .tag-input { 

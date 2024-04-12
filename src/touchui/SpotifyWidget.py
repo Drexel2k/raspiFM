@@ -49,10 +49,10 @@ class SpotifyWidget(QWidget):
 
     def __updatecontentwidgets(self) -> None:
         qx = QPixmap()
-        if(RaspiFM().spotify_isplaying()):
-            if(RaspiFM().spotify_currentplaying()):
-                currentplaying = RaspiFM().spotify_currentplaying()
-                if(currentplaying.arturl):
+        if RaspiFM().spotify_isplaying():
+            currentplaying = RaspiFM().spotify_currentplaying()
+            if not currentplaying is None:
+                if not currentplaying.arturl is None:
                     qx.loadFromData(httpcontent.get_urlbinary_content(currentplaying.arturl))
                 else:
                     renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")

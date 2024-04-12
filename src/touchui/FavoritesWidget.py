@@ -66,7 +66,7 @@ class FavoritesWidget(QWidget):
             button.setStyleSheet("QPushButton { text-align:left; }")
 
             qx = QPixmap()
-            if(station.faviconb64):
+            if not station.faviconb64 is None:
                 qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")

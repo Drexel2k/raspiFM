@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(self.__spotifybutton)
         left_layout_vertical.addWidget(self.__settingsbutton)
 
-        if(RaspiFM().spotify_isplaying()):
+        if RaspiFM().spotify_isplaying():
             self.__changeIconsSpotifyPlaying()
             self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
             self.__activebutton = self.__spotifybutton
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
                self.__spotify_dbusname = name
                break
         
-        if(utils.str_isnullorwhitespace(self.__spotify_dbusname)):
+        if utils.str_isnullorwhitespace(self.__spotify_dbusname):
             #if spotify is not up, listen for it to come up
             self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
         else:
@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
             interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
             message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertyplaybackstatus)
             state = message.arguments()[0]
-            if(state == "Playing"):
+            if state == "Playing":
                 message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata)
                 metadata = message.arguments()[0]
                 RaspiFM().spotify_set_currentplaying(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
@@ -123,15 +123,15 @@ class MainWindow(QMainWindow):
         newowner = args[1]
         oldowner = args[2]
 
-        if(servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance")):
+        if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
             #service new on the bus
-            if(utils.str_isnullorwhitespace(newowner)):
+            if utils.str_isnullorwhitespace(newowner):
                 self.__system_dbusconnection.disconnect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
                 self.__spotify_dbusname = servicename
                 self.__system_dbusconnection.connect(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, dbusstrings.dbussignalpropertieschanged, self.__spotifyd_propertieschanged)
 
             #service left bus
-            if(utils.str_isnullorwhitespace(oldowner)):
+            if utils.str_isnullorwhitespace(oldowner):
                 self.__spotify_dbusname = None
                 self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
                 self.__spotifystopped()
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
 
         #Sometimes, not reproducable, not alle infos are in the changeproperties, onyl one attribute like volume is in it.
         #Normaly after that another propertieschange signal comes in with the full infos.
-        if(not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties):
+        if not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties:
             return
             #interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
             #msg = interface.call(dbusstrings.dbusmethodgetall, dbusstrings.spotifydinterface)
@@ -152,18 +152,18 @@ class MainWindow(QMainWindow):
         spotify_wasplaying = RaspiFM().spotify_isplaying()
         RaspiFM().spotify_set_currentplaying(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
         
-        if(changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing"):
+        if changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing":
             RaspiFM().radio_stop()
 
             self.__changeIconsSpotifyPlaying()
 
             #If spotify widget is active simply update the information.
-            if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+            if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
                 self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
             else:
                 #If spotify playback was jsut startet switch to spotify widget. If Spotify was already playing
                 #the user switched manually to another widget before, so leave this widget as it is.
-                if(not spotify_wasplaying):
+                if not spotify_wasplaying:
                     self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
                     self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
                     self.__activebutton = self.__spotifybutton
@@ -173,13 +173,13 @@ class MainWindow(QMainWindow):
                     self.__closewidgetitem(widgetitem)
 
         else:
-            if(RaspiFM().spotify_isplaying()):
+            if RaspiFM().spotify_isplaying():
                 #Not only triggered when Spotify stopped via app, but also when radio
                 #was manually started again, so this is no sign of nothing is playing!
                 self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
                 RaspiFM().spotify_set_isplaying(False)
 
-                if(isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+                if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
                     self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
     
     def __radiostartsPlaying(self) -> None:
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
         self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
         self.__activebutton = self.__radiobutton
-        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget)):
+        if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget):
             radiowidget = RadioWidget(False)
             radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
         self.__favoritesbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
         self.__activebutton = self.__favoritesbutton
-        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget)):
+        if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget):
             favoriteswdidget = FavoritesWidget()
             favoriteswdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             favoriteswdidget.favclicked.connect(self.__favoritelicked)
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
         self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
         self.__activebutton = self.__spotifybutton
-        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget)):
+        if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
             spotifywdidget = SpotifyWidget()
             spotifywdidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywdidget)
@@ -238,7 +238,7 @@ class MainWindow(QMainWindow):
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
         self.__settingsbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
         self.__activebutton = self.__settingsbutton
-        if(not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SettingsWidget)):
+        if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SettingsWidget):
             settingswdiget = SettingsWidget()
             settingswdiget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), settingswdiget)
@@ -257,18 +257,18 @@ class MainWindow(QMainWindow):
     def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
         widget = widgetitem.widget()
 
-        if(isinstance(widget, RadioWidget)):
+        if isinstance(widget, RadioWidget):
             widget.beforeplaystarting.disconnect()
 
-        if(isinstance(widget, FavoritesWidget)):
+        if isinstance(widget, FavoritesWidget):
             widget.favclicked.disconnect()
 
         widget.close()
         widget.setParent(None)
 
     def keyPressEvent(self, event): 
-        if (event.key() == QtCore.Qt.Key.Key_Escape):
-            if(self.isFullScreen()):
+        if event.key() == QtCore.Qt.Key.Key_Escape:
+            if self.isFullScreen():
                 self.showNormal() 
             else:
                 self.showFullScreen()
