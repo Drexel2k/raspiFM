@@ -45,7 +45,7 @@ class TagList:
         return obj
 
     def filter(self, filter:str) -> None: 
-        self.__taglist = [tag for tag in self.__taglist if filter in tag]
+        self.__taglist = [taginternal for taginternal in self.__taglist if filter in taginternal]
 
 
 

@@ -37,10 +37,10 @@ class RadioStations:
         return obj
 
     def get_station(self, stationuuid:UUID) -> RadioStation:
-        return next((station for station in self.__stationlist if station.uuid == stationuuid), None)
+        return next((stationinternal for stationinternal in self.__stationlist if stationinternal.uuid == stationuuid), None)
     
     def add_station(self, station:RadioStation) -> None:
-        if not any(currentstation.uuid == station.uuid for currentstation in self.__stationlist):
+        if not any(stationinternal.uuid == station.uuid for stationinternal in self.__stationlist):
             self.__stationlist.append(station)
 
     def remove_station(self, station:RadioStation) -> None:

@@ -95,12 +95,12 @@ class FavoriteList:
             self.__stations.pop(station_index)
 
     def contains(self, stationuuid:UUID) -> bool:
-        return any(station.uuid == stationuuid for station in self.__stations)
+        return any(stationinternal.uuid == stationuuid for stationinternal in self.__stations)
     
     def move_station(self, stationuuid:UUID, direction:Direction) -> None:
         radiostation = next((stationinternal for stationinternal in self.__stations if stationinternal.radiostation.uuid == stationuuid), None)
         if not radiostation is None:
-            ordered_stations = sorted(self.__stations, key=lambda station: station.displayorder)
+            ordered_stations = sorted(self.__stations, key=lambda stationinternal: stationinternal.displayorder)
             currentindex = ordered_stations.index(radiostation)
 
             if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_stations) - 1 and direction == Direction.Down):

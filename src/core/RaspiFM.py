@@ -78,7 +78,8 @@ class RaspiFM:
 
         deletestation = True
         for favlist in self.__favorites.favoritelists:
-            if station in favlist.stations:
+            stationresult = next((stationinternal for stationinternal in favlist.stations if stationinternal.radiostation == station), None)
+            if not stationresult is None:
                 deletestation = False
                 break
         
@@ -96,7 +97,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if countrylist is None or countrylist.lastupdate + sevendays < datetime.now():
             countrylistapi = listapi.query_countrylist()
-            countrylist = CountryList.from_default({ country["name"] : country["iso_3166_1"] for country in countrylistapi })
+            countrylist = CountryList.from_default({ countryinternal["name"] : countryinternal["iso_3166_1"] for countryinternal in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
 
         return countrylist
@@ -107,7 +108,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if languagelist is None or languagelist.lastupdate + sevendays < datetime.now():
             languagelistapi = listapi.query_languagelist()
-            languagelist = LanguageList.from_default({ language["name"] : language["iso_639"] for language in languagelistapi })
+            languagelist = LanguageList.from_default({ languageinternal["name"] : languageinternal["iso_639"] for languageinternal in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
 
         return languagelist
@@ -118,7 +119,7 @@ class RaspiFM:
         sevendays = timedelta(days=7)
         if taglist is None or taglist.lastupdate + sevendays < datetime.now():
             taglistapi = listapi.query_taglist()
-            taglist = TagList.from_default([ tag["name"] for tag in taglistapi ])
+            taglist = TagList.from_default([ taginternal["name"] for taginternal in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
         if not filter is None:
@@ -249,7 +250,12 @@ class RaspiFM:
         Vlc().play(station)
         
         if not station is None:
+            original_laststation = self.__settings.usersettings.touch_laststation
             self.__settings.usersettings.touch_laststation = station.uuid
+
+            if not original_laststation is None:
+                self.stations_deletestation(original_laststation)
+
             JsonSerializer().serialize_usersettings(self.__settings.usersettings)
         else:
             station = Vlc().currentstation
@@ -268,7 +274,13 @@ class RaspiFM:
 
     def radio_set_currentstation(self, station:RadioStation) -> None:
         Vlc().currentstation = station
+
+        original_laststation = self.__settings.usersettings.touch_laststation
         self.__settings.usersettings.touch_laststation = station.uuid
+
+        if not original_laststation is None:
+            self.stations_deletestation(original_laststation)
+
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
     def radio_setvolume(self, volume:int) -> None:

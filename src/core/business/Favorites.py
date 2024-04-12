@@ -41,7 +41,7 @@ class Favorites:
         return obj
 
     def add_favoritelist(self) -> FavoriteList:
-        favoritelist = FavoriteList.from_default(displayorder=max(self.__favoritelists, key=lambda favlist: favlist.displayorder).displayorder + 1)
+        favoritelist = FavoriteList.from_default(displayorder=max(self.__favoritelists, key=lambda favlistinternal: favlistinternal.displayorder).displayorder + 1)
         self.__favoritelists.append(favoritelist)
         return favoritelist
     
@@ -52,16 +52,16 @@ class Favorites:
         deletelist = self.get_list(listuuid)
         if not deletelist is None:
             if deletelist.isdefault:
-                newdefaultlist = next(favlist for favlist in self.__favoritelists if favlist != deletelist)
+                newdefaultlist = next(favlistinternal for favlistinternal in self.__favoritelists if favlistinternal != deletelist)
                 newdefaultlist.isdefault = True
 
             self.__favoritelists.remove(deletelist)
 
     def get_default(self) -> FavoriteList:
-        return next(favlist for favlist in self.__favoritelists if favlist.isdefault)
+        return next(favlistinternal for favlistinternal in self.__favoritelists if favlistinternal.isdefault)
     
     def get_list(self, listuuid:UUID) -> FavoriteList:
-        return next((favlist for favlist in self.__favoritelists if favlist.uuid == listuuid), None)
+        return next((favlistinternal for favlistinternal in self.__favoritelists if favlistinternal.uuid == listuuid), None)
     
     def change_default(self, listuuid:UUID, newdefaultstate:bool) -> None:
         if newdefaultstate:
@@ -77,14 +77,14 @@ class Favorites:
                 if len(self.__favoritelists) <= 1:
                     raise InvalidOperationException("Cannot remove default state from last favorite list.")
                 
-                newdefaultlist = next(favlist for favlist in self.__favoritelists if favlist != currentdefaultlist)
+                newdefaultlist = next(favlistinternal for favlistinternal in self.__favoritelists if favlistinternal != currentdefaultlist)
                 changelist.isdefault = False
                 newdefaultlist.isdefault = True
 
     def move_list(self, listuuid:UUID, direction:Direction) -> None:
         favoritelist = self.get_list(listuuid)
         if not favoritelist is None:
-            ordered_favoritelists = sorted(self.__favoritelists, key=lambda favoritelist: favoritelist.displayorder)
+            ordered_favoritelists = sorted(self.__favoritelists, key=lambda favoritelistinternal: favoritelistinternal.displayorder)
             currentindex = ordered_favoritelists.index(favoritelist)
 
             if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_favoritelists) - 1 and direction == Direction.Down):

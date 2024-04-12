@@ -37,7 +37,7 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists = QComboBox()
         self.__cbo_favoritelists.setFixedHeight(50)
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
-        for list in RaspiFM().favorites_getlists():
+        for list in sorted(RaspiFM().favorites_getlists(), key=lambda favlistinternal: favlistinternal.displayorder):
             name = list.name if not utils.str_isnullorwhitespace(list.name) else "{no name}"
             self.__cbo_favoritelists.addItem(name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
@@ -60,7 +60,7 @@ class FavoritesWidget(QWidget):
             btn.setParent(None)
 
         favoritelist = self.__cbo_favoritelists.currentData()
-        for station in favoritelist.stations:
+        for station in sorted(favoritelist.stations, key=lambda stationinternal: stationinternal.displayorder):
             station = station.radiostation
             button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

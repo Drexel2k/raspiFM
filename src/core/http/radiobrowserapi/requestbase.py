@@ -31,7 +31,7 @@ def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
 
     req = request.Request(get_random_radiobrowser_base_url() + endpoint, paramsencoded)
 
-    req.add_header('User-Agent', 'raspiFM/0.5.0')
+    req.add_header('User-Agent', 'raspiFM/0.9.0')
     req.add_header('Content-Type', 'application/json')
     response = request.urlopen(req)
     data = response.read()

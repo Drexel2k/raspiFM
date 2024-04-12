@@ -21,7 +21,7 @@ def home() -> str:
 def favorites() -> str:
     try:
         favoritelists = []
-        for favoritelist in sorted(RaspiFM().favorites_getlists(), key=lambda favlist: favlist.displayorder):
+        for favoritelist in sorted(RaspiFM().favorites_getlists(), key=lambda favlistinternal: favlistinternal.displayorder):
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("favorites.html",
@@ -85,7 +85,7 @@ def stationsearch() -> str:
                         stations.append(RadioStationView(stationapi, False))
             
         favoritelists = []
-        for favoritelist in sorted(RaspiFM().favorites_getlists(), key=lambda favlist: favlist.displayorder):
+        for favoritelist in sorted(RaspiFM().favorites_getlists(), key=lambda favlistinternal: favlistinternal.displayorder):
             favoritelists.append(FavoriteListView(favoritelist))
 
         return render_template("stationsearch.html",
