@@ -3,10 +3,12 @@ from urllib import request
 import random
 from core.json.JsonSerializer import JsonSerializer
 
+version:str
+
 def get_random_radiobrowser_base_url() -> str:
     hosts = []
     # get all hosts from DNS
-    ips = socket.getaddrinfo('all.api.radio-browser.info',
+    ips = socket.getaddrinfo("all.api.radio-browser.info",
                              80, 0, 0, socket.IPPROTO_TCP)
     for ip_tupple in ips:
         ip = ip_tupple[4][0]
@@ -31,8 +33,8 @@ def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
 
     req = request.Request(get_random_radiobrowser_base_url() + endpoint, paramsencoded)
 
-    req.add_header('User-Agent', 'raspiFM/0.9.0')
-    req.add_header('Content-Type', 'application/json')
+    req.add_header("User-Agent", f'raspiFM/{version}')
+    req.add_header("Content-Type", "application/json")
     response = request.urlopen(req)
     data = response.read()
 
@@ -47,8 +49,8 @@ def radiobrowser_get_request(endpoint:str, params:dict):
     try:
         req = request.Request(get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded)
 
-        req.add_header('User-Agent', 'raspiFM/0.5.0')
-        req.add_header('Content-Type', 'application/json')
+        req.add_header("User-Agent", "raspiFM/0.5.0")
+        req.add_header("Content-Type", "application/json")
         response = request.urlopen(req)
         #data = response.read()
         response.close()

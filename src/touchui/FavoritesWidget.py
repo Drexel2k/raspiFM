@@ -72,7 +72,7 @@ class FavoritesWidget(QWidget):
             if not station.faviconb64 is None:
                 qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
             else:
-                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
+                renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
                 image = QImage(42, 42, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)

@@ -9,7 +9,7 @@ from core.RaspiFM import RaspiFM
 from touchui.MainWindow import MainWindow
 
 app = QApplication([])
-apply_stylesheet(app, theme="dark_blue.xml", css_file=f'{os.getcwd()}/touchui/raspiFM.css')
+apply_stylesheet(app, theme="touchui/dark_rpi.xml", css_file=f'{os.getcwd()}/touchui/raspiFM.css')
 
 window = MainWindow()
 window.resize(800, 480)

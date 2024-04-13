@@ -103,7 +103,7 @@ class RadioWidget(QWidget):
             if not station.faviconb64 is None:
                 qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
             else:
-                renderer =  QSvgRenderer("touchui/images/broadcast-pin-blue.svg")
+                renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
                 image = QImage(180, 180, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)
@@ -132,10 +132,10 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.setIconSize(QSize(80, 80))
             
             if RaspiFM().radio_isplaying(): 
-                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
                 self.__startmetagetter()
             else:
-                self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
 
             layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
@@ -152,13 +152,13 @@ class RadioWidget(QWidget):
             self.__vlcgetmeta_enabled = False
             RaspiFM().radio_stop()
             self.__btn_playcontrol.setText(None)
-            self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-blue.svg"))
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
             self.__lbl_nowplaying.setText(None)
             self.playstopped.emit()
         else:
             self.beforeplaystarting.emit()
             RaspiFM().radio_play()
-            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-blue.svg"))
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
             self.__startmetagetter()
 
     def __volslider_moved(self, value:int) -> None:

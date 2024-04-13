@@ -55,7 +55,7 @@ class SpotifyWidget(QWidget):
                 if not currentplaying.arturl is None:
                     qx.loadFromData(httpcontent.get_urlbinary_content(currentplaying.arturl))
                 else:
-                    renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")
+                    renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
                     image = QImage(270, 270, QImage.Format.Format_ARGB32)
                     image.fill(0x00000000)
                     painter = QPainter(image)
@@ -67,7 +67,7 @@ class SpotifyWidget(QWidget):
             self.__lbl_artists.setText(currentplaying.artists)
             self.__lbl_album.setText(currentplaying.album)
         else:
-            renderer =  QSvgRenderer("touchui/images/spotify-blue.svg")
+            renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
             image = QImage(320, 220, QImage.Format.Format_ARGB32)
             image.fill(0x00000000)
             painter = QPainter(image)

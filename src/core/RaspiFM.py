@@ -10,6 +10,7 @@ from core.StartWith import StartWith
 from core.json.JsonSerializer import JsonSerializer
 from core.json.JsonDeserializer import JsonDeserializer
 from core.Settings import Settings, UserSettings
+from core.http.radiobrowserapi import requestbase
 from core.http.radiobrowserapi import stationapi
 from core.http.radiobrowserapi.data.RadioStationApi import RadioStationApi
 from core.http.radiobrowserapi import listapi
@@ -29,11 +30,16 @@ from utils import utils
 
 #todo: maybe split public core interface in several proxy classes
 class RaspiFM:
-    __slots__ = ["__favorites", "__radiostations", "__settings"]
+    __slots__ = ["__favorites", "__radiostations", "__settings", "__version"]
     __instance:RaspiFM = None
     __radiostations:RadioStations
     __favorites:Favorites
     __settings:Settings
+    __version:str
+
+    @property
+    def version(self) -> str:
+        return self.__version
     
     def __new__(cls):
         if cls.__instance is None:
@@ -42,6 +48,9 @@ class RaspiFM:
         return cls.__instance
     
     def __init(self):
+        self.__version = "0.9.0"
+        requestbase.version = self.__version
+
         self.__settings = Settings()
 
         if not Path(self.__settings.serialization_directory).is_dir():

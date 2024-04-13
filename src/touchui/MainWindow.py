@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self.__favoritesbutton = PushButtonMain()
         self.__favoritesbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         #Size of icon is set PushButtonMain class!!!
-        self.__favoritesbutton.setIcon(QIcon("touchui/images/star-blue.svg"))
+        self.__favoritesbutton.setIcon(QIcon("touchui/images/star-rpi.svg"))
         self.__favoritesbutton.clicked.connect(self.__favoritesclicked)
 
         self.__spotifybutton = PushButtonMain()
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
         self.__settingsbutton = PushButtonMain()
         self.__settingsbutton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.__settingsbutton.setIcon(QIcon("touchui/images/gear-blue.svg"))
+        self.__settingsbutton.setIcon(QIcon("touchui/images/gear-rpi.svg"))
         self.__settingsbutton.clicked.connect(self.__settingsclicked)
 
         left_layout_vertical.addWidget(self.__radiobutton)
@@ -86,11 +86,11 @@ class MainWindow(QMainWindow):
 
             #can not be playing of no stations are available on initial start e.g.
             if RaspiFM().radio_isplaying():
-                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
+                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-rpi.svg"))
             else:
-                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
+                self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-rpi.svg"))
 
-            self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
+            self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
             self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
 
             radiowidget.beforeplaystarting.connect(self.__radiostartsPlaying)
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
             if RaspiFM().spotify_isplaying():
                 #Not only triggered when Spotify stopped via app, but also when radio
                 #was manually started again, so this is no sign of nothing is playing!
-                self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-blue.svg"))
+                self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
                 RaspiFM().spotify_set_isplaying(False)
 
                 if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
@@ -255,14 +255,14 @@ class MainWindow(QMainWindow):
             self.__closewidgetitem(widgetitem)
     
     def __changeIconsSpotifyPlaying(self) -> None:
-        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
-        self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-music-blue.svg"))
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-rpi.svg"))
+        self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-music-rpi.svg"))
 
     def __changeIconRadioPlaying(self) -> None:
-        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-blue.svg"))
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-rpi.svg"))
 
     def __changeIconRadioStopped(self) -> None:
-        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-blue.svg"))
+        self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-rpi.svg"))
 
     def __closewidgetitem(self, widgetitem:QWidgetItem) -> None:
         widget = widgetitem.widget()

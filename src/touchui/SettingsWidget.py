@@ -1,6 +1,7 @@
 import os
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QSpacerItem
 
 from core.RaspiFM import RaspiFM
 from core.StartWith import StartWith
@@ -16,8 +17,22 @@ class SettingsWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
         
+        layout_title = QHBoxLayout()
+        lbl_logo = QLabel()
+        lbl_logo.setStyleSheet("QLabel { margin-right:10px;}") 
+        pixmap = QPixmap("touchui/images/raspifmlogo.png")
+        lbl_logo.setPixmap(pixmap)
+        layout_title.addWidget(lbl_logo)
+        layout_title.addWidget(QLabel("raspiFM"))
+        layout_title.addStretch()
+        lbl_version = QLabel(f'v{RaspiFM().version}')
+        lbl_version.setStyleSheet("QLabel { font-size:15px;}") #Font-size ist set in qt-material css and can only be overriden in css 
+        layout_title.addWidget(lbl_version)
+        layout.addLayout(layout_title)
+        layout.addItem(QSpacerItem(7, 7))
+
         lbl_startwith = QLabel("Start with:")
-        lbl_startwith.setStyleSheet("QLabel { font-size:28px;}") #Font-size ist set in qt-material css and can only be overriden in css 
+        lbl_startwith.setStyleSheet("QLabel { font-size:28px;}")
         layout.addWidget(lbl_startwith)
         
         self.__cbo_startwith = QComboBox()
