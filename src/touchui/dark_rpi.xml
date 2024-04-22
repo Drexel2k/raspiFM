@@ -4,7 +4,7 @@
   <color name="primaryLightColor">#6ac146</color>
   <color name="secondaryColor">#f68583</color>
   <color name="secondaryLightColor">#4f5b62</color>
-  <color name="secondaryDarkColor">#31363b</color>
+  <color name="secondaryDarkColor">#0f0f0f</color><!-- background color, is much brighter on touch display -->
   <color name="primaryTextColor">#000000</color>
   <color name="secondaryTextColor">#ffffff</color>
 </resources>
