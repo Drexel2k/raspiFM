@@ -27,7 +27,7 @@ class RadioWidget(QWidget):
     beforeplaystarting = pyqtSignal()
     playstopped = pyqtSignal()
 
-    def __init__(self, startplaying:bool, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setLayout(QVBoxLayout())
@@ -38,66 +38,62 @@ class RadioWidget(QWidget):
         self.__threadpool = None
 
         self.__nostations = False
-        self.__init(startplaying)
 
-    def __init(self, startplaying:bool) -> None:
-        if not RaspiFM().radio_isplaying() and startplaying:
-            station = None
+    #Added to separate public method to emit signals on radio playback init so that possible Spotify playback is stopped
+    #via beforeplaystarting signal. If this would all be in __init__ signal connection can only take place after
+    #playback initialization. But spotifyd can start playback before as the daemon is totally independant.
+    def init_playback(self, startplaying:bool) -> None:
+        station = self.__get_station()
+        self.__init_controls(station)
 
-            if RaspiFM().settings_touch_startwith() == StartWith.LastStation:
-                laststation_uuid = RaspiFM().settings_touch_laststation()
-                if not laststation_uuid is None:
-                    laststation = RaspiFM().stations_getstation(laststation_uuid)
-                    if not laststation is None:
-                        station = laststation
+        if not RaspiFM().radio_isplaying():
+            if RaspiFM().radio_currentstation() is None and not station is None:
+                RaspiFM().radio_set_currentstation(station)
 
-            if RaspiFM().settings_touch_startwith() == StartWith.DefaultList:
-                defaultlist = RaspiFM().favorites_getdefaultlist()
-                if len(defaultlist.stations) > 0:
-                        station = defaultlist.stations[0].radiostation
+                if startplaying:
+                    self.beforeplaystarting.emit()
+                    RaspiFM().radio_play()
 
-            if station is None:
-                if not self.__nostations:
-                    self.__nostations = True
-                    layout = self.layout()
-                    layout.addStretch()
-                    label = QLabel("No radio station favorites found,")
-                    layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-                    label = QLabel("go to webinterface (probably http://raspifm),")
-                    layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-                    label = QLabel("save favorites and press refresh.")
-                    layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
-                    refreshbutton = QPushButton("Refresh")
-                    refreshbutton.clicked.connect(self.__refreshlicked)
-                    layout.addWidget(refreshbutton)
-                    layout.addStretch()
-            else:
-                #remove no favorites warning if warning was set before. 
-                #todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
+                    if RaspiFM().settings_runontouch(): #Otherwise we are on dev most propably so we don't send a click on every play
+                        stationapi.send_stationclicked(station.uuid)
+
+        if RaspiFM().radio_isplaying():            
+            if RaspiFM().radio_isplaying(): 
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
+                self.__startmetagetter()            
+
+    def __init_controls(self, station):
+        if station is None:
+            if not self.__nostations:
+                self.__nostations = True
+                layout = self.layout()
+                layout.addStretch()
+                label = QLabel("No radio station favorites found,")
+                layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                label = QLabel("go to webinterface (probably http://raspifm),")
+                layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                label = QLabel("save favorites and press refresh.")
+                layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                refreshbutton = QPushButton("Refresh")
+                refreshbutton.clicked.connect(self.__refreshlicked)
+                layout.addWidget(refreshbutton)
+                layout.addStretch()
+        else:
+                #Remove no favorites warning if warning was set before. 
+                #Todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
                 #to delete also all sub widgets
-                if self.__nostations:
-                    while self.layout().count() > 0:
-                        item = self.layout().takeAt(0)
+            if self.__nostations:
+                while self.layout().count() > 0:
+                    item = self.layout().takeAt(0)
 
                         #QSpaceritem/QLayoutItem have no parents
-                        if isinstance(item, QWidgetItem):
-                            item.widget().close()
-                            item.widget().setParent(None)
+                    if isinstance(item, QWidgetItem):
+                        item.widget().close()
+                        item.widget().setParent(None)
 
-                    self.__nostations = False
+                self.__nostations = False
 
-                RaspiFM().radio_set_currentstation(station)
-                RaspiFM().radio_play()
-
-                if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
-                    stationapi.send_stationclicked(station.uuid)
-
-        if RaspiFM().radio_isplaying():
             layout = self.layout()
-            self.__threadpool = QThreadPool()
-
-            station = RaspiFM().radio_currentstation()
-
             stationimagelabel = QLabel()
             qx = QPixmap()
             if not station.faviconb64 is None:
@@ -130,12 +126,7 @@ class RadioWidget(QWidget):
             self.__btn_playcontrol.clicked.connect(self.__playcontrol_clicked)
             self.__btn_playcontrol.setFixedSize(QSize(80, 60))
             self.__btn_playcontrol.setIconSize(QSize(80, 80))
-            
-            if RaspiFM().radio_isplaying(): 
-                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
-                self.__startmetagetter()
-            else:
-                self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
 
             layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
@@ -144,8 +135,35 @@ class RadioWidget(QWidget):
             volslider.setValue(RaspiFM().radio_getvolume())
             layout.addWidget(volslider)
 
+            self.__threadpool = QThreadPool()
+
+    def __get_station(self):
+        station = station = RaspiFM().radio_currentstation()
+
+        if station == None:
+            if RaspiFM().settings_touch_startwith() == StartWith.LastStation:
+                laststation_uuid = RaspiFM().settings_touch_laststation()
+                if not laststation_uuid is None:
+                    laststation = RaspiFM().stations_getstation(laststation_uuid)
+                    if not laststation is None:
+                        station = laststation
+
+            #On initial start, lastation_uuid will always be None, so try start with default list:
+            #Or if last station was deleted e.g.
+            if RaspiFM().settings_touch_startwith() == StartWith.DefaultList or station == None:
+                defaultlist = RaspiFM().favorites_getdefaultlist()
+                if len(defaultlist.stations) > 0:
+                        station = defaultlist.stations[0].radiostation
+
+            #If station is still None, check for check if there is any station in favorites and
+            #take the first:
+            if station == None:
+                station = RaspiFM().favorites_get_any_station()
+
+        return station
+
     def __refreshlicked(self) -> None:
-        self.__init(False)
+        self.init_playback(False)
 
     def __playcontrol_clicked(self) -> None:
         if RaspiFM().radio_isplaying():
@@ -175,17 +193,17 @@ class RadioWidget(QWidget):
         self.__threadpool.start(mediametagetter)
     
     def __getmeta(self) -> None:
-        # To debug remove comment on next line and in import statement for debugpy at beginning of file
+        #To debug remove comment on next line and in import statement for debugpy at beginning of file
         #debugpy.debug_this_thread()
         previnfo= "-1"
 
-        #split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
+        #Split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
         sleeptickslimit = 4
         sleeptickcount = 1
         while self.__vlcgetmeta_enabled:
             time.sleep(0.5)
             if sleeptickcount >= sleeptickslimit:
-                #first sleep phase is shorter than next spleep phases, so that first info is coming faster
+                #First sleep phase is shorter than next spleep phases, so that first info is coming faster
                 if sleeptickslimit < 5:
                     sleeptickslimit = 20
 
@@ -204,7 +222,7 @@ class RadioWidget(QWidget):
     def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
 
-        #is null if no stations are configured yet.
+        #Is null if no stations are configured yet.
         if not self.__lbl_nowplaying is None:
             self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
 

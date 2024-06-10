@@ -11,7 +11,7 @@ class Favorites:
     
     @property
     def favoritelists(self) -> tuple:
-        #ensure only Favorites class can edit the list
+        #Ensure only Favorites class can edit the list
         return tuple(self.__favoritelists)
 
     @classmethod
@@ -115,3 +115,10 @@ class Favorites:
         favlist =   self.get_list(favlistuuid)
         if not favlist is None:
             favlist.move_station(stationuuid, direction)
+
+    def get_any_station(self) -> FavoriteList:
+        for favoritelist in self.__favoritelists:
+            if len(favoritelist.stations) > 0:
+                return favoritelist.stations[0]
+            
+        return None

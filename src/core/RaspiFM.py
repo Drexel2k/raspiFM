@@ -196,6 +196,9 @@ class RaspiFM:
     
     def favorites_getlist(self, listuuid:UUID) -> FavoriteList:
         return self.__favorites.get_list(listuuid)
+
+    def favorites_get_any_station(self,) -> RadioStation:
+        return self.__favorites.get_any_station()
     
     def favorites_changelistproperty(self, uuid:UUID, property:str, value:str) -> None:
         if property == "isdefault":
