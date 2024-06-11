@@ -73,7 +73,7 @@ class FavoritesWidget(QWidget):
                 qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
-                image = QImage(42, 42, QImage.Format.Format_ARGB32)
+                image = QImage(61, 42, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)
                 renderer.render(painter)
@@ -81,7 +81,7 @@ class FavoritesWidget(QWidget):
                 qx.convertFromImage(image)
 
             favIcon = QIcon(qx)
-            button.setIconSize(QSize(42, 42))
+            button.setIconSize(QSize(61, 42))
             button.setIcon(favIcon)
 
             button.setText(f' {station.name}')

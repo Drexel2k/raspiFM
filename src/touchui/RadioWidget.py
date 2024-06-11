@@ -100,7 +100,7 @@ class RadioWidget(QWidget):
                 qx.loadFromData(base64.b64decode(station.faviconb64), station.faviconextension)
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
-                image = QImage(180, 180, QImage.Format.Format_ARGB32)
+                image = QImage(262, 180, QImage.Format.Format_ARGB32)
                 image.fill(0x00000000)
                 painter = QPainter(image)
                 renderer.render(painter)
