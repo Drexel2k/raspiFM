@@ -48,7 +48,7 @@ class RaspiFM:
         return cls.__instance
     
     def __init(self):
-        self.__version = "1.0.0"
+        self.__version = "1.0.1"
         requestbase.version = self.__version
 
         self.__settings = Settings()

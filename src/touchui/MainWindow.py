@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         radiowidget = RadioWidget()
         radiowidget.init_playback(True)
         radiowidget.beforeplaystarting.connect(self.__radio_starts_playing)
-        radiowidget.playstopped.connect(self.__change_icon_radio_topped)
+        radiowidget.playstopped.connect(self.__change_icon_radio_stopped)
 
         radiowidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
