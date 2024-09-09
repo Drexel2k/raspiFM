@@ -42,6 +42,7 @@ Do a `sudo apt update` first.
 
 ## Setup Spotify Connect / spotifyd
 - 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
+  - Care! Current spotifyd stable release hase some issues due to Spotify backend changes. Use the latest build instead: `sudo cp ~/raspifm_repo/libs/spotifyd-commit-e280d84124d854af3c2f9509ba496b1c2ba6a1ae-librespot-0.4.2-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 2. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`
 - 3. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp ~/raspifm_repo/configs/spotifyd.service /etc/systemd/user`
 - 4. Enable the daemon/autostart: `systemctl --user enable spotifyd.service`
