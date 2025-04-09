@@ -5,12 +5,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "raspiFM",
-            "type": "python",
+            "name": "raspiFMweb",
+            "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/app.py",
+            "program": "${workspaceFolder}/src/web.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "raspiFMcore",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "purpose": ["debug-in-terminal"],
+            "program": "${workspaceFolder}/src/raspifm.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "raspiFMtouchui",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "purpose": ["debug-in-terminal"],
+            "program": "${workspaceFolder}/src/touch.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

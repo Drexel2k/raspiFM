@@ -26,7 +26,7 @@ from core.business.FavoriteList import FavoriteList
 from core.players.Spotify import Spotify
 from core.players.SpotifyInfo import SpotifyInfo
 from core.players.Vlc import Vlc
-from utils import utils
+from common import utils
 
 #todo: maybe split public core interface in several proxy classes
 class RaspiFM:
@@ -48,7 +48,7 @@ class RaspiFM:
         return cls.__instance
     
     def __init(self):
-        self.__version = "1.0.1"
+        self.__version = "1.1.0"
         requestbase.version = self.__version
 
         self.__settings = Settings()

@@ -80,6 +80,3 @@ class JsonDeserializer():
                     return json.loads(jsonstring, cls=UserSettingsDecoder)
             
         return None
-    
-    def get_dict_from_response(self, jsonstring:str) -> dict:
-        return json.loads(jsonstring)

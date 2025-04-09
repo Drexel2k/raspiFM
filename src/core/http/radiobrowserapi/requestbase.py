@@ -45,7 +45,6 @@ def radiobrowser_get_request(endpoint:str, params:dict):
     if not params is None:
         paramsencoded = "/".join(key + "/" + value for key, value in params.items())
 
-    str = get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded
     try:
         req = request.Request(get_random_radiobrowser_base_url() + endpoint + "/" + paramsencoded)
 

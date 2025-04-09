@@ -1,14 +1,14 @@
 import traceback
 
-from webui.web import app
+from web import app
 from flask import Response, make_response, render_template, request
 from uuid import UUID
 
 from core.RaspiFM import RaspiFM
-from utils import utils
+from common import utils
 from core.business.Exceptions import InvalidOperationException
-from webui.ViewProxies.FavoriteListView import FavoriteListView
-from webui.ViewProxies.RadioStationView import RadioStationView
+from ViewProxies.FavoriteListView import FavoriteListView
+from ViewProxies.RadioStationView import RadioStationView
 
 @app.route("/")
 def home() -> str:

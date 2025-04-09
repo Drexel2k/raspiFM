@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSize
 
 from core.RaspiFM import RaspiFM
 from core.players.SpotifyInfo import SpotifyInfo
-from utils import utils
+from common import utils
 from touchui.FavoritesWidget import FavoritesWidget
 from touchui.RadioWidget import RadioWidget
 from touchui.SpotifyWidget import SpotifyWidget
