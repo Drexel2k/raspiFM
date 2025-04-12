@@ -10,7 +10,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/web.py",
+            "program": "${workspaceFolder}/src/webui_start.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -20,7 +20,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/raspifm.py",
+            "program": "${workspaceFolder}/src/core_start.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -30,7 +30,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/touch.py",
+            "program": "${workspaceFolder}/src/touchui_start.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
