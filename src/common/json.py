@@ -1,7 +1,7 @@
 import json
 import io
 
-def deserialize_from_string_or_bytes(self, jsons_content:str|bytes|bytearray, encoding=None) -> dict:
+def deserialize_from_string_or_bytes(jsons_content:str|bytes|bytearray, encoding=None) -> dict:
     if encoding is None:
         return json.loads(jsons_content)
     else:
@@ -10,7 +10,7 @@ def deserialize_from_string_or_bytes(self, jsons_content:str|bytes|bytearray, en
         tiow.close()
         return obj
     
-def serialize_to_string_or_bytes(self, dict_content:dict, encoding=None) -> str|bytes:
+def serialize_to_string_or_bytes(dict_content:dict, encoding=None) -> str|bytes:
     if encoding is None:
         return json.dumps(dict_content)
     else:

@@ -10,7 +10,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/webui_start.py",
+            "program": "${workspaceFolder}/src/webui_run.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -20,7 +20,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/core_start.py",
+            "program": "${workspaceFolder}/src/core_run.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -30,7 +30,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "purpose": ["debug-in-terminal"],
-            "program": "${workspaceFolder}/src/touchui_start.py",
+            "program": "${workspaceFolder}/src/touchui_run.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

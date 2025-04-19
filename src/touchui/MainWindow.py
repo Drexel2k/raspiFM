@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
-from core.RaspiFM import RaspiFM
 from core.players.SpotifyInfo import SpotifyInfo
 from common import utils
 from touchui.FavoritesWidget import FavoritesWidget
@@ -14,6 +13,7 @@ from touchui.SpotifyWidget import SpotifyWidget
 from touchui.SettingsWidget import SettingsWidget
 from touchui.PushButtonMain import PushButtonMain
 from touchui import dbusstrings
+from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class MainWindow(QMainWindow):
     __slots__ = ["__mainwidget", "__spotify_dbusname", "__system_dbusconnection", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor"]
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         scroll.setWidget(self.__mainwidget)
         self.setCentralWidget(scroll)
 
-        RaspiFM()
+        RaspiFMProxy()
 
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         left_layout_vertical.addWidget(self.__spotifybutton)
         left_layout_vertical.addWidget(self.__settingsbutton)
 
-        if RaspiFM().spotify_isplaying():
+        if RaspiFMProxy().spotify_isplaying():
             self.__change_icons_spotify_playing()
             self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
             self.__activebutton = self.__spotifybutton
