@@ -79,8 +79,8 @@ class RaspiFM:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
                    stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
     
-    def stations_getstation(self, uuid:UUID) -> RadioStation:
-        return self.__radiostations.get_station(uuid)
+    def stations_getstation(self, station_uuid:UUID) -> RadioStation:
+        return self.__radiostations.get_station(station_uuid)
     
     def stations_deletestation(self, uuid:UUID, serialize:bool=True) -> None:
         station = self.stations_getstation(uuid)
@@ -285,7 +285,8 @@ class RaspiFM:
     def radio_currentstation(self) -> RadioStation:
         return Vlc().currentstation
 
-    def radio_set_currentstation(self, station:RadioStation) -> None:
+    def radio_set_currentstation(self, station_uuid:UUID) -> None:
+        station = self.__radiostations.get_station(station_uuid)
         Vlc().currentstation = station
 
         original_laststation = self.__settings.usersettings.touch_laststation
@@ -309,6 +310,9 @@ class RaspiFM:
 
     def radio_shutdown(self) -> None:
         Vlc().shutdown()
+
+    def radio_send_stationclicked(self, station_uuid:UUID) -> None:
+        stationapi.send_stationclicked(station_uuid)
 
     def spotify_isplaying(self) -> bool:
         return Spotify().isplaying

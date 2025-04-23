@@ -12,7 +12,7 @@ from core.business.Favorites import Favorites
 from core.business.RadioStations import RadioStations
 from core.json.JsonEncoder import RestParamsEncoder, RadioStationsEncoder
 
-class JsonSerializer():
+class JsonSerializer:
     __slots__ = ["__path"]
     __instance:JsonSerializer = None
     __path:str
@@ -52,15 +52,3 @@ class JsonSerializer():
     def serialize_usersettings(self, usersettings:UserSettings) -> None:
         with open(Path(self.__path, "settings.json"), "w+") as outfile:
             outfile.write(json.dumps(usersettings, cls=UserSettingsEncoder, indent=4))
-
-    def serialize_restparams(self, params:dict) -> str:
-        return json.dumps(params, cls=RestParamsEncoder).encode("utf-8")
-    
-    def serialize_uuids(self, uuids:list) -> str:
-        return json.dumps(uuids, default=str)
-    
-    def serialize_uuid(self, uuid:UUID) -> str:
-        return json.dumps(uuid, default=str)
-    
-    def serialize_dict(self, dict:dict) -> str:
-        return json.dumps(dict)
