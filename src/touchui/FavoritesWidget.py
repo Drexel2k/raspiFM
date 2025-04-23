@@ -7,10 +7,8 @@ from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QScrollArea
 
 from common import utils
-from core.http.radiobrowserapi import stationapi
-from core.players.Vlc import Vlc
 from touchui.PushButtonData import PushButtonData
-from core.RaspiFM import RaspiFM
+from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class FavoritesWidget(QWidget):
     __slots__ = ["__cbo_favoritelists", "__scrolllayout"]
@@ -37,8 +35,9 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists = QComboBox()
         self.__cbo_favoritelists.setFixedHeight(50)
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
-        for list in sorted(RaspiFM().favorites_getlists(), key=lambda favlistinternal: favlistinternal.displayorder):
-            name = list.name if not utils.str_isnullorwhitespace(list.name) else "{no name}"
+
+        for list in sorted(RaspiFMProxy().favorites_getlists(), key=lambda favlistinternal: favlistinternal["displayorder"]):
+            name = list["name"] if not utils.str_isnullorwhitespace(list["name"]) else "{no name}"
             self.__cbo_favoritelists.addItem(name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
 
@@ -47,12 +46,12 @@ class FavoritesWidget(QWidget):
 
         self.__scrolllayout.addStretch()
 
-        self.__updatefavoritesbuttons()
+        self.__update_favoritesbuttons()
 
     def __favoritelists_selectionchanged(self):
-        self.__updatefavoritesbuttons()
+        self.__update_favoritesbuttons()
 
-    def __updatefavoritesbuttons(self) -> None:
+    def __update_favoritesbuttons(self) -> None:
         while self.__scrolllayout.count() > 1: #stretch always contained
             layoutitem = self.__scrolllayout.takeAt(0)
             btn = layoutitem.widget()
@@ -60,8 +59,8 @@ class FavoritesWidget(QWidget):
             btn.setParent(None)
 
         favoritelist = self.__cbo_favoritelists.currentData()
-        for station in sorted(favoritelist.stations, key=lambda stationinternal: stationinternal.displayorder):
-            station = station.radiostation
+        for station in sorted(favoritelist["stations"], key=lambda stationinternal: stationinternal["displayorder"]):
+            station = station["radiostation"]
             button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             button.setMaximumWidth(self.width() - 45)
@@ -69,8 +68,8 @@ class FavoritesWidget(QWidget):
             button.setStyleSheet("QPushButton { text-align:left; }")
 
             qx = QPixmap()
-            if not station.faviconb64 is None:
-                qx.loadFromData(base64.b64decode(station.faviconb64), f'{station.faviconextension}')
+            if not station["faviconb64"] is None:
+                qx.loadFromData(base64.b64decode(station["faviconb64"]), f'{station["faviconextension"]}')
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
                 image = QImage(61, 42, QImage.Format.Format_ARGB32)
@@ -84,13 +83,13 @@ class FavoritesWidget(QWidget):
             button.setIconSize(QSize(61, 42))
             button.setIcon(favIcon)
 
-            button.setText(f' {station.name}')
+            button.setText(f' {station["name"]}')
             button.clicked.connect(self.__buttonclicked)
             self.__scrolllayout.insertWidget(self.__scrolllayout.count() - 1, button)
 
     @pyqtSlot()
     def __buttonclicked(self):
-        RaspiFM().radio_play(self.sender().data)
+        RaspiFMProxy().radio_play(self.sender().data["uuid"])
 
         self.favclicked.emit()
 

@@ -8,7 +8,6 @@ from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
-from core.RaspiFM import RaspiFM
 from common import utils
 from touchui.MarqueeLabel import MarqueeLabel 
 from core.http.radiobrowserapi import stationapi

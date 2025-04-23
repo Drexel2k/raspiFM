@@ -31,3 +31,16 @@ class RaspiFMProxy:
         result = self.__socket_manager.query_raspifm_core("spotify_isplaying", None, True)
         result = result[strings.result_string]
         return result
+    
+    def radio_isplaying(self) -> bool:
+        result = self.__socket_manager.query_raspifm_core("radio_isplaying", None, True)
+        result = result[strings.result_string]
+        return result
+    
+    def favorites_getlists(self) -> tuple:
+        result = self.__socket_manager.query_raspifm_core("favorites_getlists", None, True)
+        result = result[strings.result_string]
+        return result
+    
+    def radio_play(self, station_uuid:str = None) -> None:
+        self.__socket_manager.query_raspifm_core("radio_play", {"station_uuid":station_uuid}, False)

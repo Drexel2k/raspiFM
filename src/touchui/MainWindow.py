@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
             radiowidget.init_playback(True)
 
             #Can not be playing if no stations are available on initial start e.g.
-            if RaspiFM().radio_isplaying():
+            if RaspiFMProxy().radio_isplaying():
                 self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-music-rpi.svg"))
             else:
                 self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-rpi.svg"))

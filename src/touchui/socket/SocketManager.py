@@ -59,10 +59,10 @@ class SocketManager:
                 pass
 
     #main thread
-    def query_raspifm_core(self, query:str, args:list, is_query:bool) -> dict:
+    def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:
         request_dict =  { 
                             strings.header_string:{strings.messageid_string:self.__get_messageid()}, 
-                            strings.message_string:{ strings.message_string: query, "args":args}
+                            strings.message_string:{ strings.message_string: query, strings.args_string:args}
                         } 
         request = MessageResponse(strings.socketpath_string, request_dict, is_query)
         self.__write_queue.put(request)

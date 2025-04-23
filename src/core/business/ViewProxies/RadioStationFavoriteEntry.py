@@ -21,3 +21,7 @@ class RadioStationFavoriteEntry:
         self.__radiostation = radiostation
         self.__displayorder = displayorder
 
+    def to_dict(self) -> dict:
+        return {"radiostation":self.__radiostation.to_dict(),
+                "displayorder":self.__displayorder
+                }  

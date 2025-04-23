@@ -26,9 +26,8 @@ class SocketManager:
     def __create_client_socket(self, client_socket_param):
         client_socket, _ = client_socket_param.accept()
         #we work with unix sockets, so we don't have an address here,
-        #so we extrace a unique identifier from the string representation
-        #of the socket object (fd=...)
-        socket_address = str(client_socket).split(",")[0].split(" ")[1]
+        #so we take the file descriptor
+        socket_address = str(client_socket.fileno())
         client_socket.setblocking(False)
         socket_transfermanager = SocketTransferManager(client_socket, socket_address, self.__read_queue)
         self.__client_sockets[socket_address] = socket_transfermanager

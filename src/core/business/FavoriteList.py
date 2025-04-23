@@ -127,7 +127,12 @@ class FavoriteList:
                 station_inorder.displayorder = position
                 position += 1
             
-
-
+    def to_dict(self) -> dict:
+        return {"uuid":str(self.__uuid),
+                "name":self.__name,
+                "isdefault":self.__isdefault,
+                "stations":[stationentry.to_dict() for stationentry in self.__stations],
+                "displayorder":self.__displayorder
+                }  
 
 

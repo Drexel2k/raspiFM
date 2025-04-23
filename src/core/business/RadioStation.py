@@ -69,12 +69,12 @@ class RadioStation:
         obj.__setattr__(f"_RadioStation__uuid", UUID(uuid))
         obj.__setattr__(f"_RadioStation__name", name)
         obj.__setattr__(f"_RadioStation__url", url)
-        obj.__setattr__(f"_RadioStation__codec", codec)
-        obj.__setattr__(f"_RadioStation__countrycode", countrycode)
         obj.__setattr__(f"_RadioStation__languagecodes", languagecodes)
         obj.__setattr__(f"_RadioStation__homepage", homepage)
         obj.__setattr__(f"_RadioStation__faviconb64", faviconb64)
         obj.__setattr__(f"_RadioStation__faviconextension", faviconextension)
+        obj.__setattr__(f"_RadioStation__countrycode", countrycode)
+        obj.__setattr__(f"_RadioStation__codec", codec)
         obj.__setattr__(f"_RadioStation__bitrate", bitrate)
         obj.__setattr__(f"_RadioStation__tags", tags)
 
@@ -95,3 +95,17 @@ class RadioStation:
             obj.__setattr__(f"_RadioStation{slot}", serializationdata[dictkey])
 
         return obj
+
+    def to_dict(self) -> dict:
+        return {"uuid":str(self.__uuid),
+                "name":self.__name,
+                "url":self.__url,
+                "languagecodes":self.__languagecodes,
+                "homepage":self.__homepage,
+                "faviconb64":self.__faviconb64,
+                "faviconextension":self.__faviconextension,
+                "countrycode":self.__countrycode,
+                "codec":self.__codec,
+                "bitrate":self.__bitrate,
+                "tags":self.__tags
+                }    

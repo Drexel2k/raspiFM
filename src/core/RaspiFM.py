@@ -258,7 +258,8 @@ class RaspiFM:
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
-    def radio_play(self, station:RadioStation = None) -> None:
+    def radio_play(self, station_uuid:UUID = None) -> None:
+        station = self.__radiostations.get_station(station_uuid)
         Vlc().play(station)
         
         if not station is None:
@@ -320,12 +321,3 @@ class RaspiFM:
     
     def spotify_set_currentplaying(self, info:SpotifyInfo) -> None:
         Spotify().currentlyplaying = info
-
-    def get_serialzeduuids(self, uuids:list) -> str:
-        return JsonSerializer().serialize_uuids(uuids)
-    
-    def get_serialzeduuid(self, uuid:UUID) -> str:
-        return JsonSerializer().serialize_uuids(uuid)
-    
-    def get_serialzeddict(self, dict:dict) -> str:
-        return JsonSerializer().serialize_dict(dict)

@@ -7,6 +7,8 @@ from common.socket.MessageResponse import MessageResponse
 from common import json
 from common import strings
 
+from core.json.JsonSerializer import JsonSerializer
+
 
 class SocketTransferManager:
     __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock"]
@@ -37,7 +39,7 @@ class SocketTransferManager:
     def read(self):
         data = self.__socket.recv(4096)
 
-        if data:
+        if len(data) > 1:
             self.__receive_buffer += data
         else:
             raise RuntimeError("Peer closed.")
@@ -113,6 +115,7 @@ class SocketTransferManager:
         self.__process_receive_buffer()
 
     #writer thread
+    #messages must die JSON serializable, only Python basics types allowed
     def send(self, message_response:MessageResponse):
         content_bytes = b""
         header = {} 

@@ -6,6 +6,7 @@ from uuid import UUID
 
 from core.RaspiFM import RaspiFM
 from common import utils
+from common import json
 from core.business.Exceptions import InvalidOperationException
 from ViewProxies.FavoriteListView import FavoriteListView
 from ViewProxies.RadioStationView import RadioStationView
@@ -251,11 +252,11 @@ def get_errorresponse(e):
     traceback.print_exc() 
     if isinstance(e, Exception):
         if isinstance(e, InvalidOperationException):
-            response = make_response(RaspiFM().get_serialzeddict({"errorNo": 1, "errorType": type(e).__name__, "error": e.args}), 400)
+            response = make_response(json.serialize_dict({"errorNo": 1, "errorType": type(e).__name__, "error": e.args}), 400)
         else:
-            response = make_response(RaspiFM().get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 400)
+            response = make_response(json.serialize_dict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 400)
     else:
-        response = make_response(RaspiFM().get_serialzeddict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
+        response = make_response(json.serialize_dict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
 
     response.mimetype = "application/json"
     return response
