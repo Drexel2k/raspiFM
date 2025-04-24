@@ -3,8 +3,7 @@ import os
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QSpacerItem
 
-from core.RaspiFM import RaspiFM
-from core.StartWith import StartWith
+from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class SettingsWidget(QWidget):
     __slots__ = ["__cbo_startwith"]
@@ -25,7 +24,7 @@ class SettingsWidget(QWidget):
         layout_title.addWidget(lbl_logo)
         layout_title.addWidget(QLabel("raspiFM"))
         layout_title.addStretch()
-        lbl_version = QLabel(f'v{RaspiFM().version}')
+        lbl_version = QLabel(f'v{RaspiFMProxy().raspifm_getversion()}')
         lbl_version.setStyleSheet("QLabel { font-size:15px;}") #Font-size ist set in qt-material css and can only be overriden in css 
         layout_title.addWidget(lbl_version)
         layout.addLayout(layout_title)
@@ -38,10 +37,10 @@ class SettingsWidget(QWidget):
         self.__cbo_startwith = QComboBox()
         self.__cbo_startwith.setFixedHeight(50)
         self.__cbo_startwith.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
-        self.__cbo_startwith.addItem("Last Radiostation", StartWith.LastStation)
-        self.__cbo_startwith.addItem("Default Favorite List", StartWith.DefaultList)
+        self.__cbo_startwith.addItem("Last Radiostation", 1) #StartWith.LastStation
+        self.__cbo_startwith.addItem("Default Favorite List", 2) #StartWith.DefaultList
 
-        if RaspiFM().settings_touch_startwith() == StartWith.DefaultList:
+        if RaspiFMProxy().settings_touch_startwith() == 2: #StartWith.DefaultList
             self.__cbo_startwith.setCurrentIndex(1)
 
         self.__cbo_startwith.currentIndexChanged.connect(self.__startwith_selectionchanges)
@@ -51,4 +50,4 @@ class SettingsWidget(QWidget):
         layout.addStretch()       
 
     def __startwith_selectionchanges(self):
-        RaspiFM().settings_set_touch_startwith(self.__cbo_startwith.currentData())
+        RaspiFMProxy().settings_set_touch_startwith(self.__cbo_startwith.currentData())

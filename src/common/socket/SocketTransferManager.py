@@ -7,17 +7,16 @@ from common.socket.MessageResponse import MessageResponse
 from common import json
 from common import strings
 
-from core.json.JsonSerializer import JsonSerializer
-
-
 class SocketTransferManager:
-    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock"]
+    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback"]
     __socket:socket
     __socket_address:str
     __read_queue:Queue
     __receive_buffer:bytes
     __requests_without_response_lock:Lock
     __requests_without_response:dict
+    __buffer_size:int
+    __close_callback:int
 
     #message can span over several read calls, bytes are removed, once a full part 
     #(header length, header or request content) is read, therefore read parts
@@ -25,7 +24,7 @@ class SocketTransferManager:
     __current_message_header_length:int
     __current_message_header:dict
 
-    def __init__(self, socket, socket_address, request_queue):
+    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback=None):
         self.__socket = socket
         self.__socket_address = socket_address
         self.__read_queue = request_queue
@@ -34,15 +33,26 @@ class SocketTransferManager:
         self.__requests_without_response = {}
         self.__current_message_header_length = 0
         self.__current_message_header = None
+        self.__buffer_size = buffer_size
+        self.__close_callback = close_callback
+
+    @property
+    def socket(self) -> socket:
+        return self.__socket
+    
+    @property
+    def socket_address(self) -> str:
+        return self.__socket_address
 
     #reader thread
     def read(self):
-        data = self.__socket.recv(4096)
+        data = self.__socket.recv(self.__buffer_size)
 
         if len(data) > 1:
             self.__receive_buffer += data
         else:
-            raise RuntimeError("Peer closed.")
+            if self.__close_callback is not None:
+                self.__close_callback(self)
         
         self.__process_receive_buffer()
 
@@ -89,9 +99,6 @@ class SocketTransferManager:
         self.__receive_buffer = self.__receive_buffer[message_length:]
         header = self.__current_message_header
         message = json.deserialize_from_string_or_bytes(data, strings.utf8_string)
-        if strings.message_string in message and message[strings.message_string].strip().lower() == "bye":
-            self.__close()
-            return
         
         self.__current_message_header_length = 0
         self.__current_message_header = None
@@ -110,6 +117,8 @@ class SocketTransferManager:
                                                 strings.header_string: header,
                                                 strings.response_string: message
                                             }
+                
+                message_response.response_ready.set()
                 
         self.__read_queue.put(message_response)
         self.__process_receive_buffer()
@@ -147,12 +156,19 @@ class SocketTransferManager:
         message_bytes = message_header + header_bytes + content_bytes
 
         sent = 0
-        while len(message_bytes) > 0:
-            sent = self.__socket.send(message_bytes)
-            message_bytes= message_bytes[sent:]
+        try:
+            while len(message_bytes) > 0:
+                buff = message_bytes[:self.__buffer_size]
+                sent = self.__socket.send(buff)
+                message_bytes= message_bytes[sent:]
+            
+            message_response.message_sent.set()
+        except Exception as transfer_exception:
+            message_response.transfer_exception = transfer_exception
+            if message_response.is_query:
+                message_response.response_ready.set()
 
     #reader thread
-    def __close(self):
-        self.__selector.unregister(self.__sock)
-        self.__sock.close()
+    def close(self):
+        self.__socket.close()
         self.__socket = None

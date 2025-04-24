@@ -196,7 +196,8 @@ class RadioWidget(QWidget):
         #Split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
         sleeptickslimit = 4
         sleeptickcount = 1
-        while self.__vlcgetmeta_enabled:
+        socket_alive = True
+        while self.__vlcgetmeta_enabled and socket_alive:
             time.sleep(0.5)
             if sleeptickcount >= sleeptickslimit:
                 #First sleep phase is shorter than next spleep phases, so that first info is coming faster
@@ -204,14 +205,23 @@ class RadioWidget(QWidget):
                     sleeptickslimit = 20
 
                 sleeptickcount = 0
-                info = RaspiFMProxy().radio_getmeta()
-                if RaspiFMProxy().radio_isplaying():
-                    if info != previnfo and self.__vlcgetmeta_enabled:
-                        previnfo = info
-                        if utils.str_isnullorwhitespace(info):
-                            info = RaspiFMProxy().radio_currentstation()["name"]
+                #There are rare moments, when the app is closed when we are already in the loop
+                #that means self.__vlcgetmeta_enabled is set during the processing and the socket can already be closed.
+                try:
+                    info = RaspiFMProxy().radio_getmeta()
+                    if RaspiFMProxy().radio_isplaying():
+                        if info != previnfo and self.__vlcgetmeta_enabled:
+                            previnfo = info
+                            if utils.str_isnullorwhitespace(info):
+                                info = RaspiFMProxy().radio_currentstation()["name"]
 
-                        self.__inforeceived.emit(info)
+                            self.__inforeceived.emit(info)
+                except OSError as os_error_exception:
+                    #socket closed
+                    if os_error_exception.errno == 9:
+                        socket_alive = False
+                    else:
+                        raise
   
             sleeptickcount += 1
 

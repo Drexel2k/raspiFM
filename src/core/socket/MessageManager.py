@@ -4,6 +4,8 @@ from uuid import UUID
 
 from common import strings
 from core.RaspiFM import RaspiFM
+from core.StartWith import StartWith
+from core.players.SpotifyInfo import SpotifyInfo
 from core.socket.SocketManager import SocketManager
 
 class MessageManager:
@@ -20,14 +22,14 @@ class MessageManager:
 
         while True:
             message_response = read_queue.get()
-            #the server expects only queries  and no reponses
+            #the server expects only queries and no reponses
             #in the read queue as it doesn't send any queries
             #which expect a response.
             if message_response.response is None:
                 func = getattr(raspifm, message_response.message[strings.message_string][strings.message_string])
 
                 #queries which don't send responses
-                if message_response.message[strings.message_string][strings.message_string] in ["radio_play", "radio_set_currentstation", "radio_send_stationclicked", "radio_stop", "radio_setvolume"]:
+                if message_response.message[strings.message_string][strings.message_string] in ["radio_play", "radio_set_currentstation", "radio_send_stationclicked", "radio_stop", "radio_setvolume", "settings_set_touch_startwith", "spotify_set_currentplaying", "spotify_set_isplaying", "raspifm_shutdown"]:
                     #queries which require argument conversion
                     if message_response.message[strings.message_string][strings.message_string] == "radio_play":
                         func(None if message_response.message[strings.message_string][strings.args_string]["station_uuid"] is None else UUID(message_response.message[strings.message_string][strings.args_string]["station_uuid"]))
@@ -35,6 +37,10 @@ class MessageManager:
                         func(UUID(message_response.message[strings.message_string][strings.args_string]["station_uuid"]))
                     elif message_response.message[strings.message_string][strings.message_string] == "radio_send_stationclicked":
                         func(UUID(message_response.message[strings.message_string][strings.args_string]["station_uuid"]))
+                    elif message_response.message[strings.message_string][strings.message_string] == "settings_set_touch_startwith":
+                        func(StartWith(message_response.message[strings.message_string][strings.args_string]["startwith"]))
+                    elif message_response.message[strings.message_string][strings.message_string] == "spotify_set_currentplaying":
+                        func(SpotifyInfo(**message_response.message[strings.message_string][strings.args_string]["info"]))
                     else:
                         if message_response.message[strings.message_string][strings.args_string] is None:
                             func()
@@ -54,7 +60,7 @@ class MessageManager:
                     result_json_serializable = None
                     if not result_object is None:
                         #queries which require result conversion
-                        if message_response.message[strings.message_string][strings.message_string] in ["stations_getstation", "favorites_getdefaultlist", "favorites_get_any_station", "radio_currentstation"]:
+                        if message_response.message[strings.message_string][strings.message_string] in ["stations_getstation", "favorites_getdefaultlist", "favorites_get_any_station", "radio_currentstation", "spotify_currentplaying"]:
                             result_json_serializable = result_object.to_dict()
                         elif message_response.message[strings.message_string][strings.message_string] == "favorites_getlists":
                             result_json_serializable = [favorite_list.to_dict() for favorite_list in result_object]

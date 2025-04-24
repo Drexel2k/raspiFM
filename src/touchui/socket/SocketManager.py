@@ -8,7 +8,6 @@ from threading import Thread
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import strings
 from common.socket.MessageResponse import MessageResponse
-from threading import Event
 
 class SocketManager:
     #No multi threading in selector mechanisms!
@@ -19,9 +18,9 @@ class SocketManager:
     __socket_transfermanager:SocketTransferManager
     __messageid:int
 
-    def __init__(self, request_queue:Queue, response_queue:Queue):
+    def __init__(self, read_queue:Queue, response_queue:Queue):
         self.__socket_selector = DefaultSelector()
-        self.__read_queue = request_queue
+        self.__read_queue = read_queue
         self.__write_queue = response_queue
         self.__messageid = 0
 
@@ -33,7 +32,7 @@ class SocketManager:
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(strings.socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, strings.socketpath_string, self.__read_queue)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.socketpath_string, self.__read_queue)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
         while True:
@@ -52,7 +51,7 @@ class SocketManager:
     def __monitor_read_queue(self):
         while True:
             message_response = self.__read_queue.get()
-            #messages with response are handled by reponse ready event/
+            #messages with response are handled by response ready event/
             #query_raspifm_core
             if message_response.response is None:
                 #send message/event to main window
@@ -68,10 +67,20 @@ class SocketManager:
         self.__write_queue.put(request)
         if is_query:
             request.response_ready.wait()
+
+            if request.transfer_exception is not None:
+                raise request.transfer_exception
+            
             return request.response[strings.response_string]
-        
-        return
+        else:
+            request.message_sent.wait()
+            if request.transfer_exception is not None:
+                raise request.transfer_exception
 
     def __get_messageid(self) -> int:
         self.__messageid = self.__messageid + 1
         return self.__messageid
+    
+    def close(self) -> None:
+        self.__socket_selector.unregister(self.__socket_transfermanager.socket)
+        self.__socket_transfermanager.socket.close()

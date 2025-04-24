@@ -31,3 +31,9 @@ class SpotifyInfo:
 
         self.__arturl = arturl
 
+    def to_dict(self) -> dict:
+        return {"title":self.__title,
+                "album":self.__album,
+                "artists":self.artists,
+                "arturl":self.__arturl
+                }

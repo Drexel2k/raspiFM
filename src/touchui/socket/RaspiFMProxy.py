@@ -18,9 +18,9 @@ class RaspiFMProxy:
         return cls.__instance
     
     def __init(self):
-        request_queue = Queue()
+        read_queue = Queue()
         write_queue = Queue()
-        self.__socket_manager = SocketManager(request_queue, write_queue)
+        self.__socket_manager = SocketManager(read_queue, write_queue)
         socket_read_thread = Thread(target=self.__socket_manager.create_client_socket)
         socket_read_thread.start()
 
@@ -101,3 +101,30 @@ class RaspiFMProxy:
 
     def radio_setvolume(self, volume:int) -> None:
         self.__socket_manager.query_raspifm_core("radio_setvolume", {"volume":volume}, False)
+
+    def raspifm_getversion(self) -> str:
+        result = self.__socket_manager.query_raspifm_core("raspifm_getversion", None, True)
+        result = result[strings.result_string]
+        return result
+    
+    def settings_set_touch_startwith (self, startwith:int) -> None:
+        self.__socket_manager.query_raspifm_core("settings_set_touch_startwith", {"startwith":startwith}, False)
+
+    def spotify_currentplaying(self) -> dict:
+        result = self.__socket_manager.query_raspifm_core("spotify_currentplaying", None, True)
+        result = result[strings.result_string]
+        return result
+    
+    def spotify_set_currentplaying(self, info:dict) -> None:
+        self.__socket_manager.query_raspifm_core("spotify_set_currentplaying", {"info":info}, False)
+
+    def http_get_urlbinary_content_as_base64(self, url:str) -> str:
+        result = self.__socket_manager.query_raspifm_core("http_get_urlbinary_content_asb64", {"url":url}, True)
+        result = result[strings.result_string]
+        return result
+    
+    def spotify_set_isplaying(self, playing:bool) -> None:
+        self.__socket_manager.query_raspifm_core("spotify_set_isplaying", {"playing":playing}, False)
+    
+    def raspifm_shutdown(self) -> None:
+        self.__socket_manager.close()

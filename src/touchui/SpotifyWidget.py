@@ -1,11 +1,11 @@
+import base64
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
 
-from core.RaspiFM import RaspiFM
-from core.http.basics import httpcontent
 from touchui.MarqueeLabel import MarqueeLabel
+from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class SpotifyWidget(QWidget):
     __slots__ = ["__artlabel" , "__lbl_title", "__lbl_artists", "__lbl_album"]
@@ -49,11 +49,11 @@ class SpotifyWidget(QWidget):
 
     def __updatecontentwidgets(self) -> None:
         qx = QPixmap()
-        if RaspiFM().spotify_isplaying():
-            currentplaying = RaspiFM().spotify_currentplaying()
+        if RaspiFMProxy().spotify_isplaying():
+            currentplaying = RaspiFMProxy().spotify_currentplaying()
             if not currentplaying is None:
-                if not currentplaying.arturl is None:
-                    qx.loadFromData(httpcontent.get_urlbinary_content(currentplaying.arturl))
+                if not currentplaying["arturl"] is None:
+                    qx.loadFromData(base64.b64decode(RaspiFMProxy().http_get_urlbinary_content_as_base64(currentplaying["arturl"])))
                 else:
                     renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
                     image = QImage(393, 270, QImage.Format.Format_ARGB32)
@@ -63,9 +63,9 @@ class SpotifyWidget(QWidget):
                     painter.end()
                     qx.convertFromImage(image)
 
-            self.__lbl_title.setText(currentplaying.title)
-            self.__lbl_artists.setText(currentplaying.artists)
-            self.__lbl_album.setText(currentplaying.album)
+            self.__lbl_title.setText(currentplaying["title"])
+            self.__lbl_artists.setText(currentplaying["artists"])
+            self.__lbl_album.setText(currentplaying["album"])
         else:
             renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
             image = QImage(393, 270, QImage.Format.Format_ARGB32)

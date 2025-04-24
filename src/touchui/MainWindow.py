@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
-from core.players.SpotifyInfo import SpotifyInfo
 from common import utils
 from touchui.FavoritesWidget import FavoritesWidget
 from touchui.RadioWidget import RadioWidget
@@ -123,7 +122,10 @@ class MainWindow(QMainWindow):
             if state == "Playing":
                 message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata)
                 metadata = message.arguments()[0]
-                RaspiFM().spotify_set_currentplaying(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
+                RaspiFMProxy().spotify_set_currentplaying({"title":metadata[dbusstrings.spotifydmetadatatitle],
+                                                           "album":metadata[dbusstrings.spotifydmetadataalbum],
+                                                           "artists":metadata[dbusstrings.spotifydmetadataartists],
+                                                           "arturl":metadata[dbusstrings.spotifydmetadataarturl]})
 
     @pyqtSlot(QtDBus.QDBusMessage)
     def __dbus_nameownerchanged(self, msg:QtDBus.QDBusMessage) -> None:
@@ -158,11 +160,15 @@ class MainWindow(QMainWindow):
             #changeproperties = msg.arguments()[0]
 
         metadata = changeproperties[dbusstrings.spotifydpropertymetadata]
-        spotify_wasplaying = RaspiFM().spotify_isplaying()
-        RaspiFM().spotify_set_currentplaying(SpotifyInfo(metadata[dbusstrings.spotifydmetadatatitle], metadata[dbusstrings.spotifydmetadataalbum], metadata[dbusstrings.spotifydmetadataartists], metadata[dbusstrings.spotifydmetadataarturl]))
+        spotify_wasplaying = RaspiFMProxy().spotify_isplaying()
+        RaspiFMProxy().spotify_set_currentplaying({"title":metadata[dbusstrings.spotifydmetadatatitle], 
+                                                   "album":metadata[dbusstrings.spotifydmetadataalbum],
+                                                   "artists":metadata[dbusstrings.spotifydmetadataartists],
+                                                   "arturl":metadata[dbusstrings.spotifydmetadataarturl]
+                                                   })
         
         if changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing":
-            RaspiFM().radio_stop()
+            RaspiFMProxy().radio_stop()
 
             self.__change_icons_spotify_playing()
 
@@ -182,11 +188,11 @@ class MainWindow(QMainWindow):
                     self.__closewidgetitem(widgetitem)
 
         else:
-            if RaspiFM().spotify_isplaying():
+            if RaspiFMProxy().spotify_isplaying():
                 #Not only triggered when Spotify stopped via app, but also when radio
                 #was manually started again, so this is no sign of nothing is playing!
                 self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
-                RaspiFM().spotify_set_isplaying(False)
+                RaspiFMProxy().spotify_set_isplaying(False)
 
                 if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
                     self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
@@ -300,4 +306,4 @@ class MainWindow(QMainWindow):
         widget = self.__mainwidget.layout().itemAt(1).widget()
         widget.close()
         widget.setParent(None)
-        RaspiFM().radio_shutdown()
+        RaspiFMProxy().raspifm_shutdown()

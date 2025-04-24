@@ -29,7 +29,7 @@ class SocketManager:
         #so we take the file descriptor
         socket_address = str(client_socket.fileno())
         client_socket.setblocking(False)
-        socket_transfermanager = SocketTransferManager(client_socket, socket_address, self.__read_queue)
+        socket_transfermanager = SocketTransferManager(client_socket, 4096, socket_address, self.__read_queue, self.__close_client_socket)
         self.__client_sockets[socket_address] = socket_transfermanager
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, socket_transfermanager)
 
@@ -57,4 +57,8 @@ class SocketManager:
     def write(self):
         while True:
             write = self.__write_queue.get()
-            self.__client_sockets[write.socket_address].send(write) 
+            self.__client_sockets[write.socket_address].send(write)
+
+    def __close_client_socket(self, socket_transfermanager:SocketTransferManager) -> None:
+        self.__socket_selector.unregister(socket_transfermanager.socket)
+        self.__client_sockets[socket_transfermanager.socket_address].close()

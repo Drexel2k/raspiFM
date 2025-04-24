@@ -149,7 +149,7 @@ class RaspiFM:
                                    radiostationapi.countrycode,
                                    radiostationapi.languagecodes,
                                    radiostationapi.homepage,
-                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else httpcontent.get_urlbinary_contentasb64(radiostationapi.favicon),
+                                   None if utils.str_isnullorwhitespace(radiostationapi.favicon) else httpcontent.get_urlbinary_content_as_base64(radiostationapi.favicon),
                                    None if utils.str_isnullorwhitespace(radiostationapi.favicon) else path.splitext(radiostationapi.favicon)[1][1:],
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))
@@ -302,13 +302,16 @@ class RaspiFM:
         self.__settings.usersettings.touch_volume = volume
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
+    def http_get_urlbinary_content_asb64(self, url:str) ->str:
+        return httpcontent.get_urlbinary_content_as_base64(url)
+
     def radio_getvolume(self) -> int:
         return Vlc().volume
 
     def radio_getmeta(self) -> str:
         return Vlc().getmeta()
 
-    def radio_shutdown(self) -> None:
+    def raspifm_shutdown(self) -> None:
         Vlc().shutdown()
 
     def radio_send_stationclicked(self, station_uuid:UUID) -> None:
@@ -325,3 +328,6 @@ class RaspiFM:
     
     def spotify_set_currentplaying(self, info:SpotifyInfo) -> None:
         Spotify().currentlyplaying = info
+
+    def raspifm_getversion(self) -> str:
+        return self.version
