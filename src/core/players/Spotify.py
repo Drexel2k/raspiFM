@@ -32,10 +32,10 @@ class Spotify:
     def currentlyplaying(self, value: SpotifyInfo) -> None:
         self.__spotifyinfo = value
 
-        if self.__spotifyinfo:
-            self.__state = PlayerState.Playing
-        else:
+        if self.__spotifyinfo is None:
             self.__state = PlayerState.Stopped
+        else:
+            self.__state = PlayerState.Playing
 
     def __new__(cls):
         if cls.__instance is None:

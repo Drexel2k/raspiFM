@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+from collections import deque
 from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
 from uuid import UUID
 from os import path
 
+from jeepney import DBusAddress, new_method_call, MatchRule, message_bus, HeaderFields
+from jeepney.io.blocking import Proxy, DBusConnection
+from jeepney.io.common import FilterHandle
+from jeepney.io.blocking import open_dbus_connection
+
+from core import dbusstrings
 from core.StartWith import StartWith
 from core.json.JsonSerializer import JsonSerializer
 from core.json.JsonDeserializer import JsonDeserializer
@@ -30,12 +37,17 @@ from common import utils
 
 #todo: maybe split public core interface in several proxy classes
 class RaspiFM:
-    __slots__ = ["__favorites", "__radiostations", "__settings", "__version"]
+    __slots__ = ["__favorites", "__radiostations", "__settings", "__version", "__spotify_dbusname", "__dbus_spotify_filter", "__dbus_connection", "__dbus_queue", "__dbus_proxy"]
     __instance:RaspiFM = None
     __radiostations:RadioStations
     __favorites:Favorites
     __settings:Settings
     __version:str
+    __spotify_dbusname:str
+    __dbus_spotify_filter:FilterHandle
+    __dbus_connection:DBusConnection
+    __dbus_queue:deque
+    __dbus_proxy:Proxy
 
     @property
     def version(self) -> str:
@@ -74,6 +86,125 @@ class RaspiFM:
         self.__settings.usersettings = usersettings if usersettings else UserSettings.from_default()
 
         Vlc().volume = self.__settings.usersettings.touch_volume
+
+        self.__initializespotify()
+
+    def __initializespotify(self) -> None:
+        self.__spotify_dbusname = None
+
+        self.__dbus_connection = open_dbus_connection(bus='SYSTEM')
+        self.__dbus_proxy = Proxy(message_bus, self.__dbus_connection)
+        self.__dbus_queue = deque()
+
+        dbus_address = DBusAddress(dbusstrings.dbuspath, dbusstrings.dbusname, dbusstrings.dbusinterface)
+        dbus_list_names_message = new_method_call(dbus_address, 'ListNames')
+
+        dbus_list_names_reply = self.__dbus_connection.send_and_get_reply(dbus_list_names_message)
+
+        #check if spotify is already up
+        for dbus_name in dbus_list_names_reply.body[0]:
+            if dbus_name.startswith(dbusstrings.spotifydservicestart):
+               self.__spotify_dbusname = dbus_name
+               break
+
+
+        dbus_properties_address = DBusAddress(dbusstrings.dbuspath, dbusstrings.dbusname, dbusstrings.dbusinterface)
+        #listen for service names entering or leaving the bus
+        dbus_changed_match_rule = MatchRule(
+            type="signal",
+            interface=dbus_properties_address.interface,
+            member=dbusstrings.dbussignalnameownerchanged,
+            path=dbus_properties_address.object_path
+            )
+
+        self.__dbus_proxy.AddMatch(dbus_changed_match_rule)
+        self.__dbus_connection.filter(dbus_changed_match_rule, queue=self.__dbus_queue)
+
+        if not utils.str_isnullorwhitespace(self.__spotify_dbusname):
+            self.__spotify_service_presence_change(True)
+
+        while True:
+            signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
+            if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
+                #spotify state changed
+                self.__spotifyd_propertieschanged(signal_message.body[1])
+
+            if signal_message.header.fields[HeaderFields.path] == "/org/freedesktop/DBus":
+                servicename = signal_message.body[0]
+                newowner = signal_message.body[1]
+                oldowner = signal_message.body[2]
+
+                if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
+                    #service new on the bus
+                    if utils.str_isnullorwhitespace(newowner):
+                        self.__spotify_dbusname = servicename
+                        self.__spotify_service_presence_change(True)
+                    #service left bus
+                    if utils.str_isnullorwhitespace(oldowner):
+                        self.__spotify_dbusname = None
+                        self.__spotify_service_presence_change(False)
+
+    def __spotify_service_presence_change(self, spotify_present:bool) -> None:
+        if spotify_present:
+            dbus_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.dbuspropertiesinterface)
+            dbus_spotify_playbackstatus_message = new_method_call(dbus_address, dbusstrings.dbusmethodget, "ss", (dbusstrings.spotifydinterface, dbusstrings.spotifydpropertyplaybackstatus))
+
+            dbus_spotify_playbackstatus_reply = self.__dbus_connection.send_and_get_reply(dbus_spotify_playbackstatus_message)
+            if dbus_spotify_playbackstatus_reply.body[0][1] == "Playing":
+                dbus_spotify_playbackstatus_message = new_method_call(dbus_address, dbusstrings.dbusmethodget, "ss", (dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata))
+                dbus_spotify_playbackstatus_reply = self.__dbus_connection.send_and_get_reply(dbus_spotify_playbackstatus_message)
+                metadata = dbus_spotify_playbackstatus_reply.body[0][1]
+                Spotify().currentlyplaying = {"title":metadata[dbusstrings.spotifydmetadatatitle][1],
+                                                    "album":metadata[dbusstrings.spotifydmetadataalbum][1],
+                                                    "artists":metadata[dbusstrings.spotifydmetadataartists][1],
+                                                    "arturl":metadata[dbusstrings.spotifydmetadataarturl][1]}
+                
+            dbus_spotify_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.dbuspropertiesinterface)
+
+            dbus_spotify_changed_match_rule = MatchRule(
+                    type="signal",
+                    interface=dbus_spotify_address.interface,
+                    member=dbusstrings.dbussignalpropertieschanged,
+                    path=dbus_spotify_address.object_path
+                    )
+                
+            self.__dbus_proxy.AddMatch(dbus_spotify_changed_match_rule)
+            self.__dbus_spotify_filter = self.__dbus_connection.filter(dbus_spotify_changed_match_rule, queue=self.__dbus_queue)
+        else:
+            self.__dbus_spotify_filter.close()
+            Spotify().currentlyplaying = None
+
+
+    def __spotifyd_propertieschanged(self, changeproperties:dict) -> None:
+        #Sometimes, not reproducable, not alle infos are in the changeproperties, onyl one attribute like volume is in it.
+        #Normaly after that another propertieschange signal comes in with the full infos.
+        if not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties:
+            return
+            #interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
+            #msg = interface.call(dbusstrings.dbusmethodgetall, dbusstrings.spotifydinterface)
+            #changeproperties = msg.arguments()[0]
+
+        metadata = changeproperties[dbusstrings.spotifydpropertymetadata][1]
+        #todo:maybe notify GUI
+        Spotify().currentlyplaying = {"title":metadata[dbusstrings.spotifydmetadatatitle][1], 
+                                            "album":metadata[dbusstrings.spotifydmetadataalbum][1],
+                                            "artists":metadata[dbusstrings.spotifydmetadataartists][1],
+                                            "arturl":metadata[dbusstrings.spotifydmetadataarturl][1]
+                                            }
+        
+        if changeproperties[dbusstrings.spotifydpropertyplaybackstatus][1] == "Playing":
+            Vlc().stop()
+
+            #todo:notify GUI
+
+        else:
+            if Spotify().isplaying:
+                #Not only triggered when Spotify stopped via app, but also when radio
+                #was manually started again, so this is no sign of nothing is playing!
+                #todo:notify GUI
+                self.spotify_set_isplaying(False)
+
+                #todo:notify GUI
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
@@ -276,9 +407,6 @@ class RaspiFM:
         if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
 
-    def radio_stop(self) -> None:
-        Vlc().stop()
-
     def radio_isplaying(self) -> bool:
         return Vlc().isplaying
     
@@ -325,9 +453,6 @@ class RaspiFM:
 
     def spotify_currentplaying(self) -> SpotifyInfo:
         return Spotify().currentlyplaying
-    
-    def spotify_set_currentplaying(self, info:SpotifyInfo) -> None:
-        Spotify().currentlyplaying = info
 
     def raspifm_getversion(self) -> str:
         return self.version

@@ -114,17 +114,11 @@ class RaspiFMProxy:
         result = self.__socket_manager.query_raspifm_core("spotify_currentplaying", None, True)
         result = result[strings.result_string]
         return result
-    
-    def spotify_set_currentplaying(self, info:dict) -> None:
-        self.__socket_manager.query_raspifm_core("spotify_set_currentplaying", {"info":info}, False)
 
     def http_get_urlbinary_content_as_base64(self, url:str) -> str:
         result = self.__socket_manager.query_raspifm_core("http_get_urlbinary_content_asb64", {"url":url}, True)
         result = result[strings.result_string]
         return result
-    
-    def spotify_set_isplaying(self, playing:bool) -> None:
-        self.__socket_manager.query_raspifm_core("spotify_set_isplaying", {"playing":playing}, False)
     
     def raspifm_shutdown(self) -> None:
         self.__socket_manager.close()

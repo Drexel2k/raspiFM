@@ -5,13 +5,11 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
-from common import utils
 from touchui.FavoritesWidget import FavoritesWidget
 from touchui.RadioWidget import RadioWidget
 from touchui.SpotifyWidget import SpotifyWidget
 from touchui.SettingsWidget import SettingsWidget
 from touchui.PushButtonMain import PushButtonMain
-from touchui import dbusstrings
 from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class MainWindow(QMainWindow):
@@ -35,7 +33,6 @@ class MainWindow(QMainWindow):
 
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
-        self.__initializespotify()
 
         #Create background color from qt-material primary color
         hexColor = os.environ["QTMATERIAL_PRIMARYCOLOR"][1:]
@@ -96,106 +93,7 @@ class MainWindow(QMainWindow):
             self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
             self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
 
-            self.__mainwidget.layout().addWidget(radiowidget, stretch=4)
-        
-    def __initializespotify(self) -> None:
-        self.__system_dbusconnection = QtDBus.QDBusConnection.systemBus()
-        self.__system_dbusconnection.registerObject('/', self) #needed to prevent hang of connect call, is a bug, which will be fixed.
-        
-        #check if spotify is already up
-        servicenames = self.__system_dbusconnection.interface().registeredServiceNames().value()
-        for name in servicenames:
-            if name.startswith(dbusstrings.spotifydservicestart):
-               self.__spotify_dbusname = name
-               break
-        
-        if utils.str_isnullorwhitespace(self.__spotify_dbusname):
-            #if spotify is not up, listen for it to come up
-            self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
-        else:
-            #if spotify is up, listen to player/track changes
-            self.__system_dbusconnection.connect(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, dbusstrings.dbussignalpropertieschanged, self.__spotifyd_propertieschanged)
-
-            interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
-            message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertyplaybackstatus)
-            state = message.arguments()[0]
-            if state == "Playing":
-                message = interface.call(dbusstrings.dbusmethodget, dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata)
-                metadata = message.arguments()[0]
-                RaspiFMProxy().spotify_set_currentplaying({"title":metadata[dbusstrings.spotifydmetadatatitle],
-                                                           "album":metadata[dbusstrings.spotifydmetadataalbum],
-                                                           "artists":metadata[dbusstrings.spotifydmetadataartists],
-                                                           "arturl":metadata[dbusstrings.spotifydmetadataarturl]})
-
-    @pyqtSlot(QtDBus.QDBusMessage)
-    def __dbus_nameownerchanged(self, msg:QtDBus.QDBusMessage) -> None:
-        args = msg.arguments()
-        servicename = args[0]
-        newowner = args[1]
-        oldowner = args[2]
-
-        if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
-            #service new on the bus
-            if utils.str_isnullorwhitespace(newowner):
-                self.__system_dbusconnection.disconnect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
-                self.__spotify_dbusname = servicename
-                self.__system_dbusconnection.connect(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, dbusstrings.dbussignalpropertieschanged, self.__spotifyd_propertieschanged)
-
-            #service left bus
-            if utils.str_isnullorwhitespace(oldowner):
-                self.__spotify_dbusname = None
-                self.__system_dbusconnection.connect(dbusstrings.dbusservice, dbusstrings.dbuspath, dbusstrings.dbusinterface, dbusstrings.dbussignalnameownerchanged, self.__dbus_nameownerchanged)
-                self.__spotifystopped()
-
-    @pyqtSlot(QtDBus.QDBusMessage)
-    def __spotifyd_propertieschanged(self, msg:QtDBus.QDBusMessage) -> None:
-        changeproperties = msg.arguments()[1]
-
-        #Sometimes, not reproducable, not alle infos are in the changeproperties, onyl one attribute like volume is in it.
-        #Normaly after that another propertieschange signal comes in with the full infos.
-        if not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties:
-            return
-            #interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.dbuspropertiesinterface, self.__system_dbusconnection)
-            #msg = interface.call(dbusstrings.dbusmethodgetall, dbusstrings.spotifydinterface)
-            #changeproperties = msg.arguments()[0]
-
-        metadata = changeproperties[dbusstrings.spotifydpropertymetadata]
-        spotify_wasplaying = RaspiFMProxy().spotify_isplaying()
-        RaspiFMProxy().spotify_set_currentplaying({"title":metadata[dbusstrings.spotifydmetadatatitle], 
-                                                   "album":metadata[dbusstrings.spotifydmetadataalbum],
-                                                   "artists":metadata[dbusstrings.spotifydmetadataartists],
-                                                   "arturl":metadata[dbusstrings.spotifydmetadataarturl]
-                                                   })
-        
-        if changeproperties[dbusstrings.spotifydpropertyplaybackstatus] == "Playing":
-            RaspiFMProxy().radio_stop()
-
-            self.__change_icons_spotify_playing()
-
-            #If spotify widget is active simply update the information.
-            if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
-                self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()
-            else:
-                #If spotify playback was jsut startet switch to spotify widget. If Spotify was already playing
-                #the user switched manually to another widget before, so leave this widget as it is.
-                if not spotify_wasplaying:
-                    self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-                    self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
-                    self.__activebutton = self.__spotifybutton
-                    spotifywidget = SpotifyWidget()
-                    spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                    widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
-                    self.__closewidgetitem(widgetitem)
-
-        else:
-            if RaspiFMProxy().spotify_isplaying():
-                #Not only triggered when Spotify stopped via app, but also when radio
-                #was manually started again, so this is no sign of nothing is playing!
-                self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
-                RaspiFMProxy().spotify_set_isplaying(False)
-
-                if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
-                    self.__mainwidget.layout().itemAt(1).widget().spotifyupdate()   
+            self.__mainwidget.layout().addWidget(radiowidget, stretch=4) 
     
     def __radio_starts_playing(self) -> None:
         self.__stopspotify()

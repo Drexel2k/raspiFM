@@ -1,5 +1,5 @@
-dbusservice = "org.freedesktop.DBus"
 dbuspath = "/org/freedesktop/DBus"
+dbusname = "org.freedesktop.DBus"
 dbusinterface = "org.freedesktop.DBus"
 dbuspropertiesinterface = "org.freedesktop.DBus.Properties"
 dbussignalnameownerchanged = "NameOwnerChanged"
