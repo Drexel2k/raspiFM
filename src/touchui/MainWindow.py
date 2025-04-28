@@ -94,6 +94,8 @@ class MainWindow(QMainWindow):
             self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
 
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4) 
+        
+        RaspiFMProxy().spotify_status_subscribe()
     
     def __radio_starts_playing(self) -> None:
         self.__stopspotify()

@@ -50,11 +50,10 @@ class SocketTransferManager:
 
         if len(data) > 1:
             self.__receive_buffer += data
+            self.__process_receive_buffer()
         else:
-            if self.__close_callback is not None:
+            if not self.__close_callback is None:
                 self.__close_callback(self)
-        
-        self.__process_receive_buffer()
 
     #reader thread    
     def __process_receive_buffer(self):
@@ -65,7 +64,7 @@ class SocketTransferManager:
             if self.__current_message_header is None:
                 self.__process_header()
 
-        if self.__current_message_header is not None:
+        if not self.__current_message_header is None:
             self.__process_message()
 
     #reader thread  

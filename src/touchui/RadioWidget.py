@@ -1,6 +1,4 @@
 import base64
-import time
-from types import MethodType
 #import debugpy
 
 from PyQt6.QtSvg import QSvgRenderer
@@ -8,18 +6,14 @@ from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
-from common import utils
 from touchui.MarqueeLabel import MarqueeLabel 
 from touchui.socket.RaspiFMProxy import RaspiFMProxy
 
 class RadioWidget(QWidget):
-    __slots__ = ["__vlcgetmeta_enabled", "__btn_playcontrol", "__threadpool", "__lbl_nowplaying", "__nostations"]
+    __slots__ = ["__btn_playcontrol", "__lbl_nowplaying", "__nostations"]
     __btn_playcontrol:QPushButton
     __lbl_nowplaying:MarqueeLabel
-    __vlcgetmeta_enabled:bool
-    __threadpool:QThreadPool
     __nostations:bool
-    __inforeceived = pyqtSignal(str)
 
     beforeplaystarting = pyqtSignal()
     playstopped = pyqtSignal()
@@ -31,8 +25,6 @@ class RadioWidget(QWidget):
 
         self.__btn_playcontrol = None
         self.__lbl_nowplaying = None
-        self.__vlcgetmeta_enabled = None
-        self.__threadpool = None
 
         self.__nostations = False
 
@@ -44,7 +36,7 @@ class RadioWidget(QWidget):
         self.__init_controls(station)
 
         if not RaspiFMProxy().radio_isplaying():
-            if RaspiFMProxy().radio_currentstation() is None and not station is None:
+            if RaspiFMProxy().radio_get_currentstation() is None and not station is None:
                 RaspiFMProxy().radio_set_currentstation(station["uuid"])
 
                 if startplaying:
@@ -56,7 +48,6 @@ class RadioWidget(QWidget):
          
         if RaspiFMProxy().radio_isplaying(): 
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
-            self.__startmetagetter()            
 
     def __init_controls(self, station):
         if station is None:
@@ -131,10 +122,8 @@ class RadioWidget(QWidget):
             volslider.setValue(RaspiFMProxy().radio_getvolume())
             layout.addWidget(volslider)
 
-            self.__threadpool = QThreadPool()
-
     def __get_station(self) -> dict:
-        station = station = RaspiFMProxy().radio_currentstation()
+        station = station = RaspiFMProxy().radio_get_currentstation()
 
         if station == None:
             if RaspiFMProxy().settings_touch_startwith() == 1: #StartWith.LastStation
@@ -163,7 +152,6 @@ class RadioWidget(QWidget):
 
     def __playcontrol_clicked(self) -> None:
         if RaspiFMProxy().radio_isplaying():
-            self.__vlcgetmeta_enabled = False
             RaspiFMProxy().radio_stop()
             self.__btn_playcontrol.setText(None)
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
@@ -182,66 +170,9 @@ class RadioWidget(QWidget):
     def __updateinfo(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
-    def __startmetagetter(self):
-        self.__vlcgetmeta_enabled = True
-        mediametagetter = MediaMetaGetter(self.__getmeta)
-        self.__inforeceived.connect(self.__updateinfo)
-        self.__threadpool.start(mediametagetter)
-    
-    def __getmeta(self) -> None:
-        #To debug remove comment on next line and in import statement for debugpy at beginning of file
-        #debugpy.debug_this_thread()
-        previnfo= "-1"
-
-        #Split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
-        sleeptickslimit = 4
-        sleeptickcount = 1
-        socket_alive = True
-        while self.__vlcgetmeta_enabled and socket_alive:
-            time.sleep(0.5)
-            if sleeptickcount >= sleeptickslimit:
-                #First sleep phase is shorter than next spleep phases, so that first info is coming faster
-                if sleeptickslimit < 5:
-                    sleeptickslimit = 20
-
-                sleeptickcount = 0
-                #There are rare moments, when the app is closed when we are already in the loop
-                #that means self.__vlcgetmeta_enabled is set during the processing and the socket can already be closed.
-                try:
-                    info = RaspiFMProxy().radio_getmeta()
-                    if RaspiFMProxy().radio_isplaying():
-                        if info != previnfo and self.__vlcgetmeta_enabled:
-                            previnfo = info
-                            if utils.str_isnullorwhitespace(info):
-                                info = RaspiFMProxy().radio_currentstation()["name"]
-
-                            self.__inforeceived.emit(info)
-                except OSError as os_error_exception:
-                    #socket closed
-                    if os_error_exception.errno == 9:
-                        socket_alive = False
-                    else:
-                        raise
-  
-            sleeptickcount += 1
-
     def resizeEvent(self, event) -> None:
         QWidget.resizeEvent(self, event)
 
         #Is null if no stations are configured yet.
         if not self.__lbl_nowplaying is None:
             self.__lbl_nowplaying.setMaximumWidth(self.width() - 20)
-
-    def closeEvent(self, event) -> None:
-        self.__vlcgetmeta_enabled = False
-
-class MediaMetaGetter(QRunnable):
-    __slots__ = ["__execute"]
-    __execute:MethodType
-
-    def __init__(self, execute:MethodType):
-        super().__init__()
-        self.__execute = execute
-
-    def run(self) -> None:
-        self.__execute()

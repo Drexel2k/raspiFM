@@ -45,8 +45,8 @@ class RaspiFMProxy:
     def radio_play(self, station_uuid:str = None) -> None:
         self.__socket_manager.query_raspifm_core("radio_play", {"station_uuid":station_uuid}, False)
 
-    def radio_currentstation(self) -> dict:
-        result = self.__socket_manager.query_raspifm_core("radio_currentstation", None, True)
+    def radio_get_currentstation(self) -> dict:
+        result = self.__socket_manager.query_raspifm_core("radio_get_currentstation", None, True)
         result = result[strings.result_string]
         return result
     
@@ -114,6 +114,9 @@ class RaspiFMProxy:
         result = self.__socket_manager.query_raspifm_core("spotify_currentplaying", None, True)
         result = result[strings.result_string]
         return result
+    
+    def spotify_status_subscribe(self) -> None:
+        self.__socket_manager.query_raspifm_core("spotify_status_subscribe", None, False)       
 
     def http_get_urlbinary_content_as_base64(self, url:str) -> str:
         result = self.__socket_manager.query_raspifm_core("http_get_urlbinary_content_asb64", {"url":url}, True)

@@ -5,22 +5,28 @@ from socket import socket
 from selectors import DefaultSelector
 from queue import Queue
 
+from common.socket.MessageResponse import MessageResponse
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import strings
 
 class SocketManager:
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets"]
+    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets", "__socket_closed_callback", "__messageid"]
     __socket_selector:DefaultSelector
     __read_queue:Queue
     __write_queue:Queue
     __client_sockets:dict
+    __socket_closed_callback:int
+    __messageid:int
 
-    def __init__(self, read_queue:Queue, response_queue:Queue):
+    def __init__(self, read_queue:Queue, response_queue:Queue, socket_closed_callback=None):
         self.__socket_selector = DefaultSelector()
         self.__read_queue = read_queue
         self.__write_queue = response_queue
         self.__client_sockets = {}
+        self.__socket_closed_callback = socket_closed_callback
+        self.__messageid = 0
+        
 
     #reader thread 
     def __create_client_socket(self, client_socket_param):
@@ -59,6 +65,24 @@ class SocketManager:
             write = self.__write_queue.get()
             self.__client_sockets[write.socket_address].send(write)
 
+    #main thread
+    def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> dict:
+        request_dict =  { 
+                            strings.header_string:{strings.messageid_string:self.__get_messageid()}, 
+                            strings.message_string:{ strings.message_string: query, strings.args_string:args}
+                        } 
+        request = MessageResponse(client_socket_address, request_dict)
+        self.__write_queue.put(request)
+        request.message_sent.wait()
+        if not request.transfer_exception is None:
+            raise request.transfer_exception
+
+    def __get_messageid(self) -> int:
+        self.__messageid = self.__messageid + 1
+        return self.__messageid
+
     def __close_client_socket(self, socket_transfermanager:SocketTransferManager) -> None:
         self.__socket_selector.unregister(socket_transfermanager.socket)
         self.__client_sockets[socket_transfermanager.socket_address].close()
+        if not self.__socket_closed_callback is None:
+            self.__socket_closed_callback(socket_transfermanager.socket_address)

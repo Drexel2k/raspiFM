@@ -18,7 +18,7 @@ class JsonDeserializer():
     def __new__(cls, path = None):
         if cls.__instance is None:
             if path is None:
-                raise TypeError("On first call a path parameter must be given which is the serialization folder.")
+                raise ValueError("Missing argument on first call (initialization): path")
 
             cls.__instance = super(JsonDeserializer, cls).__new__(cls)
             cls.__instance.__init(path)

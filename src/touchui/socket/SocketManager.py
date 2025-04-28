@@ -68,13 +68,13 @@ class SocketManager:
         if is_query:
             request.response_ready.wait()
 
-            if request.transfer_exception is not None:
+            if not request.transfer_exception is None:
                 raise request.transfer_exception
             
             return request.response[strings.response_string]
         else:
             request.message_sent.wait()
-            if request.transfer_exception is not None:
+            if not request.transfer_exception is None:
                 raise request.transfer_exception
 
     def __get_messageid(self) -> int:

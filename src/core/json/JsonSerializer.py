@@ -1,7 +1,6 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-from uuid import UUID
 
 from core.json.JsonEncoder import CountryListEncoder, UserSettingsEncoder, LanguageListEncoder, FavoritesEncoder, TagListEncoder
 from core.Settings import UserSettings
@@ -20,7 +19,7 @@ class JsonSerializer:
     def __new__(cls, path = None):
         if cls.__instance is None:
             if path is None:
-                raise TypeError("On first call a path parameter must be given which is the serialization folder.")
+                raise ValueError("Missing argument on first call (initialization): path")
 
             cls.__instance = super(JsonSerializer, cls).__new__(cls)
             cls.__instance.__init(path)
