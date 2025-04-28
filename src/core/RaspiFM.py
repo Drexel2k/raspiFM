@@ -23,6 +23,7 @@ from core.business.Favorites import Favorites
 from core.business.RadioStations import RadioStations
 from core.business.RadioStation import RadioStation
 from core.business.FavoriteList import FavoriteList
+from core.players.DBusSpotifyMonitor import DBusSpotifyMonitor
 from core.players.VlcRadioMonitor import VlcRadioMonitor
 from core.players.Spotify import Spotify
 from core.players.SpotifyInfo import SpotifyInfo
@@ -42,7 +43,7 @@ class RaspiFM:
     def version(self) -> str:
         return self.__version
     
-    def __new__(cls, spotify_info:SpotifyInfo):
+    def __new__(cls, spotify_info:SpotifyInfo = None):
         if cls.__instance is None:
             cls.__instance = super(RaspiFM, cls).__new__(cls)
             cls.__instance.__init(spotify_info)
@@ -85,7 +86,7 @@ class RaspiFM:
     def stations_getstation(self, station_uuid:UUID) -> RadioStation:
         return self.__radiostations.get_station(station_uuid)
     
-    def stations_deletestation(self, uuid:UUID, serialize:bool=True) -> None:
+    def stations_delete_station_if_not_used(self, uuid:UUID, serialize:bool=True) -> None:
         station = self.stations_getstation(uuid)
 
         deletestation = True
@@ -169,7 +170,7 @@ class RaspiFM:
         self.__favorites.get_list(favlistuuid).remove_station(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
-        self.stations_deletestation(station.uuid)
+        self.stations_delete_station_if_not_used(station.uuid)
     
     def favorites_getlists(self) -> tuple:
         return self.__favorites.favoritelists
@@ -190,7 +191,7 @@ class RaspiFM:
         JsonSerializer().serialize_favorites(self.__favorites)
 
         for station_uuid in station_uuids:
-            self.stations_deletestation(station_uuid, False)
+            self.stations_delete_station_if_not_used(station_uuid, False)
 
         JsonSerializer().serialize_radiostations(self.__radiostations)
 
@@ -266,12 +267,12 @@ class RaspiFM:
         Vlc().play(station)
         VlcRadioMonitor().start_meta_getter()
         
-        if station is None:
+        if not station is None:
             original_laststation = self.__settings.usersettings.touch_laststation
             self.__settings.usersettings.touch_laststation = station.uuid
 
             if not original_laststation is None:
-                self.stations_deletestation(original_laststation)
+                self.stations_delete_station_if_not_used(original_laststation)
 
             JsonSerializer().serialize_usersettings(self.__settings.usersettings)
         else:
@@ -298,7 +299,7 @@ class RaspiFM:
         self.__settings.usersettings.touch_laststation = station.uuid
 
         if not original_laststation is None:
-            self.stations_deletestation(original_laststation)
+            self.stations_delete_station_if_not_used(original_laststation)
 
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
@@ -330,6 +331,9 @@ class RaspiFM:
 
     def spotify_currentplaying(self) -> SpotifyInfo:
         return Spotify().currentlyplaying
+    
+    def spotify_stop(self) -> None:
+        DBusSpotifyMonitor().stop_spotify()
 
     def raspifm_getversion(self) -> str:
         return self.version

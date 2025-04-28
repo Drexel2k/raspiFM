@@ -3,29 +3,41 @@ from __future__ import annotations
 from queue import Queue
 from threading import Thread
 
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QObject, QThreadPool
+
 from common import strings
+from touchui.CoreMonitor import CoreMonitor
+from touchui.QObjectSingletonMeta import QObjectSingletonMeta
 from touchui.socket.SocketManager import SocketManager
 
-class RaspiFMProxy:
-    __slots__ = ["__socket_manager"]
-    __instance:RaspiFMProxy = None
-    __socket_manager:SocketManager
+class RaspiFMProxy(QObject, metaclass=QObjectSingletonMeta):
+    __slots__ = ["__socket_manager", "__thread_pool"]  
 
-    def __new__(cls):
-        if cls.__instance is None:
-            cls.__instance = super(RaspiFMProxy, cls).__new__(cls)
-            cls.__instance.__init()
-        return cls.__instance
-    
-    def __init(self):
+    __socket_manager:SocketManager
+    __thread_pool:QThreadPool
+
+    core_notification_available = pyqtSignal(dict)
+
+    def __init__(self):
+
+        # Always call the parent class's __init__ first
+        super().__init__()
+        self.__thread_pool = QThreadPool()
         read_queue = Queue()
         write_queue = Queue()
         self.__socket_manager = SocketManager(read_queue, write_queue)
-        socket_read_thread = Thread(target=self.__socket_manager.create_client_socket)
+        socket_read_thread = Thread(target=self.__socket_manager.read)
         socket_read_thread.start()
-
         socket_write_thread = Thread(target=self.__socket_manager.write)
         socket_write_thread.start()
+
+        self.__socket_manager.core_notification_available.connect(self.__core_notification_available)
+        core_monitor = CoreMonitor(self.__socket_manager)
+        self.__thread_pool.start(core_monitor)
+
+    @pyqtSlot(dict)
+    def __core_notification_available(self, notification:dict):
+        self.core_notification_available.emit(notification[strings.message_string])
     
     def spotify_isplaying(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("spotify_isplaying", None, True)
@@ -115,8 +127,11 @@ class RaspiFMProxy:
         result = result[strings.result_string]
         return result
     
-    def spotify_status_subscribe(self) -> None:
-        self.__socket_manager.query_raspifm_core("spotify_status_subscribe", None, False)       
+    def spotify_stop(self) -> None:
+        self.__socket_manager.query_raspifm_core("spotify_stop", None, False)
+    
+    def players_status_subscribe(self) -> None:
+        self.__socket_manager.query_raspifm_core("players_status_subscribe", None, False)       
 
     def http_get_urlbinary_content_as_base64(self, url:str) -> str:
         result = self.__socket_manager.query_raspifm_core("http_get_urlbinary_content_asb64", {"url":url}, True)

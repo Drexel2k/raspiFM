@@ -43,14 +43,14 @@ class RaspiFMMessageManager:
                 #in the read queue as it doesn't send any queries
                 #which expect a response.
                 if raspifm_call.response is None:
-                    if raspifm_call.message[strings.message_string][strings.message_string] == "spotify_status_subscribe":
+                    if raspifm_call.message[strings.message_string][strings.message_string] == "players_status_subscribe":
                         self.__clients_with_spotify_update_subscriptions.append(raspifm_call.socket_address)
                         continue
 
                     func = getattr(raspifm, raspifm_call.message[strings.message_string][strings.message_string])
 
                     #queries which don't send responses
-                    if raspifm_call.message[strings.message_string][strings.message_string] in ["radio_play", "radio_set_currentstation", "radio_send_stationclicked", "radio_stop", "radio_setvolume", "settings_set_touch_startwith", "spotify_set_currentplaying", "spotify_set_isplaying", "raspifm_shutdown"]:
+                    if raspifm_call.message[strings.message_string][strings.message_string] in ["radio_play", "radio_set_currentstation", "radio_send_stationclicked", "radio_stop", "radio_setvolume", "settings_set_touch_startwith", "spotify_set_currentplaying", "spotify_set_isplaying", "raspifm_shutdown", "spotify_stop"]:
                         #queries which require argument conversion
                         if raspifm_call.message[strings.message_string][strings.message_string] == "radio_play":
                             func(None if raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"] is None else UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))

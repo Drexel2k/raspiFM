@@ -155,3 +155,9 @@ class DBusSpotifyMonitor:
                                                                             "arturl":metadata[dbusstrings.spotifydmetadataarturl][1]}
 
         return None
+    
+    def stop_spotify(self) -> None:
+        if not self.__spotify_dbusname is None:
+            dbus_spotify_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.spotifydinterface)
+            dbus_spotify_playbackstatus_message = new_method_call(dbus_spotify_address, dbusstrings.spotifydmethodpause, None, None)
+            self.__dbus_connection.send(dbus_spotify_playbackstatus_message)

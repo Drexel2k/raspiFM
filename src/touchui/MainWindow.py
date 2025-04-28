@@ -1,7 +1,7 @@
 import os
 
 from PyQt6 import QtDBus, QtCore
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
 
@@ -20,6 +20,11 @@ class MainWindow(QMainWindow):
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        #if RaspiFMProxy().settings_runontouch():
+        #    app.setOverrideCursor(Qt.CursorShape.BlankCursor)
+        #    window.showFullScreen()
+
         self.setWindowTitle("raspiFM touch")
         scroll = QScrollArea()
         
@@ -29,7 +34,8 @@ class MainWindow(QMainWindow):
         scroll.setWidget(self.__mainwidget)
         self.setCentralWidget(scroll)
 
-        RaspiFMProxy()
+        raspifm_proxy = RaspiFMProxy()
+        raspifm_proxy.core_notification_available.connect(self.__core_notification_available)
 
         self.__spotify_dbusname = None
         self.__system_dbusconnection = None
@@ -95,16 +101,15 @@ class MainWindow(QMainWindow):
 
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4) 
         
-        RaspiFMProxy().spotify_status_subscribe()
+        RaspiFMProxy().players_status_subscribe()
+
+    def __core_notification_available(self, notification:dict):
+        raise NotImplemented()
     
     def __radio_starts_playing(self) -> None:
-        self.__stopspotify()
+        RaspiFMProxy().spotify_stop()
         #Spotify Icon is changed on Spotify stopped playing DBus message
         self.__change_icon_radio_playing()
-
-    def __stopspotify(self) -> None:
-        interface = QtDBus.QDBusInterface(self.__spotify_dbusname, dbusstrings.spotifydpath, dbusstrings.spotifydinterface, self.__system_dbusconnection)
-        interface.call(dbusstrings.spotifydmethodpause)
 
     def __radioclicked(self) -> None:
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")

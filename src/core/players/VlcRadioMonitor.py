@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import time
+import time
 from queue import Queue
 from threading import Thread
 
@@ -8,9 +8,10 @@ from core.RaspiFMMessage import RaspiFMMessage
 from core.players.Vlc import Vlc
 
 class VlcRadioMonitor:
-    __slots__ = ["__message_queue", "__spotify_dbusname", "__dbus_spotify_filter", "__dbus_connection", "__dbus_queue", "__dbus_proxy"]
+    __slots__ = ["__message_queue", "__vlcgetmeta_enabled"]
     __instance:VlcRadioMonitor = None
     __message_queue:Queue
+    __vlcgetmeta_enabled:bool
 
     def __new__(cls, message_queue:Queue = None):
         if cls.__instance is None:
