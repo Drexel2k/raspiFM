@@ -26,6 +26,15 @@ class SocketManager:
         self.__client_sockets = {}
         self.__socket_closed_callback = socket_closed_callback
         self.__messageid = 0
+
+        raspifm_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
+        if os.path.exists(strings.socketpath_string):
+            os.remove(strings.socketpath_string)
+
+        raspifm_socket.bind(strings.socketpath_string)
+        raspifm_socket.listen()
+        raspifm_socket.setblocking(False)
+        self.__socket_selector.register(raspifm_socket, selectors.EVENT_READ, None)
         
 
     #reader thread 
@@ -39,17 +48,7 @@ class SocketManager:
         self.__client_sockets[socket_address] = socket_transfermanager
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, socket_transfermanager)
 
-    #reader thread
-    def create_server_socket(self):
-        raspifm_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
-        if os.path.exists(strings.socketpath_string):
-            os.remove(strings.socketpath_string)
-
-        raspifm_socket.bind(strings.socketpath_string)
-        raspifm_socket.listen()
-        raspifm_socket.setblocking(False)
-        self.__socket_selector.register(raspifm_socket, selectors.EVENT_READ, None)
-
+    def read(self) -> None:
         while True:
             events = self.__socket_selector.select(timeout=None)
             for event in events:
@@ -60,13 +59,13 @@ class SocketManager:
                     socket_transfermanager.read()
 
     #writer thread
-    def write(self):
+    def write(self) -> None:
         while True:
             write = self.__write_queue.get()
             self.__client_sockets[write.socket_address].send(write)
 
     #main thread
-    def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> dict:
+    def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> None:
         request_dict =  { 
                             strings.header_string:{strings.messageid_string:self.__get_messageid()}, 
                             strings.message_string:{ strings.message_string: query, strings.args_string:args}

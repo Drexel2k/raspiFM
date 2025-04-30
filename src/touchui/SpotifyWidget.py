@@ -14,7 +14,7 @@ class SpotifyWidget(QWidget):
     __lbl_artists:MarqueeLabel
     __lbl_album:MarqueeLabel
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, currentplaying:dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         layout = QVBoxLayout()
@@ -42,26 +42,25 @@ class SpotifyWidget(QWidget):
         layout.addWidget(self.__lbl_album, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         layout.addStretch()
-        self.__updatecontentwidgets()        
+        self.__updatecontentwidgets(currentplaying)        
 
-    def spotifyupdate(self) -> None:
-        self.__updatecontentwidgets()
+    def spotifyupdate(self, currentplaying) -> None:
+        self.__updatecontentwidgets(currentplaying)
 
-    def __updatecontentwidgets(self) -> None:
+    def __updatecontentwidgets(self, currentplaying:dict) -> None:
         qx = QPixmap()
-        if RaspiFMProxy().spotify_isplaying():
-            currentplaying = RaspiFMProxy().spotify_currentplaying()
-            if not currentplaying is None:
-                if not currentplaying["arturl"] is None:
-                    qx.loadFromData(base64.b64decode(RaspiFMProxy().http_get_urlbinary_content_as_base64(currentplaying["arturl"])))
-                else:
-                    renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
-                    image = QImage(393, 270, QImage.Format.Format_ARGB32)
-                    image.fill(0x00000000)
-                    painter = QPainter(image)
-                    renderer.render(painter)
-                    painter.end()
-                    qx.convertFromImage(image)
+
+        if not currentplaying is None:
+            if not currentplaying["arturl"] is None:
+                qx.loadFromData(base64.b64decode(RaspiFMProxy().http_get_urlbinary_content_as_base64(currentplaying["arturl"])))
+            else:
+                renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
+                image = QImage(393, 270, QImage.Format.Format_ARGB32)
+                image.fill(0x00000000)
+                painter = QPainter(image)
+                renderer.render(painter)
+                painter.end()
+                qx.convertFromImage(image)
 
             self.__lbl_title.setText(currentplaying["title"])
             self.__lbl_artists.setText(currentplaying["artists"])

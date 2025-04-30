@@ -37,7 +37,7 @@ class RaspiFMProxy(QObject, metaclass=QObjectSingletonMeta):
 
     @pyqtSlot(dict)
     def __core_notification_available(self, notification:dict):
-        self.core_notification_available.emit(notification[strings.message_string])
+        self.core_notification_available.emit(notification.message[strings.message_string])
     
     def spotify_isplaying(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("spotify_isplaying", None, True)
@@ -94,9 +94,6 @@ class RaspiFMProxy(QObject, metaclass=QObjectSingletonMeta):
         result = self.__socket_manager.query_raspifm_core("radio_getmeta", None, True)
         result = result[strings.result_string]
         return result
-    
-    def radio_send_stationclicked(self, station_uuid:str) -> None:
-        self.__socket_manager.query_raspifm_core("radio_send_stationclicked", {"station_uuid":station_uuid}, False)
 
     def favorites_getdefaultlist(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("favorites_getdefaultlist", None, True)
@@ -122,8 +119,8 @@ class RaspiFMProxy(QObject, metaclass=QObjectSingletonMeta):
     def settings_set_touch_startwith (self, startwith:int) -> None:
         self.__socket_manager.query_raspifm_core("settings_set_touch_startwith", {"startwith":startwith}, False)
 
-    def spotify_currentplaying(self) -> dict:
-        result = self.__socket_manager.query_raspifm_core("spotify_currentplaying", None, True)
+    def spotify_currently_playing(self) -> dict:
+        result = self.__socket_manager.query_raspifm_core("spotify_currently_playing", None, True)
         result = result[strings.result_string]
         return result
     

@@ -27,13 +27,13 @@ class VlcRadioMonitor:
 
     def start_meta_getter(self):
         self.__vlcgetmeta_enabled = True
-        server_socket_read_thread = Thread(target=self.__getmeta)
-        server_socket_read_thread.start()
+        thread = Thread(target=self.__getmeta)
+        thread.start()
     
     def __getmeta(self) -> None:
         #To debug remove comment on next line and in import statement for debugpy at beginning of file
         #debugpy.debug_this_thread()
-        previous_meta= "-1"
+        previous_meta = None
 
         #Split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
         sleeptickslimit = 4
@@ -51,9 +51,9 @@ class VlcRadioMonitor:
                 if current_meta != previous_meta:
                     previous_meta = current_meta
                     self.__message_queue.put(RaspiFMMessage({
-                                                                "message":"vlc_change",
+                                                                "message":"radio_change",
                                                                 "args":{
-                                                                            "vlc_nowplaying_metadata":current_meta}}))
+                                                                            "radio_currentplaying":current_meta}}))
 
             sleeptickcount += 1
     

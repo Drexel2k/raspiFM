@@ -329,7 +329,7 @@ class RaspiFM:
     def spotify_isplaying(self) -> bool:
         return Spotify().isplaying
 
-    def spotify_currentplaying(self) -> SpotifyInfo:
+    def spotify_currently_playing(self) -> SpotifyInfo:
         return Spotify().currentlyplaying
     
     def spotify_stop(self) -> None:

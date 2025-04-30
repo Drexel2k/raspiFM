@@ -28,6 +28,7 @@ class SocketManager(QObject):
         self.__read_queue = read_queue
         self.__write_queue = response_queue
         self.__messageid = 0
+        
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(strings.socketpath_string)
@@ -35,7 +36,7 @@ class SocketManager(QObject):
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
-    def read(self):
+    def read(self) -> None:
         while True:
             events = self.__socket_selector.select(timeout=None)
             for event in events:
@@ -43,13 +44,13 @@ class SocketManager(QObject):
                 socket_transfermanager.read()
 
     #writer thread
-    def write(self):
+    def write(self) -> None:
         while True:
             write = self.__write_queue.get()
             self.__socket_transfermanager.send(write)
 
     #monitor thread
-    def monitor_read_queue(self):
+    def monitor_read_queue(self) -> None:
         while True:
             message_response = self.__read_queue.get()
             #messages with response are handled by response ready event/

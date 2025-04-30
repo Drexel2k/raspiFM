@@ -46,7 +46,14 @@ class SocketTransferManager:
 
     #reader thread
     def read(self):
-        data = self.__socket.recv(self.__buffer_size)
+        try:
+            data = self.__socket.recv(self.__buffer_size)
+        except ConnectionResetError as conn_error:
+            #connection reset by peer
+            if conn_error.errno == 104:
+                self.__close_callback(self)
+            else:
+                raise conn_error
 
         if len(data) > 1:
             self.__receive_buffer += data

@@ -32,21 +32,24 @@ class RadioWidget(QWidget):
     #via beforeplaystarting signal. If this would all be in __init__ signal connection can only take place after
     #playback initialization. But spotifyd can start playback before as the daemon is totally independant.
     def init_playback(self, startplaying:bool) -> None:
-        station = self.__get_station()
+        station = None
+        if RaspiFMProxy().radio_isplaying():
+            station = RaspiFMProxy().radio_get_currentstation()
+        else:
+            station = self.__get_station()
+
         self.__init_controls(station)
 
         if not RaspiFMProxy().radio_isplaying():
-            if RaspiFMProxy().radio_get_currentstation() is None and not station is None:
+            if not station is None:
                 RaspiFMProxy().radio_set_currentstation(station["uuid"])
 
                 if startplaying:
                     self.beforeplaystarting.emit()
                     RaspiFMProxy().radio_play()
-
-                    if RaspiFMProxy().settings_runontouch(): #Otherwise we are on dev most propably so we don't send a click on every play
-                        RaspiFMProxy().radio_send_stationclicked(station["uuid"])
          
-        if RaspiFMProxy().radio_isplaying(): 
+        if RaspiFMProxy().radio_isplaying():
+            self.update_info(RaspiFMProxy().radio_getmeta())
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
 
     def __init_controls(self, station):
@@ -161,13 +164,11 @@ class RadioWidget(QWidget):
             self.beforeplaystarting.emit()
             RaspiFMProxy().radio_play()
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
-            self.__startmetagetter()
 
     def __volslider_moved(self, value:int) -> None:
        RaspiFMProxy().radio_setvolume(value)
 
-    @pyqtSlot(str)
-    def __updateinfo(self, info:str):
+    def update_info(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
     def resizeEvent(self, event) -> None:
