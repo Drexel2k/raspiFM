@@ -21,7 +21,7 @@ def query_stations_advanced(name:str, country:str, language:str, tags:list, orde
 
 def query_station(stationuuid:UUID) -> RadioStationApi:
     
-    return RadioStationApi(JsonDeserializer().get_dict_from_response(
+    return RadioStationApi(json.deserialize_from_string_or_bytes(
         requestbase.get_radiobrowser_post_request_data("/json/stations/byuuid",
                                                        {"uuids":stationuuid}))[0])
 

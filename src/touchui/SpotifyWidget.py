@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
 
 from touchui.MarqueeLabel import MarqueeLabel
-from touchui.socket.RaspiFMProxy import RaspiFMProxy
+from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class SpotifyWidget(QWidget):
     __slots__ = ["__artlabel" , "__lbl_title", "__lbl_artists", "__lbl_album"]
@@ -42,17 +42,17 @@ class SpotifyWidget(QWidget):
         layout.addWidget(self.__lbl_album, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         layout.addStretch()
-        self.__updatecontentwidgets(currentplaying)        
+        self.__update_content_widgets(currentplaying)        
 
-    def spotifyupdate(self, currentplaying) -> None:
-        self.__updatecontentwidgets(currentplaying)
+    def spotify_update(self, currentplaying) -> None:
+        self.__update_content_widgets(currentplaying)
 
-    def __updatecontentwidgets(self, currentplaying:dict) -> None:
+    def __update_content_widgets(self, currentplaying:dict) -> None:
         qx = QPixmap()
 
         if not currentplaying is None:
             if not currentplaying["arturl"] is None:
-                qx.loadFromData(base64.b64decode(RaspiFMProxy().http_get_urlbinary_content_as_base64(currentplaying["arturl"])))
+                qx.loadFromData(base64.b64decode(RaspiFMQtProxy().http_get_urlbinary_content_as_base64(currentplaying["arturl"])))
             else:
                 renderer =  QSvgRenderer("touchui/images/spotify-rpi.svg")
                 image = QImage(393, 270, QImage.Format.Format_ARGB32)

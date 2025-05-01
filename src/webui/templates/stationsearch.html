@@ -18,7 +18,7 @@
         <label for="slcountry" class="form-label"><small>country</small></label>
         <select name="country" id="slcountry" class="form-control max-width-12-sm">
           <option {% if selectedcountry=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
-          {% for countryname, countrycode in countries.countrylist.items() %}
+          {% for countryname, countrycode in countries.items() %}
               <option {% if selected["country"]==countrycode|upper %}selected{% endif %} value="{{countrycode|upper}}" >{{countryname}} ({{countrycode}})</option>
           {% endfor %}
         </select>
@@ -28,7 +28,7 @@
         <label for="sllang" class="form-label"><small>language</small></label>
         <select name="lang" id="sllang" class="form-control max-width-12-sm">
           <option {% if selectedlang=="nofilter" %}selected{% endif %} value="nofilter">NO FILTER</option>
-          {% for languagename, languacecode in languages.languagelist.items() %}
+          {% for languagename, languagecode in languages.items() %}
               <option {% if selected["language"]==languagename|lower %}selected{% endif %} value="{{languagename|lower}}" >{{languagename}}</option>
           {% endfor %}
         </select>
@@ -98,7 +98,7 @@
         <label for="slfavorites" class="form-label mb-0 me-1 d-flex align-items-center"><small>favorite list for adding: </small></label>
         <select name="favorites" id="slfavorites" class="form-control max-width-12-sm d-inline">
           {% for favoritelist in favoritelists %}
-            <option {% if favoritelist.favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.favoritelist.uuid|string }}" >{{favoritelist.name}}</option>
+            <option {% if favoritelist.favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.favoritelist.uuid }}" >{{favoritelist.favoritelist.name}}</option>
           {% endfor %}
         </select>
       </div>

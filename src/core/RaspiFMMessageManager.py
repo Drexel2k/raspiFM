@@ -50,7 +50,22 @@ class RaspiFMMessageManager:
                     func = getattr(raspifm, raspifm_call.message[strings.message_string][strings.message_string])
 
                     #queries which don't send responses
-                    if raspifm_call.message[strings.message_string][strings.message_string] in ["radio_play", "radio_set_currentstation", "radio_stop", "radio_setvolume", "settings_set_touch_startwith", "spotify_set_currentplaying", "spotify_set_isplaying", "raspifm_shutdown", "spotify_stop"]:
+                    if raspifm_call.message[strings.message_string][strings.message_string] in ["radio_play",
+                                                                                                "radio_set_currentstation",
+                                                                                                "radio_stop",
+                                                                                                "radio_setvolume",
+                                                                                                "settings_set_touch_startwith",
+                                                                                                "spotify_set_currentplaying",
+                                                                                                "spotify_set_isplaying",
+                                                                                                "raspifm_shutdown",
+                                                                                                "spotify_stop",
+                                                                                                "favorites_add_stationtolist",
+                                                                                                "favorites_remove_stationfromlist",
+                                                                                                "favorites_changelistproperty",
+                                                                                                "favorites_deletelist",
+                                                                                                "favorites_movelist",
+                                                                                                "favorites_move_station_in_list",
+                                                                                                "settings_changeproperty"]:
                         #queries which require argument conversion
                         if raspifm_call.message[strings.message_string][strings.message_string] == "radio_play":
                             func(None if raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"] is None else UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
@@ -60,6 +75,16 @@ class RaspiFMMessageManager:
                             func(StartWith(raspifm_call.message[strings.message_string][strings.args_string]["startwith"]))
                         elif raspifm_call.message[strings.message_string][strings.message_string] == "spotify_set_currentplaying":
                             func(SpotifyInfo(**raspifm_call.message[strings.message_string][strings.args_string]["info"]))
+                        elif raspifm_call.message[strings.message_string][strings.message_string] in ["favorites_add_stationtolist", "favorites_remove_stationfromlist"]:
+                            func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]), UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
+                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_changelistproperty":
+                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]),raspifm_call.message[strings.message_string][strings.args_string]["property"],raspifm_call.message[strings.message_string][strings.args_string]["value"])
+                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_deletelist":
+                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
+                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_movelist":
+                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]), raspifm_call.message[strings.message_string][strings.args_string]["direction"])
+                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_move_station_in_list":
+                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]), UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]), raspifm_call.message[strings.message_string][strings.args_string]["direction"])
                         else:
                             if raspifm_call.message[strings.message_string][strings.args_string] is None:
                                 func()
@@ -73,20 +98,36 @@ class RaspiFMMessageManager:
                             #queries which require argument conversion
                             if raspifm_call.message[strings.message_string][strings.message_string] == "stations_getstation":
                                 result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_getlist":
+                                result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
                             else:
                                 result_object = func(**raspifm_call.message[strings.message_string][strings.args_string])
 
                         result_json_serializable = None
                         if not result_object is None:
                             #queries which require result conversion
-                            if raspifm_call.message[strings.message_string][strings.message_string] in ["stations_getstation", "favorites_getdefaultlist", "favorites_get_any_station", "radio_get_currentstation", "spotify_currently_playing"]:
+                            if raspifm_call.message[strings.message_string][strings.message_string] in ["stations_getstation",
+                                                                                                        "favorites_getdefaultlist",
+                                                                                                        "favorites_get_any_station",
+                                                                                                        "radio_get_currentstation",
+                                                                                                        "spotify_currently_playing",
+                                                                                                        "favorites_getlist",
+                                                                                                        "favorites_addlist"]:
                                 result_json_serializable = result_object.to_dict()
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_touch_laststation":
+                                result_json_serializable = str(result_object)
                             elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_getlists":
                                 result_json_serializable = [favorite_list.to_dict() for favorite_list in result_object]
                             elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_touch_startwith":
                                 result_json_serializable = result_object.value
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_touch_laststation":
-                                result_json_serializable = str(result_object)
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "countries_get":
+                                result_json_serializable = result_object.countrylist
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "languages_get":
+                                result_json_serializable = result_object.languagelist
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "stationapis_get":
+                                result_json_serializable = [radiostationapi.to_dict() for radiostationapi in result_object]
+                            elif raspifm_call.message[strings.message_string][strings.message_string] == "tags_get":
+                                result_json_serializable = result_object.taglist
                             else:
                                 result_json_serializable = result_object
 
@@ -112,4 +153,5 @@ class RaspiFMMessageManager:
                         socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[strings.message_string], {"spotify_currently_playing": None if spotify_currently_playing is None else spotify_currently_playing.to_dict()})
                                 
     def socket_closed(self, socket_address:str) -> None:
-        self.__clients_with_spotify_update_subscriptions.remove(socket_address)
+        if socket_address in self.__clients_with_spotify_update_subscriptions:
+            self.__clients_with_spotify_update_subscriptions.remove(socket_address)

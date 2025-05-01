@@ -16,7 +16,7 @@ class SocketTransferManager:
     __requests_without_response_lock:Lock
     __requests_without_response:dict
     __buffer_size:int
-    __close_callback:int
+    __close_callback:callable
 
     #message can span over several read calls, bytes are removed, once a full part 
     #(header length, header or request content) is read, therefore read parts
@@ -24,7 +24,7 @@ class SocketTransferManager:
     __current_message_header_length:int
     __current_message_header:dict
 
-    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback=None):
+    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback:callable=None):
         self.__socket = socket
         self.__socket_address = socket_address
         self.__read_queue = request_queue
@@ -130,7 +130,7 @@ class SocketTransferManager:
         self.__process_receive_buffer()
 
     #writer thread
-    #messages must die JSON serializable, only Python basics types allowed
+    #messages must be JSON serializable, only Python basics types allowed
     def send(self, message_response:MessageResponse):
         content_bytes = b""
         header = {} 

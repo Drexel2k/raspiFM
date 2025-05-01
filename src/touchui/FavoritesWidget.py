@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QScrollArea
 
 from common import utils
 from touchui.PushButtonData import PushButtonData
-from touchui.socket.RaspiFMProxy import RaspiFMProxy
+from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class FavoritesWidget(QWidget):
     __slots__ = ["__cbo_favoritelists", "__scrolllayout"]
@@ -36,7 +36,7 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists.setFixedHeight(50)
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
 
-        for list in sorted(RaspiFMProxy().favorites_getlists(), key=lambda favlistinternal: favlistinternal["displayorder"]):
+        for list in sorted(RaspiFMQtProxy().favorites_getlists(), key=lambda favlistinternal: favlistinternal["displayorder"]):
             name = list["name"] if not utils.str_isnullorwhitespace(list["name"]) else "{no name}"
             self.__cbo_favoritelists.addItem(name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
@@ -89,7 +89,7 @@ class FavoritesWidget(QWidget):
 
     @pyqtSlot()
     def __buttonclicked(self):
-        RaspiFMProxy().radio_play(self.sender().data["uuid"])
+        RaspiFMQtProxy().radio_play(self.sender().data["uuid"])
 
         self.favclicked.emit()
 
@@ -102,5 +102,3 @@ class FavoritesWidget(QWidget):
                 layoutitem = self.__scrolllayout.itemAt(itemindex)
                 layoutitem.widget().setMaximumWidth(self.width() - 45)
                 itemindex +=1
-
-

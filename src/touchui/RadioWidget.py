@@ -7,7 +7,7 @@ from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
 from touchui.MarqueeLabel import MarqueeLabel 
-from touchui.socket.RaspiFMProxy import RaspiFMProxy
+from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class RadioWidget(QWidget):
     __slots__ = ["__btn_playcontrol", "__lbl_nowplaying", "__nostations"]
@@ -33,23 +33,23 @@ class RadioWidget(QWidget):
     #playback initialization. But spotifyd can start playback before as the daemon is totally independant.
     def init_playback(self, startplaying:bool) -> None:
         station = None
-        if RaspiFMProxy().radio_isplaying():
-            station = RaspiFMProxy().radio_get_currentstation()
+        if RaspiFMQtProxy().radio_isplaying():
+            station = RaspiFMQtProxy().radio_get_currentstation()
         else:
             station = self.__get_station()
 
         self.__init_controls(station)
 
-        if not RaspiFMProxy().radio_isplaying():
+        if not RaspiFMQtProxy().radio_isplaying():
             if not station is None:
-                RaspiFMProxy().radio_set_currentstation(station["uuid"])
+                RaspiFMQtProxy().radio_set_currentstation(station["uuid"])
 
                 if startplaying:
                     self.beforeplaystarting.emit()
-                    RaspiFMProxy().radio_play()
+                    RaspiFMQtProxy().radio_play()
          
-        if RaspiFMProxy().radio_isplaying():
-            self.update_info(RaspiFMProxy().radio_getmeta())
+        if RaspiFMQtProxy().radio_isplaying():
+            self.radio_update(RaspiFMQtProxy().radio_getmeta())
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
 
     def __init_controls(self, station):
@@ -122,31 +122,31 @@ class RadioWidget(QWidget):
 
             volslider = QSlider(Qt.Orientation.Horizontal)
             volslider.sliderMoved.connect(self.__volslider_moved)
-            volslider.setValue(RaspiFMProxy().radio_getvolume())
+            volslider.setValue(RaspiFMQtProxy().radio_getvolume())
             layout.addWidget(volslider)
 
     def __get_station(self) -> dict:
-        station = station = RaspiFMProxy().radio_get_currentstation()
+        station = station = RaspiFMQtProxy().radio_get_currentstation()
 
         if station == None:
-            if RaspiFMProxy().settings_touch_startwith() == 1: #StartWith.LastStation
-                laststation_uuid = RaspiFMProxy().settings_touch_laststation()
+            if RaspiFMQtProxy().settings_touch_startwith() == 1: #StartWith.LastStation
+                laststation_uuid = RaspiFMQtProxy().settings_touch_laststation()
                 if not laststation_uuid is None:
-                    laststation = RaspiFMProxy().stations_getstation(laststation_uuid)
+                    laststation = RaspiFMQtProxy().stations_getstation(laststation_uuid)
                     if not laststation is None:
                         station = laststation
 
             #On initial start, lastation_uuid will always be None, so try start with default list:
             #Or if last station was deleted e.g.
-            if RaspiFMProxy().settings_touch_startwith() == 2 or station == None: #2 = StartWith.DefaultList 
-                defaultlist = RaspiFMProxy().favorites_getdefaultlist()
+            if RaspiFMQtProxy().settings_touch_startwith() == 2 or station == None: #2 = StartWith.DefaultList 
+                defaultlist = RaspiFMQtProxy().favorites_getdefaultlist()
                 if len(defaultlist["stations"]) > 0:
                         station = defaultlist["stations"][0]["radiostation"]
 
             #If station is still None, check for check if there is any station in favorites and
             #take the first:
             if station == None:
-                station = RaspiFMProxy().favorites_get_any_station()["radiostation"]
+                station = RaspiFMQtProxy().favorites_get_any_station()["radiostation"]
 
         return station
 
@@ -154,21 +154,21 @@ class RadioWidget(QWidget):
         self.init_playback(False)
 
     def __playcontrol_clicked(self) -> None:
-        if RaspiFMProxy().radio_isplaying():
-            RaspiFMProxy().radio_stop()
+        if RaspiFMQtProxy().radio_isplaying():
+            RaspiFMQtProxy().radio_stop()
             self.__btn_playcontrol.setText(None)
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/play-fill-rpi.svg"))
             self.__lbl_nowplaying.setText(None)
             self.playstopped.emit()
         else:
             self.beforeplaystarting.emit()
-            RaspiFMProxy().radio_play()
+            RaspiFMQtProxy().radio_play()
             self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
 
     def __volslider_moved(self, value:int) -> None:
-       RaspiFMProxy().radio_setvolume(value)
+       RaspiFMQtProxy().radio_setvolume(value)
 
-    def update_info(self, info:str):
+    def radio_update(self, info:str):
         self.__lbl_nowplaying.setText(info)
 
     def resizeEvent(self, event) -> None:

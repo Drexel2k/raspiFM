@@ -3,37 +3,31 @@ import socket as modsocket
 from socket import socket
 from selectors import DefaultSelector
 from queue import Queue
-from threading import Thread
-
-from PyQt6.QtCore import pyqtSignal, QObject
 
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import strings
 from common.socket.MessageResponse import MessageResponse
 
-class SocketManager(QObject):
+class SocketManager():
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__socket_transfermanager", "__messageid"]
+    __slots__ = ["__socket_selector", "__write_queue", "__socket_transfermanager", "__messageid"]
     __socket_selector:DefaultSelector
-    __read_queue:Queue
+
     __write_queue:Queue
     __socket_transfermanager:SocketTransferManager
     __messageid:int
 
-    core_notification_available = pyqtSignal(MessageResponse)
-
     def __init__(self, read_queue:Queue, response_queue:Queue):
         super().__init__()
         self.__socket_selector = DefaultSelector()
-        self.__read_queue = read_queue
         self.__write_queue = response_queue
         self.__messageid = 0
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(strings.socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.socketpath_string, self.__read_queue)
-        self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.socketpath_string, read_queue)
+        self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)        
 
     #reader thread
     def read(self) -> None:
@@ -48,15 +42,6 @@ class SocketManager(QObject):
         while True:
             write = self.__write_queue.get()
             self.__socket_transfermanager.send(write)
-
-    #monitor thread
-    def monitor_read_queue(self) -> None:
-        while True:
-            message_response = self.__read_queue.get()
-            #messages with response are handled by response ready event/
-            #query_raspifm_core
-            if message_response.response is None:
-                self.core_notification_available.emit(message_response)
 
     #main thread
     def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:

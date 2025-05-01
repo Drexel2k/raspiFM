@@ -4,11 +4,11 @@ class RadioStationApi:
     __name:str
     __url:str
     __url_resolved:str
+    __languagecodes:str
     __homepage:str
     __favicon:str
     __tags:list
     __countrycode:str
-    __languagecodes:str
     __votes:int
     __codec:str
     __bitrate:int
@@ -33,6 +33,10 @@ class RadioStationApi:
         return self.__url_resolved
     
     @property
+    def languagecodes(self) -> str:
+        return self.__languagecodes
+    
+    @property
     def homepage(self) -> str:
         return self.__homepage
     
@@ -47,10 +51,6 @@ class RadioStationApi:
     @property
     def countrycode(self) -> str:
         return self.__countrycode
-    
-    @property
-    def languagecodes(self) -> str:
-        return self.__languagecodes
     
     @property
     def votes(self) -> int:
@@ -85,4 +85,22 @@ class RadioStationApi:
                 self.__setattr__(f"_RadioStationApi{slot}", apidict[dictkey])
             else:
                 self.__setattr__(f"_RadioStationApi{slot}", apidict[dictkey].split(","))
+
+    def to_dict(self) -> dict:
+        return {"stationuuid":self.__stationuuid,
+                "name":self.__name,
+                "url":self.__url,
+                "url_resolved":self.__url_resolved,
+                "languagecodes":self.__languagecodes,
+                "homepage":self.__homepage,
+                "favicon":self.__favicon,
+                "tags":self.__tags,
+                "countrycode":self.__countrycode,
+                "votes":self.__votes,
+                "codec":self.__codec,
+                "bitrate":self.__bitrate,
+                "hls":self.__hls,
+                "clickcount":self.__clickcount,
+                "clicktrend":self.__clicktrend
+                }    
 

@@ -16,10 +16,10 @@ class SocketManager:
     __read_queue:Queue
     __write_queue:Queue
     __client_sockets:dict
-    __socket_closed_callback:int
+    __socket_closed_callback:callable
     __messageid:int
 
-    def __init__(self, read_queue:Queue, response_queue:Queue, socket_closed_callback=None):
+    def __init__(self, read_queue:Queue, response_queue:Queue, socket_closed_callback:callable=None):
         self.__socket_selector = DefaultSelector()
         self.__read_queue = read_queue
         self.__write_queue = response_queue

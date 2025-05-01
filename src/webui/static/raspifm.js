@@ -578,7 +578,7 @@ function initSettingsMgmt()
                 }
             }
         );
-    });$('#tblfavoritelists .favlistselected').attr('id').substr(11)
+    });
 
     $('#sllang').on('change', function(e)
     {   

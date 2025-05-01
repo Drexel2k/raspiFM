@@ -140,11 +140,11 @@ class RaspiFM:
             
         return taglist
     
-    def favorites_add_stationtolist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
-        station = self.__radiostations.get_station(stationuuid)
+    def favorites_add_stationtolist(self, station_uuid:UUID, favlist_uuid:UUID) -> None:
+        station = self.__radiostations.get_station(station_uuid)
 
         if station is None:
-            radiostationapi = stationapi.query_station(stationuuid)
+            radiostationapi = stationapi.query_station(station_uuid)
 
             station = RadioStation.from_default(radiostationapi.stationuuid,
                                    radiostationapi.name,
@@ -158,7 +158,7 @@ class RaspiFM:
                                    radiostationapi.bitrate,
                                    list(radiostationapi.tags))
 
-        self.__favorites.get_list(favlistuuid).add_station(station)
+        self.__favorites.get_list(favlist_uuid).add_station(station)
         self.__radiostations.add_station(station)
 
         JsonSerializer().serialize_radiostations(self.__radiostations)
@@ -180,14 +180,14 @@ class RaspiFM:
         JsonSerializer().serialize_favorites(self.__favorites)
         return favoritelist
     
-    def favorites_deletelist(self, uuid:UUID) -> FavoriteList:
-        favlist = self.__favorites.get_list(uuid)
+    def favorites_deletelist(self, favlist__uuid:UUID) -> None:
+        favlist = self.__favorites.get_list(favlist__uuid)
         station_uuids = []
         if not favlist is None:
             for stationentry in favlist.stations:
                 station_uuids.append(stationentry.radiostation.uuid)
 
-        self.__favorites.delete_favoritelist(uuid)
+        self.__favorites.delete_favoritelist(favlist__uuid)
         JsonSerializer().serialize_favorites(self.__favorites)
 
         for station_uuid in station_uuids:
@@ -198,42 +198,42 @@ class RaspiFM:
     def favorites_getdefaultlist(self) -> FavoriteList:
         return self.__favorites.get_default()
     
-    def favorites_getlist(self, listuuid:UUID) -> FavoriteList:
-        return self.__favorites.get_list(listuuid)
+    def favorites_getlist(self, favlist_uuid:UUID) -> FavoriteList:
+        return self.__favorites.get_list(favlist_uuid)
 
-    def favorites_get_any_station(self,) -> RadioStation:
+    def favorites_get_any_station(self) -> RadioStation:
         return self.__favorites.get_any_station()
     
-    def favorites_changelistproperty(self, uuid:UUID, property:str, value:str) -> None:
+    def favorites_changelistproperty(self, favlist_uuid:UUID, property:str, value:str) -> None:
         if property == "isdefault":
-            self.__favorites.change_default(uuid, True if value.strip().lower() == "true" else False)
+            self.__favorites.change_default(favlist_uuid, True if value.strip().lower() == "true" else False)
         elif property == "name":
-            changelist = self.__favorites.get_list(uuid)
+            changelist = self.__favorites.get_list(favlist_uuid)
             changelist.name = value
         else: 
             raise TypeError(f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def favorites_movelist(self, uuid:UUID, direction:str) -> None:
+    def favorites_movelist(self, favlist_uuid:UUID, direction:str) -> None:
         direction = Direction[direction]
-        self.__favorites.move_list(uuid, direction)
+        self.__favorites.move_list(favlist_uuid, direction)
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def favorites_move_station_in_list(self, favlistuuid:UUID, stationuuid:UUID, direction:str) -> None:
+    def favorites_move_station_in_list(self, favlist_uuid:UUID, station_uuid:UUID, direction:str) -> None:
         direction = Direction[direction]
-        self.__favorites.move_station_in_list(favlistuuid, stationuuid, direction)
+        self.__favorites.move_station_in_list(favlist_uuid, station_uuid, direction)
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
     def settings_runontouch(self) -> bool:
         return self.__settings.usersettings.touch_runontouch
     
-    def settings_web_defaultlanguage(self) -> bool:
+    def settings_web_defaultlanguage(self) -> str:
         return self.__settings.usersettings.web_defaultlanguage
     
-    def settings_web_defaultcountry(self) -> bool:
+    def settings_web_defaultcountry(self) -> str:
         return self.__settings.usersettings.web_defaultcountry
     
     def settings_touch_startwith(self) -> StartWith:

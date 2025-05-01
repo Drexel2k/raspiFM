@@ -6,8 +6,8 @@ Tag List
 {% endblock %}
 {% block content %}
 <h1>Tag List</h1>
-{%- if tags.taglist -%}
- {%- for tag in tags.taglist -%}
+{%- if tags -%}
+ {%- for tag in tags -%}
  <span class="badge text-bg-primary m-1">{{tag}}</span>
  {%- endfor -%}
 {%- endif -%}
