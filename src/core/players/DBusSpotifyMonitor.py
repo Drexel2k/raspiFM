@@ -50,12 +50,7 @@ class DBusSpotifyMonitor:
             if dbus_spotify_playbackstatus_reply.body[0][1] == "Playing":
                 dbus_spotify_metadata_message = new_method_call(dbus_spotify_address, dbusstrings.dbusmethodget, "ss", (dbusstrings.spotifydinterface, dbusstrings.spotifydpropertymetadata))
                 dbus_spotify_metadata_reply = self.__dbus_connection.send_and_get_reply(dbus_spotify_metadata_message)
-                metadata = dbus_spotify_metadata_reply.body[0][1]
-                return {
-                            "title":metadata[dbusstrings.spotifydmetadatatitle][1],
-                            "album":metadata[dbusstrings.spotifydmetadataalbum][1],
-                            "artists":metadata[dbusstrings.spotifydmetadataartists][1],
-                            "arturl":metadata[dbusstrings.spotifydmetadataarturl][1]}
+                return self.__extract_metadata(dbus_spotify_metadata_reply.body[0][1])
             else:
                 return None
             
@@ -141,21 +136,24 @@ class DBusSpotifyMonitor:
             self.__dbus_spotify_filter.close()
 
     def __get_meta_from_change_properties(self, changeproperties:dict) -> dict:
-        #Sometimes, not reproducable, not alle infos are in the changeproperties, onyl one attribute like volume is in it.
-        #Normaly after that another propertieschange signal comes in with the full infos.
-        if not dbusstrings.spotifydpropertymetadata in changeproperties or not dbusstrings.spotifydpropertyplaybackstatus in changeproperties:
-            return None
+        #if spotify is resumed after paused it sends only playing status
+        if dbusstrings.spotifydpropertyplaybackstatus in changeproperties:
+            if changeproperties[dbusstrings.spotifydpropertyplaybackstatus][1] == "Playing":
+                return self.get_spotify_status()
 
-        if changeproperties[dbusstrings.spotifydpropertyplaybackstatus][1] == "Playing":
-            metadata = changeproperties[dbusstrings.spotifydpropertymetadata][1]
-            return {
-                                                                            "title":metadata[dbusstrings.spotifydmetadatatitle][1],
-                                                                            "album":metadata[dbusstrings.spotifydmetadataalbum][1],
-                                                                            "artists":metadata[dbusstrings.spotifydmetadataartists][1],
-                                                                            "arturl":metadata[dbusstrings.spotifydmetadataarturl][1]}
+        #on track change while playing spotify sends metadata
+        if dbusstrings.spotifydpropertymetadata in changeproperties:
+            return self.__extract_metadata(changeproperties[dbusstrings.spotifydpropertymetadata][1])
 
         return None
     
+    def __extract_metadata(self, message_meta):
+        return {
+                    "title":message_meta[dbusstrings.spotifydmetadatatitle][1],
+                    "album":message_meta[dbusstrings.spotifydmetadataalbum][1],
+                    "artists":message_meta[dbusstrings.spotifydmetadataartists][1],
+                    "arturl":message_meta[dbusstrings.spotifydmetadataarturl][1]}
+
     def stop_spotify(self) -> None:
         if not self.__spotify_dbusname is None:
             dbus_spotify_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.spotifydinterface)

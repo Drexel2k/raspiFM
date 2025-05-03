@@ -20,8 +20,8 @@ class MainWindow(QMainWindow):
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        #if RaspiFMProxy().settings_runontouch():
+        #print("Qt: v", QtCore.QT_VERSION_STR, "\tPyQt: v", QtCore.PYQT_VERSION_STR)
+        #if RaspiFMQtProxy().settings_runontouch():
         #    app.setOverrideCursor(Qt.CursorShape.BlankCursor)
         #    window.showFullScreen()
 

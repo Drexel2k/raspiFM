@@ -41,8 +41,7 @@ Do a `sudo apt update` first.
 - 3. If you do not want to use the latest commit, but the latest release, look up the latest release tag: https://github.com/Drexel2k/raspiFM/releases or https://github.com/Drexel2k/raspiFM/tags and do: `git checkout tags/v1.0`
 
 ## Setup Spotify Connect / spotifyd
-- 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
-  - Care! Current spotifyd stable release hase some issues due to Spotify backend changes. Use the latest build instead: `sudo cp ~/raspifm_repo/libs/spotifyd-commit-e280d84124d854af3c2f9509ba496b1c2ba6a1ae-librespot-0.4.2-dbus-pulse_aarch64 /usr/bin/spotifyd`
+- 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 2. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`
 - 3. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp ~/raspifm_repo/configs/spotifyd.service /etc/systemd/user`
 - 4. Enable the daemon/autostart: `systemctl --user enable spotifyd.service`
@@ -57,7 +56,7 @@ Do a `sudo apt update` first.
 - 4. Setup python environment/dependencies:
   - `python3 -m venv /usr/bin/local/raspifm/.venv`
   - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install -r ~/raspifm_repo/piprequirements.txt`
-  - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.6.1-cp38-abi3-manylinux_2_28_aarch64.whl`
+  - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.8.3-cp39-abi3-manylinux_2_28_aarch64.whl`
 - 5. Setup nginx: 
   - `sudo cp ~/raspifm_repo/configs/raspifm.nginx /etc/nginx/sites-available/raspifm`
   - `sudo ln -s /etc/nginx/sites-available/raspifm /etc/nginx/sites-enabled/`
