@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections import deque
+import os
 from queue import Queue
+import socket
 from threading import Thread
 from jeepney import DBusAddress, new_method_call, MatchRule, message_bus, HeaderFields
 from jeepney.io.blocking import Proxy, DBusConnection
@@ -89,9 +91,18 @@ class DBusSpotifyMonitor:
 
     def __monitor_internal(self):
         previous_meta = None
-        while True:
+        run = True
+        while run:
             current_meta = None
-            signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
+            signal_message = None
+            try:
+                signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
+            #only solution found to unblock the recv_until_filtered call
+            except ConnectionResetError as e:
+                if e.errno == 104:
+                    run = False
+                    continue
+
             if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
                 #spotify state changed
                 current_meta = self.__get_meta_from_change_properties(signal_message.body[1])
@@ -159,3 +170,8 @@ class DBusSpotifyMonitor:
             dbus_spotify_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.spotifydinterface)
             dbus_spotify_playbackstatus_message = new_method_call(dbus_spotify_address, dbusstrings.spotifydmethodpause, None, None)
             self.__dbus_connection.send(dbus_spotify_playbackstatus_message)
+
+    def shutdown(self) -> None:
+        #only solution found to unblock the recv_until_filtered call
+        self.__dbus_connection.close()
+        self.__dbus_connection.sock.shutdown(socket.SHUT_RDWR)

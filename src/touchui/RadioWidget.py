@@ -2,7 +2,7 @@ import base64
 #import debugpy
 
 from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QImage, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QSlider, QWidgetItem
 
@@ -10,10 +10,10 @@ from touchui.MarqueeLabel import MarqueeLabel
 from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class RadioWidget(QWidget):
-    __slots__ = ["__btn_playcontrol", "__lbl_nowplaying", "__nostations"]
+    __slots__ = ["__btn_playcontrol", "__lbl_nowplaying", "__nostations_controls_set"]
     __btn_playcontrol:QPushButton
     __lbl_nowplaying:MarqueeLabel
-    __nostations:bool
+    __nostations_controls_set:bool
 
     beforeplaystarting = pyqtSignal()
     playstopped = pyqtSignal()
@@ -26,7 +26,7 @@ class RadioWidget(QWidget):
         self.__btn_playcontrol = None
         self.__lbl_nowplaying = None
 
-        self.__nostations = False
+        self.__nostations_controls_set = False
 
     #Added to separate public method to emit signals on radio playback init so that possible Spotify playback is stopped
     #via beforeplaystarting signal. If this would all be in __init__ signal connection can only take place after
@@ -40,22 +40,22 @@ class RadioWidget(QWidget):
 
         self.__init_controls(station)
 
-        if not RaspiFMQtProxy().radio_isplaying():
-            if not station is None:
+        if not station is None:
+            if not RaspiFMQtProxy().radio_isplaying():
                 RaspiFMQtProxy().radio_set_currentstation(station["uuid"])
 
                 if startplaying:
                     self.beforeplaystarting.emit()
                     RaspiFMQtProxy().radio_play()
-         
-        if RaspiFMQtProxy().radio_isplaying():
-            self.radio_update(RaspiFMQtProxy().radio_getmeta())
-            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
+            
+            if RaspiFMQtProxy().radio_isplaying():
+                self.radio_update(RaspiFMQtProxy().radio_getmeta())
+                self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
 
     def __init_controls(self, station):
         if station is None:
-            if not self.__nostations:
-                self.__nostations = True
+            if not self.__nostations_controls_set:
+                self.__nostations_controls_set = True
                 layout = self.layout()
                 layout.addStretch()
                 label = QLabel("No radio station favorites found,")
@@ -72,16 +72,16 @@ class RadioWidget(QWidget):
                 #Remove no favorites warning if warning was set before. 
                 #Todo: maybe add a root widget over all the info widget so that only the main or root widget has to be deleted
                 #to delete also all sub widgets
-            if self.__nostations:
+            if self.__nostations_controls_set:
                 while self.layout().count() > 0:
                     item = self.layout().takeAt(0)
 
-                        #QSpaceritem/QLayoutItem have no parents
+                    #QSpaceritem/QLayoutItem have no parents
                     if isinstance(item, QWidgetItem):
                         item.widget().close()
                         item.widget().setParent(None)
 
-                self.__nostations = False
+                self.__nostations_controls_set = False
 
             layout = self.layout()
             stationimagelabel = QLabel()

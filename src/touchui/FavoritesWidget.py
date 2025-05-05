@@ -37,7 +37,7 @@ class FavoritesWidget(QWidget):
         self.__cbo_favoritelists.setStyleSheet(f'QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}')
 
         for list in sorted(RaspiFMQtProxy().favorites_getlists(), key=lambda favlistinternal: favlistinternal["displayorder"]):
-            name = list["name"] if not utils.str_isnullorwhitespace(list["name"]) else "{no name}"
+            name = list["name"] if not utils.str_isnullorwhitespace(list["name"]) else "List w/o name"
             self.__cbo_favoritelists.addItem(name, list)
         self.__cbo_favoritelists.currentIndexChanged.connect(self.__favoritelists_selectionchanged)
 

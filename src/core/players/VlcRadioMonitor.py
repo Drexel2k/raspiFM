@@ -35,15 +35,16 @@ class VlcRadioMonitor:
         #debugpy.debug_this_thread()
         previous_meta = None
 
-        #Split the sleep phase into 0.5 seconds that closing the app is more responsive e.g.
-        sleeptickslimit = 4
+        #Split the sleep phase into 1 seconds that closing the app is more responsive e.g.
+        #initla meta get after 2 seconds to get meta on start soon, afterwards meta is checked every 10 seconds.
+        sleeptickslimit = 2
         sleeptickcount = 1
         while self.__vlcgetmeta_enabled:
-            time.sleep(0.5)
+            time.sleep(1)
             if sleeptickcount >= sleeptickslimit:
                 #First sleep phase is shorter than next spleep phases, so that first info is coming faster
-                if sleeptickslimit < 5:
-                    sleeptickslimit = 20
+                if sleeptickslimit < 3:
+                    sleeptickslimit = 10
 
                 sleeptickcount = 0
 

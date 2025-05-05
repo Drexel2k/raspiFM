@@ -8,8 +8,11 @@ from common import strings
 from common.socket.raspifm_client.SocketManager import SocketManager
 
 class RaspiFMProxy():
-    __slots__ = ["__socket_manager", "__read_queue", "__read_queue_callback"]
-    __instance:RaspiFMProxy = None 
+    __slots__ = ["__socket_manager", "__read_queue", "__read_queue_callback", "__socket_read_thread", "__socket_write_thread"]
+    __instance:RaspiFMProxy = None
+
+    __socket_read_thread:Thread
+    __socket_write_thread:Thread
 
     __read_queue:Queue
     __socket_manager:SocketManager
@@ -17,18 +20,22 @@ class RaspiFMProxy():
 
     def __new__(cls, read_queue_callback:callable = None):
         if cls.__instance is None:
-            cls.__instance = super(RaspiFMProxy, cls).__new__(cls)
-            cls.__instance.__init(read_queue_callback)
+            #instance initialization may fail, if raspifm service is not available.
+            #therefore set instance only once we have a working instance
+            instance_internal =  super(RaspiFMProxy, cls).__new__(cls)
+            instance_internal.__init(read_queue_callback)
+            if not instance_internal is None:
+                cls.__instance = instance_internal
         return cls.__instance
     
     def __init(self, read_queue_callback:callable):
         self.__read_queue = Queue()
         write_queue = Queue()
         self.__socket_manager = SocketManager(self.__read_queue, write_queue)
-        socket_read_thread = Thread(target=self.__socket_manager.read)
-        socket_read_thread.start()
-        socket_write_thread = Thread(target=self.__socket_manager.write)
-        socket_write_thread.start()
+        self.__socket_read_thread = Thread(target=self.__socket_manager.read)
+        self.__socket_read_thread.start()
+        self.__socket_write_thread = Thread(target=self.__socket_manager.write)
+        self.__socket_write_thread.start()
 
         self.__read_queue_callback = read_queue_callback
         read_queue_thread = Thread(target=self.__monitor_read_queue)
@@ -36,12 +43,19 @@ class RaspiFMProxy():
 
     #monitor thread
     def __monitor_read_queue(self) -> None:
-        while True:
-            message_response = self.__read_queue.get()
+        run = True
+        while True and run:
+            queue_item = self.__read_queue.get()
+            if isinstance(queue_item, str):
+                #Python 3.12 doesn't support Queue.shutdown yet()
+                if queue_item == "shutdown":
+                    run=False
+                    continue
+
             #messages with response are handled by response ready event/
             #query_raspifm_core
-            if message_response.response is None and not self.__read_queue_callback is None:
-                self.__read_queue_callback(message_response)
+            if queue_item.response is None and not self.__read_queue_callback is None:
+                self.__read_queue_callback(queue_item)
     
     def spotify_isplaying(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("spotify_isplaying", None, True)
@@ -209,4 +223,6 @@ class RaspiFMProxy():
         self.__socket_manager.query_raspifm_core("settings_changeproperty", {"property":property, "value":value}, False)
 
     def raspifm_shutdown(self) -> None:
-        self.__socket_manager.close()
+        self.__socket_manager.query_raspifm_core("raspifm_shutdown", None, False)
+        self.__socket_manager.shutdown()
+        self.__read_queue.put("shutdown")

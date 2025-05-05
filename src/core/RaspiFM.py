@@ -314,9 +314,6 @@ class RaspiFM:
     def radio_getmeta(self) -> str:
         return Vlc().getmeta()
 
-    def raspifm_shutdown(self) -> None:
-        Vlc().shutdown()
-
     def radio_send_stationclicked(self, station_uuid:UUID) -> None:
         stationapi.send_stationclicked(station_uuid)
 
@@ -340,3 +337,6 @@ class RaspiFM:
     
     def http_get_urlbinary_content_asb64(self, url:str) ->str:
         return httpcontent.get_urlbinary_content_as_base64(url)
+
+    def raspifm_shutdown(self) -> None:
+        Vlc().shutdown()

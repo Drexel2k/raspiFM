@@ -6,10 +6,11 @@ from uuid import UUID
 
 from common import strings
 from common.socket.MessageResponse import MessageResponse
-from core.players.DBusSpotifyMonitor import DBusSpotifyMonitor
 from core.RaspiFM import RaspiFM
 from core.RaspiFMMessage import RaspiFMMessage
 from core.StartWith import StartWith
+from core.players.VlcRadioMonitor import VlcRadioMonitor
+from core.players.DBusSpotifyMonitor import DBusSpotifyMonitor
 from core.players.SpotifyInfo import SpotifyInfo
 from core.socket.SocketManager import SocketManager
 
@@ -36,9 +37,10 @@ class RaspiFMMessageManager:
         socket_write_thread = Thread(target=socket_manager.write)
         socket_write_thread.start()
 
-        while True:
+        run = True
+        while run:
             raspifm_call = raspifm_call_queue.get()
-            if type(raspifm_call) is MessageResponse:
+            if isinstance(raspifm_call, MessageResponse):
                 #the server expects only queries and no reponses
                 #in the read queue as it doesn't send any queries
                 #which expect a response.
@@ -67,6 +69,11 @@ class RaspiFMMessageManager:
                                                                                                 "favorites_move_station_in_list",
                                                                                                 "settings_changeproperty"]:
                         #queries which require argument conversion
+                        if raspifm_call.message[strings.message_string][strings.message_string] == "raspifm_shutdown":
+                            run = False
+                            VlcRadioMonitor().stop_meta_getter()
+                            DBusSpotifyMonitor().shutdown()
+                            socket_manager.shutdown()
                         if raspifm_call.message[strings.message_string][strings.message_string] == "radio_play":
                             func(None if raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"] is None else UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
                         elif raspifm_call.message[strings.message_string][strings.message_string] == "radio_set_currentstation":
@@ -137,7 +144,7 @@ class RaspiFMMessageManager:
                     
             #not every client needs radio players updates,
             #e.g. the web client which is only for favorites management doesn't nee these updates.
-            if type(raspifm_call) is RaspiFMMessage:
+            if  isinstance(raspifm_call, RaspiFMMessage):
                 if raspifm_call.message[strings.message_string] == "spotify_change":
                     func = getattr(raspifm, raspifm_call.message[strings.message_string])
                     if raspifm_call.message[strings.args_string]["spotify_currently_playing"] is None:

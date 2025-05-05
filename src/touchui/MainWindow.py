@@ -3,7 +3,7 @@ import os
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem
+from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem, QLabel, QPushButton
 
 from common import strings
 from touchui.FavoritesWidget import FavoritesWidget
@@ -14,9 +14,17 @@ from touchui.PushButtonMain import PushButtonMain
 from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class MainWindow(QMainWindow):
-    __slots__ = ["__mainwidget", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor", "__spotify_playing"]
+    __slots__ = ["__mainwidget", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor", "__spotify_playing", "__raspifm_service_not_available_controls_set"]
     __mainwidget:QWidget
+    __radiobutton:QPushButton
+    __favoritesbutton:QPushButton
+    __spotifybutton:QPushButton
+    __settingsbutton:QPushButton
+    __activebutton:QPushButton
+    __activebackgroundcolor:str
     __spotify_playing:bool
+    __raspifm_service_not_available_controls_set:bool
+
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,13 +38,6 @@ class MainWindow(QMainWindow):
         
         self.__mainwidget = QWidget()
         self.__mainwidget.setLayout(QHBoxLayout())
-        self.__spotify_playing = False
-
-        scroll.setWidget(self.__mainwidget)
-        self.setCentralWidget(scroll)
-
-        raspifm_proxy = RaspiFMQtProxy()
-        raspifm_proxy.core_notification_available.connect(self.__core_notification_available)
 
         #Create background color from qt-material primary color
         hexColor = os.environ["QTMATERIAL_PRIMARYCOLOR"][1:]
@@ -45,6 +46,52 @@ class MainWindow(QMainWindow):
             self.__activebackgroundcolor += str(int(hexColor[i:i+2], 16)) +", "
 
         self.__activebackgroundcolor += "0.2)"
+
+        self.__spotify_playing = False
+        self.__raspifm_service_not_available_controls_set = False
+
+        scroll.setWidget(self.__mainwidget)
+        self.setCentralWidget(scroll)
+
+        self.__init_controls()
+
+    def __init_controls(self) -> None:
+        try:
+            RaspiFMQtProxy()
+        except (ConnectionRefusedError, FileNotFoundError):
+            if not self.__raspifm_service_not_available_controls_set:
+                self.__raspifm_service_not_available_controls_set = True
+                info_layout_vertical = QVBoxLayout()
+                self.__mainwidget.layout().addLayout(info_layout_vertical)
+                info_layout_vertical.addStretch()
+                label = QLabel("RaspiFM service not running,")
+                info_layout_vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                label = QLabel("run the service (more info in the docs directory),")
+                info_layout_vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                label = QLabel("and press refresh.")
+                info_layout_vertical.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+                refreshbutton = QPushButton("Refresh")
+                refreshbutton.clicked.connect(self.__refreshlicked)
+                info_layout_vertical.addWidget(refreshbutton)
+                info_layout_vertical.addStretch()
+
+            return
+        
+        if self.__raspifm_service_not_available_controls_set:
+            #info_layout_vertical QVBoxLayout
+            layout = self.__mainwidget.layout().takeAt(0)
+            while layout.count() > 0:
+                item = layout.takeAt(0)
+
+                #QSpaceritem/QLayoutItem have no parents
+                if isinstance(item, QWidgetItem):
+                    item.widget().close()
+                    item.widget().setParent(None)     
+
+            self.__mainwidget.layout().removeItem(layout)       
+            self.__raspifm_service_not_available_controls_set = False
+
+        RaspiFMQtProxy().core_notification_available.connect(self.__core_notification_available)
 
         left_layout_vertical = QVBoxLayout()
         self.__mainwidget.layout().addLayout(left_layout_vertical, stretch=1)
@@ -101,6 +148,9 @@ class MainWindow(QMainWindow):
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4) 
         
         RaspiFMQtProxy().players_status_subscribe()
+
+    def __refreshlicked(self) -> None:
+        self.__init_controls()
 
     def __core_notification_available(self, notification:dict):
         if notification[strings.message_string] == "radio_change":
@@ -238,8 +288,9 @@ class MainWindow(QMainWindow):
         self.__mainwidget.setFixedSize(self.width(), self.height())
 
     def closeEvent(self, event) -> None:
-        QMainWindow.closeEvent(self, event)
-        widget = self.__mainwidget.layout().itemAt(1).widget()
-        widget.close()
-        widget.setParent(None)
-        RaspiFMQtProxy().raspifm_shutdown()
+        if not self.__raspifm_service_not_available_controls_set:
+            QMainWindow.closeEvent(self, event)
+            widget = self.__mainwidget.layout().itemAt(1).widget()
+            widget.close()
+            widget.setParent(None)
+            RaspiFMQtProxy().raspifm_shutdown()

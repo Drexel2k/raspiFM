@@ -1,6 +1,6 @@
 import traceback
 
-from webui.web import app
+from webui.run import app
 from flask import Response, make_response, render_template, request
 from uuid import UUID
 
@@ -28,6 +28,8 @@ def favorites() -> str:
         return render_template("favorites.html",
                                favoritelists=favoritelists,
                                favoritelist=RaspiFMProxy().favorites_getdefaultlist())
+    except (ConnectionRefusedError, FileNotFoundError):
+        return render_template("raspifm_service_not_available.html", route="favorites") 
     except BaseException as e:
         return get_errorresponse(e)
 
@@ -97,6 +99,8 @@ def stationsearch() -> str:
                                 selected=selected,
                                 pagelast=pagelast,
                                 pagenext=pagenext)
+    except (ConnectionRefusedError, FileNotFoundError):
+        return render_template("raspifm_service_not_available.html", route="stationsearch") 
     except BaseException as e:
         return get_errorresponse(e)
     
@@ -105,6 +109,8 @@ def taglist() -> str:
     try:
         taglist = RaspiFMProxy().tags_get()
         return render_template("taglist.html", tags=taglist)
+    except (ConnectionRefusedError, FileNotFoundError):
+        return render_template("raspifm_service_not_available.html", route="taglist") 
     except BaseException as e:
         return get_errorresponse(e)
     
@@ -120,6 +126,8 @@ def settings() -> str:
                                 countries=countries,
                                 languages=languages,
                                 selected=selected)
+    except (ConnectionRefusedError, FileNotFoundError):
+        return render_template("raspifm_service_not_available.html", route="settings") 
     except BaseException as e:
         return get_errorresponse(e)
 
