@@ -1,10 +1,14 @@
 from queue import Queue
 
+import setproctitle
+
 from core.players.VlcRadioMonitor import VlcRadioMonitor
 from core.players.DBusSpotifyMonitor import DBusSpotifyMonitor
 from core.RaspiFM import RaspiFM
 from core.RaspiFMMessageManager import RaspiFMMessageManager
 from core.players.SpotifyInfo import SpotifyInfo
+
+setproctitle.setproctitle("raspiFM core")
 
 raspifm_call_queue = Queue()
 VlcRadioMonitor(raspifm_call_queue)

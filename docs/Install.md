@@ -56,7 +56,7 @@ Do a `sudo apt update` first.
 - 4. Setup python environment/dependencies:
   - `python3 -m venv /usr/bin/local/raspifm/.venv`
   - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install -r ~/raspifm_repo/piprequirements.txt`
-  - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.8.3-cp39-abi3-manylinux_2_28_aarch64.whl`
+  - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.8.1-cp39-abi3-manylinux_2_28_aarch64.whl`
 - 5. Setup nginx: 
   - `sudo cp ~/raspifm_repo/configs/raspifm.nginx /etc/nginx/sites-available/raspifm`
   - `sudo ln -s /etc/nginx/sites-available/raspifm /etc/nginx/sites-enabled/`

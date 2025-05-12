@@ -33,6 +33,16 @@
             "program": "${workspaceFolder}/src/touchui_run.py",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "raspiFMall",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "purpose": ["debug-in-terminal"],
+            "program": "${workspaceFolder}/src/raspifm_run.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

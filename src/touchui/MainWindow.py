@@ -1,9 +1,12 @@
 import os
+import subprocess
+from subprocess import Popen
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem, QLabel, QPushButton
+import setproctitle
 
 from common import strings
 from touchui.FavoritesWidget import FavoritesWidget
@@ -25,14 +28,13 @@ class MainWindow(QMainWindow):
     __spotify_playing:bool
     __raspifm_service_not_available_controls_set:bool
 
-
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #print("Qt: v", QtCore.QT_VERSION_STR, "\tPyQt: v", QtCore.PYQT_VERSION_STR)
         #if RaspiFMQtProxy().settings_runontouch():
         #    app.setOverrideCursor(Qt.CursorShape.BlankCursor)
         #    window.showFullScreen()
-
+        setproctitle.setproctitle("raspiFM touch")
         self.setWindowTitle("raspiFM touch")
         scroll = QScrollArea()
         
@@ -186,7 +188,7 @@ class MainWindow(QMainWindow):
 
     def __radio_starts_playing(self) -> None:
         RaspiFMQtProxy().spotify_stop()
-        #Spotify Icon is changed on Spotify stopped playing DBus message
+        #Spotify icon is changed on Spotify stopped playing DBus message
         self.__change_icon_radio_playing()
 
     def __radioclicked(self) -> None:
@@ -288,9 +290,47 @@ class MainWindow(QMainWindow):
         self.__mainwidget.setFixedSize(self.width(), self.height())
 
     def closeEvent(self, event) -> None:
+        #Closing the ui shall also shutdown all processes but nginx which is a system daemon, we don't have rights to shut it down
         if not self.__raspifm_service_not_available_controls_set:
             QMainWindow.closeEvent(self, event)
             widget = self.__mainwidget.layout().itemAt(1).widget()
             widget.close()
             widget.setParent(None)
             RaspiFMQtProxy().raspifm_shutdown()
+
+        ps_process = Popen(["ps", "-aux"], stdout=subprocess.PIPE, text=True)
+        prgrep_process = Popen(["grep", "-i", "gunicorn: master"], stdin=ps_process.stdout, stdout=subprocess.PIPE, text=True)
+        processes_matched = prgrep_process.communicate()[0]
+        process_matched_info = None
+
+        process_ids_to_end =[]
+        for process_matched in processes_matched.splitlines():
+            process_matched_info = process_matched.split(maxsplit=10)
+            if not "grep" in process_matched_info[10].lower():
+                print(process_matched_info)
+                process_ids_to_end.append(process_matched_info[1])
+        
+        ps_process = Popen(["ps", "-aux"], stdout=subprocess.PIPE, text=True)
+        prgrep_process = Popen(["grep", "-i", "spotifyd"], stdin=ps_process.stdout, stdout=subprocess.PIPE, text=True)
+        processes_matched = prgrep_process.communicate()[0]
+
+        for process_matched in processes_matched.splitlines():
+            process_matched_info = process_matched.split(maxsplit=10)
+            if not "grep" in process_matched_info[10].lower():
+                print(process_matched_info)
+                process_ids_to_end.append(process_matched_info[1])
+
+        for process_id in process_ids_to_end:
+            subprocess.run(["kill", "-SIGTERM", process_id])
+
+        print (process_ids_to_end)
+
+
+        #proc1 = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
+        #proc2 = subprocess.Popen(['grep', 'python'], stdin=proc1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #proc3 = subprocess.Popen(['awk', "'{print $2}'"], stdin=proc2.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #proc4 = subprocess.Popen(['xargs', 'kill'], stdin=proc3.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #proc1.stdout.close() # Allow proc1 to receive a SIGPIPE if proc2 exits.
+        #proc2.stdout.close() # Allow proc2 to receive a SIGPIPE if proc3 exits.
+        #proc3.stdout.close() # Allow proc3 to receive a SIGPIPE if proc4 exits.
+        #out, err = proc4.communicate()

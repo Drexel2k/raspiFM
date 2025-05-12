@@ -173,5 +173,4 @@ class DBusSpotifyMonitor:
 
     def shutdown(self) -> None:
         #only solution found to unblock the recv_until_filtered call
-        self.__dbus_connection.close()
         self.__dbus_connection.sock.shutdown(socket.SHUT_RDWR)
