@@ -57,7 +57,6 @@ class RaspiFMMessageManager:
                                                                                                 "radio_stop",
                                                                                                 "radio_setvolume",
                                                                                                 "settings_set_touch_startwith",
-                                                                                                "spotify_set_currentplaying",
                                                                                                 "spotify_set_isplaying",
                                                                                                 "raspifm_shutdown",
                                                                                                 "spotify_stop",
@@ -68,77 +67,27 @@ class RaspiFMMessageManager:
                                                                                                 "favorites_movelist",
                                                                                                 "favorites_move_station_in_list",
                                                                                                 "settings_changeproperty"]:
-                        #queries which require argument conversion
+
                         if raspifm_call.message[strings.message_string][strings.message_string] == "raspifm_shutdown":
                             run = False
                             VlcRadioMonitor().stop_meta_getter()
                             DBusSpotifyMonitor().shutdown()
                             socket_manager.shutdown()
-                        if raspifm_call.message[strings.message_string][strings.message_string] == "radio_play":
-                            func(None if raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"] is None else UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "radio_set_currentstation":
-                            func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_set_touch_startwith":
-                            func(StartWith(raspifm_call.message[strings.message_string][strings.args_string]["startwith"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "spotify_set_currentplaying":
-                            func(SpotifyInfo(**raspifm_call.message[strings.message_string][strings.args_string]["info"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] in ["favorites_add_stationtolist", "favorites_remove_stationfromlist"]:
-                            func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]), UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_changelistproperty":
-                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]),raspifm_call.message[strings.message_string][strings.args_string]["property"],raspifm_call.message[strings.message_string][strings.args_string]["value"])
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_deletelist":
-                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_movelist":
-                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]), raspifm_call.message[strings.message_string][strings.args_string]["direction"])
-                        elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_move_station_in_list":
-                            result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]), UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]), raspifm_call.message[strings.message_string][strings.args_string]["direction"])
                         else:
                             if raspifm_call.message[strings.message_string][strings.args_string] is None:
                                 func()
                             else:
-                                func(**raspifm_call.message[strings.message_string][strings.args_string])
+                                func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[strings.message_string][strings.message_string], raspifm_call.message[strings.message_string][strings.args_string]))
+
+                    #queries which send responses
                     else:
                         result_object = None
                         if raspifm_call.message[strings.message_string][strings.args_string] is None:
                             result_object = func()
                         else:
-                            #queries which require argument conversion
-                            if raspifm_call.message[strings.message_string][strings.message_string] == "stations_getstation":
-                                result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["station_uuid"]))
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_getlist":
-                                result_object = func(UUID(raspifm_call.message[strings.message_string][strings.args_string]["favlist_uuid"]))
-                            else:
-                                result_object = func(**raspifm_call.message[strings.message_string][strings.args_string])
+                            result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[strings.message_string][strings.message_string], raspifm_call.message[strings.message_string][strings.args_string]))
 
-                        result_json_serializable = None
-                        if not result_object is None:
-                            #queries which require result conversion
-                            if raspifm_call.message[strings.message_string][strings.message_string] in ["stations_getstation",
-                                                                                                        "favorites_getdefaultlist",
-                                                                                                        "favorites_get_any_station",
-                                                                                                        "radio_get_currentstation",
-                                                                                                        "spotify_currently_playing",
-                                                                                                        "favorites_getlist",
-                                                                                                        "favorites_addlist"]:
-                                result_json_serializable = result_object.to_dict()
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_touch_laststation":
-                                result_json_serializable = str(result_object)
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "favorites_getlists":
-                                result_json_serializable = [favorite_list.to_dict() for favorite_list in result_object]
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "settings_touch_startwith":
-                                result_json_serializable = result_object.value
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "countries_get":
-                                result_json_serializable = result_object.countrylist
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "languages_get":
-                                result_json_serializable = result_object.languagelist
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "stationapis_get":
-                                result_json_serializable = [radiostationapi.to_dict() for radiostationapi in result_object]
-                            elif raspifm_call.message[strings.message_string][strings.message_string] == "tags_get":
-                                result_json_serializable = result_object.taglist
-                            else:
-                                result_json_serializable = result_object
-
-                        raspifm_call.response = {strings.result_string:result_json_serializable}
+                        raspifm_call.response = {strings.result_string:None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[strings.message_string][strings.message_string], result_object)}
 
                         write_queue.put(raspifm_call)
                     
@@ -158,6 +107,68 @@ class RaspiFMMessageManager:
                     if raspifm_call.message[strings.message_string] == "spotify_change":
                         spotify_currently_playing = RaspiFM().spotify_currently_playing()
                         socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[strings.message_string], {"spotify_currently_playing": None if spotify_currently_playing is None else spotify_currently_playing.to_dict()})
+
+    @staticmethod
+    def deserialize_arguments(method_name:str, method_arguments:dict) -> dict:
+        deserialized_arguments = {}
+
+        if method_name == "radio_play":
+            deserialized_arguments["station_uuid"] = None if method_arguments["station_uuid"] is None else UUID(method_arguments["station_uuid"])
+        elif method_name in ["radio_set_currentstation", "stations_getstation"]:
+            deserialized_arguments["station_uuid"] = UUID(method_arguments["station_uuid"])
+        elif method_name == "settings_set_touch_startwith":
+            deserialized_arguments["startwith"] = StartWith(method_arguments["startwith"])
+        elif method_name in ["favorites_add_stationtolist", "favorites_remove_stationfromlist"]:
+            deserialized_arguments["station_uuid"] = UUID(method_arguments["station_uuid"])
+            deserialized_arguments["favlist_uuid"] = UUID(method_arguments["favlist_uuid"])
+        elif method_name == "favorites_changelistproperty":
+            deserialized_arguments["favlist_uuid"] = UUID(method_arguments["favlist_uuid"])
+            deserialized_arguments["property"] = method_arguments["property"]
+            deserialized_arguments["value"] = method_arguments["value"]
+        elif method_name in ["favorites_deletelist", "favorites_getlist"]:
+            deserialized_arguments["favlist_uuid"] = UUID(method_arguments["favlist_uuid"])
+        elif method_name == "favorites_movelist":
+            deserialized_arguments["favlist_uuid"] = UUID(method_arguments["favlist_uuid"])
+            deserialized_arguments["direction"] = method_arguments["direction"]
+        elif method_name == "favorites_move_station_in_list":
+            deserialized_arguments["favlist_uuid"] = UUID(method_arguments["favlist_uuid"])
+            deserialized_arguments["station_uuid"] = UUID(method_arguments["station_uuid"])
+            deserialized_arguments["direction"] = method_arguments["direction"]
+        else:
+            deserialized_arguments = method_arguments
+        
+        return deserialized_arguments
+    
+    @staticmethod
+    def serialize_result_object(method_name:str, result_object:dict) -> dict:
+        serialized_result_object = {}
+
+        if method_name in ["stations_getstation",
+                            "favorites_getdefaultlist",
+                            "favorites_get_any_station",
+                            "radio_get_currentstation",
+                            "spotify_currently_playing",
+                            "favorites_getlist",
+                            "favorites_addlist"]:
+            serialized_result_object = result_object.to_dict()
+        elif method_name == "settings_touch_laststation":
+            serialized_result_object = str(result_object)
+        elif method_name == "favorites_getlists":
+            serialized_result_object = [favorite_list.to_dict() for favorite_list in result_object]
+        elif method_name == "settings_touch_startwith":
+            serialized_result_object = result_object.value
+        elif method_name == "countries_get":
+            serialized_result_object = result_object.countrylist
+        elif method_name == "languages_get":
+            serialized_result_object = result_object.languagelist
+        elif method_name == "stationapis_get":
+            serialized_result_object = [radiostationapi.to_dict() for radiostationapi in result_object]
+        elif method_name == "tags_get":
+            serialized_result_object = result_object.taglist
+        else:
+            serialized_result_object = result_object
+        
+        return serialized_result_object
                                 
     def socket_closed(self, socket_address:str) -> None:
         if socket_address in self.__clients_with_spotify_update_subscriptions:

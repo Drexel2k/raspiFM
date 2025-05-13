@@ -1,5 +1,6 @@
 utf8_string = "utf-8"
-socketpath_string = "/tmp/raspifm_socket"
+core_socketpath_string = "/usr/bin/local/raspifm/raspifm_core.sock"
+web_socketpath_string = "unix:/usr/bin/local/raspifm/raspifm_web.sock"
 messageid_string = "messageid"
 message_string = "message"
 header_string = "header"

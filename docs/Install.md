@@ -43,13 +43,11 @@ Do a `sudo apt update` first.
 ## Setup Spotify Connect / spotifyd
 - 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 2. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`
-- 3. Set up daemon: Copy the file from [configs](/configs/spotifyd.service) to /etc/systemd/system: `sudo cp ~/raspifm_repo/configs/spotifyd.service /etc/systemd/user`
-- 4. Enable the daemon/autostart: `systemctl --user enable spotifyd.service`
-- 5. Allow the spotifyd daemon to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: `sudo cp ~/raspifm_repo/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`
+- 5. Allow the spotifyd to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: `sudo cp ~/raspifm_repo/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`
 - 6. Reboot
 
 ## Setup raspiFM
-- 1. Install gui libraries and nginx for web interface: `sudo apt install qt6-base-dev libqt6svg6-dev qt6-wayland nginx`
+- 1. Install gui libraries for touch ui and nginx for web ui: `sudo apt install qt6-base-dev libqt6svg6-dev qt6-wayland nginx`
 - 2. Create directory for raspiFM files and set permissions: `sudo mkdir -p /usr/bin/local/raspifm` and set permissions: `sudo chown raspifm:raspifm /usr/bin/local/raspifm`
 - 3. Add www-data user to raspifm group: `sudo usermod -a -G raspifm www-data`
 - 3. Copy the raspiFM files to the directory: `cp -r ~/raspifm_repo/src/. /usr/bin/local/raspifm`

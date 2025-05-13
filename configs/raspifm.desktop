@@ -1,10 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=raspiFM
-Exec=sh -c "sleep 5; cd /usr/bin/local/raspifm; /usr/bin/local/raspifm/.venv/bin/python3 -m gunicorn --timeout 120 --workers 1 --bind unix:/usr/bin/local/raspifm/raspifm.sock -m 007 app:app"
-
-# With logging:
-# sudo mkdir /var/log/raspifm
-# sudo chown raspifm:raspifm /var/log/raspifm
-# sudo apt install moreutils
-#Exec=sh -c "sleep 5; cd /usr/bin/local/raspifm; /usr/bin/local/raspifm/.venv/bin/python3 -m gunicorn --error-log /var/log/raspifm/gunicorn-error.log --access-logfile /var/log/raspifm/gunicorn-access.log --log-level debug --timeout 120 --workers 1 --bind unix:/usr/bin/local/raspifm/raspifm.sock -m 007 app:app 2>&1 | ts '[%Y-%m-%d %H:%M:%.S]' >> /var/log/raspifm/python.log"
+Exec=sh -c "python3 /usr/bin/local/raspifm/raspifm_run.py"

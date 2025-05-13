@@ -27,8 +27,8 @@ class SocketManager():
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
-        client_socket.connect(strings.socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.socketpath_string, read_queue)
+        client_socket.connect(strings.core_socketpath_string)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.core_socketpath_string, read_queue)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
@@ -59,7 +59,7 @@ class SocketManager():
                             strings.header_string:{strings.messageid_string:self.__get_messageid()}, 
                             strings.message_string:{ strings.message_string: query, strings.args_string:args}
                         } 
-        request = MessageResponse(strings.socketpath_string, request_dict, is_query)
+        request = MessageResponse(strings.core_socketpath_string, request_dict, is_query)
         self.__write_queue.put(request)
         if is_query:
             request.response_ready.wait()

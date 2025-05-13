@@ -2,7 +2,6 @@ import traceback
 
 from webui.run import app
 from flask import Response, make_response, render_template, request
-from uuid import UUID
 
 from common import utils
 from common import json

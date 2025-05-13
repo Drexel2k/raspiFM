@@ -14,7 +14,7 @@ server {
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/usr/bin/local/raspifm/raspifm.sock;
+        proxy_pass http://unix:/usr/bin/local/raspifm/raspifm_web.sock;
     }
 
     location /static {

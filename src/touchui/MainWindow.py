@@ -6,7 +6,6 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem, QLabel, QPushButton
-import setproctitle
 
 from common import strings
 from touchui.FavoritesWidget import FavoritesWidget
@@ -34,7 +33,6 @@ class MainWindow(QMainWindow):
         #if RaspiFMQtProxy().settings_runontouch():
         #    app.setOverrideCursor(Qt.CursorShape.BlankCursor)
         #    window.showFullScreen()
-        setproctitle.setproctitle("raspiFM touch")
         self.setWindowTitle("raspiFM touch")
         scroll = QScrollArea()
         

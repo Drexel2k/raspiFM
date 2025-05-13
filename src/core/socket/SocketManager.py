@@ -33,10 +33,10 @@ class SocketManager:
         self.__sockets_lock = Lock()
 
         raspifm_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
-        if os.path.exists(strings.socketpath_string):
-            os.remove(strings.socketpath_string)
+        if os.path.exists(strings.core_socketpath_string):
+            os.remove(strings.core_socketpath_string)
 
-        raspifm_socket.bind(strings.socketpath_string)
+        raspifm_socket.bind(strings.core_socketpath_string)
         raspifm_socket.listen()
         raspifm_socket.setblocking(False)
         self.__socket_selector.register(raspifm_socket, selectors.EVENT_READ, None)
