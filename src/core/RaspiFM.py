@@ -164,10 +164,10 @@ class RaspiFM:
         JsonSerializer().serialize_radiostations(self.__radiostations)
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def favorites_remove_stationfromlist(self, stationuuid:UUID, favlistuuid:UUID) -> None:
-        station = self.__radiostations.get_station(stationuuid)
+    def favorites_remove_stationfromlist(self, station_uuid:UUID, favlist_uuid:UUID) -> None:
+        station = self.__radiostations.get_station(station_uuid)
 
-        self.__favorites.get_list(favlistuuid).remove_station(station)
+        self.__favorites.get_list(favlist_uuid).remove_station(station)
         JsonSerializer().serialize_favorites(self.__favorites)
 
         self.stations_delete_station_if_not_used(station.uuid)

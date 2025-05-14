@@ -30,9 +30,11 @@ class MainWindow(QMainWindow):
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #print("Qt: v", QtCore.QT_VERSION_STR, "\tPyQt: v", QtCore.PYQT_VERSION_STR)
-        #if RaspiFMQtProxy().settings_runontouch():
-        #    app.setOverrideCursor(Qt.CursorShape.BlankCursor)
-        #    window.showFullScreen()
+
+        #otherwise resize event which accesses __mainwidget will fail
+        self.__mainwidget = None
+        self.resize(800, 480)   
+
         self.setWindowTitle("raspiFM touch")
         scroll = QScrollArea()
         
@@ -76,6 +78,10 @@ class MainWindow(QMainWindow):
                 info_layout_vertical.addStretch()
 
             return
+        
+        if RaspiFMQtProxy().settings_runontouch():
+            self.showFullScreen()
+            self.setCursor(Qt.CursorShape.BlankCursor)  
         
         if self.__raspifm_service_not_available_controls_set:
             #info_layout_vertical QVBoxLayout
@@ -285,7 +291,8 @@ class MainWindow(QMainWindow):
     
     def resizeEvent(self, event):
         QMainWindow.resizeEvent(self, event)
-        self.__mainwidget.setFixedSize(self.width(), self.height())
+        if not self.__mainwidget is None:
+            self.__mainwidget.setFixedSize(self.width(), self.height())
 
     def closeEvent(self, event) -> None:
         #Closing the ui shall also shutdown all processes but nginx which is a system daemon, we don't have rights to shut it down
@@ -305,7 +312,6 @@ class MainWindow(QMainWindow):
         for process_matched in processes_matched.splitlines():
             process_matched_info = process_matched.split(maxsplit=10)
             if not "grep" in process_matched_info[10].lower():
-                print(process_matched_info)
                 process_ids_to_end.append(process_matched_info[1])
         
         ps_process = Popen(["ps", "-aux"], stdout=subprocess.PIPE, text=True)
@@ -315,20 +321,7 @@ class MainWindow(QMainWindow):
         for process_matched in processes_matched.splitlines():
             process_matched_info = process_matched.split(maxsplit=10)
             if not "grep" in process_matched_info[10].lower():
-                print(process_matched_info)
                 process_ids_to_end.append(process_matched_info[1])
 
         for process_id in process_ids_to_end:
             subprocess.run(["kill", "-SIGTERM", process_id])
-
-        print (process_ids_to_end)
-
-
-        #proc1 = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
-        #proc2 = subprocess.Popen(['grep', 'python'], stdin=proc1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #proc3 = subprocess.Popen(['awk', "'{print $2}'"], stdin=proc2.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #proc4 = subprocess.Popen(['xargs', 'kill'], stdin=proc3.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #proc1.stdout.close() # Allow proc1 to receive a SIGPIPE if proc2 exits.
-        #proc2.stdout.close() # Allow proc2 to receive a SIGPIPE if proc3 exits.
-        #proc3.stdout.close() # Allow proc3 to receive a SIGPIPE if proc4 exits.
-        #out, err = proc4.communicate()
