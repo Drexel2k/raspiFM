@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from queue import Queue
 from threading import Thread
-from uuid import UUID
 
-from common import strings
+from common import socketstrings
 from common.socket.raspifm_client.SocketManager import SocketManager
 
 class RaspiFMProxy():
@@ -59,17 +58,17 @@ class RaspiFMProxy():
     
     def spotify_isplaying(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("spotify_isplaying", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_isplaying(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("radio_isplaying", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def favorites_getlists(self) -> tuple:
         result = self.__socket_manager.query_raspifm_core("favorites_getlists", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_play(self, station_uuid:str = None) -> None:
@@ -77,27 +76,27 @@ class RaspiFMProxy():
 
     def radio_get_currentstation(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("radio_get_currentstation", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def settings_touch_startwith(self) -> int:
         result = self.__socket_manager.query_raspifm_core("settings_touch_startwith", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def settings_touch_laststation(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("settings_touch_laststation", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def stations_getstation(self, station_uuid:str) -> dict:
         result = self.__socket_manager.query_raspifm_core("stations_getstation", {"station_uuid":station_uuid}, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_getvolume(self) -> int:
         result = self.__socket_manager.query_raspifm_core("radio_getvolume", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_set_currentstation(self, station_uuid:str) -> None:
@@ -105,22 +104,22 @@ class RaspiFMProxy():
     
     def settings_runontouch(self) -> bool:
         result = self.__socket_manager.query_raspifm_core("settings_runontouch", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_getmeta(self) -> str:
         result = self.__socket_manager.query_raspifm_core("radio_getmeta", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
 
     def favorites_getdefaultlist(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("favorites_getdefaultlist", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def favorites_get_any_station(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("favorites_get_any_station", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def radio_stop(self) -> None:
@@ -131,7 +130,7 @@ class RaspiFMProxy():
 
     def raspifm_getversion(self) -> str:
         result = self.__socket_manager.query_raspifm_core("raspifm_getversion", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def settings_set_touch_startwith (self, startwith:int) -> None:
@@ -139,7 +138,7 @@ class RaspiFMProxy():
 
     def spotify_currently_playing(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("spotify_currently_playing", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def spotify_stop(self) -> None:
@@ -150,32 +149,32 @@ class RaspiFMProxy():
 
     def http_get_urlbinary_content_as_base64(self, url:str) -> str:
         result = self.__socket_manager.query_raspifm_core("http_get_urlbinary_content_asb64", {"url":url}, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
 
     def countries_get(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("countries_get", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
 
     def languages_get(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("languages_get", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def settings_web_defaultcountry(self) -> str:
         result = self.__socket_manager.query_raspifm_core("settings_web_defaultcountry", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def settings_web_defaultlanguage(self) -> str:
         result = self.__socket_manager.query_raspifm_core("settings_web_defaultlanguage", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def favorites_getlist(self, favlist_uuid:str) -> dict:
         result = self.__socket_manager.query_raspifm_core("favorites_getlist", {"favlist_uuid":favlist_uuid}, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
 
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
@@ -188,12 +187,12 @@ class RaspiFMProxy():
                                                                                 "reverse":reverse,
                                                                                 "page":page},
                                                                                 True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def tags_get(self, filter:str=None):
         result = self.__socket_manager.query_raspifm_core("tags_get", {"filter":filter}, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def favorites_add_stationtolist(self, station_uuid:str, favlist_uuid:str) -> None:
@@ -204,7 +203,7 @@ class RaspiFMProxy():
 
     def favorites_addlist(self) -> dict:
         result = self.__socket_manager.query_raspifm_core("favorites_addlist", None, True)
-        result = result[strings.result_string]
+        result = result[socketstrings.result_string]
         return result
     
     def favorites_changelistproperty(self, favlist_uuid:str, property:str, value:str) -> None:

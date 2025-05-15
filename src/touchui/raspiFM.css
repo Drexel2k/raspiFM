@@ -9,6 +9,9 @@ QSlider {{
     }}
 QSlider::groove:horizontal {{
     height: 5px;
+/* Border-radius must be set here, otherwise handle sizes don't work
+   The setting makes no difference in other visual appearance. */
+    border-radius: 0px;
     }}
 QSlider::handle:horizontal {{
     height: 40px;

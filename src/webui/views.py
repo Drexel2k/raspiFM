@@ -178,7 +178,7 @@ def addfavoritelist() -> Response:
     try:
         favoritelist = RaspiFMProxy().favorites_addlist()
 
-        response = make_response(favoritelist["uuid"], 200)
+        response = make_response(json.serialize_to_string_or_bytes(favoritelist["uuid"]), 200)
         response.mimetype = "application/json"
         return response
     except BaseException as e:

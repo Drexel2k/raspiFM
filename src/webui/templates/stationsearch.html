@@ -98,7 +98,7 @@
         <label for="slfavorites" class="form-label mb-0 me-1 d-flex align-items-center"><small>favorite list for adding: </small></label>
         <select name="favorites" id="slfavorites" class="form-control max-width-12-sm d-inline">
           {% for favoritelist in favoritelists %}
-            <option {% if favoritelist.favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.favoritelist.uuid }}" >{{favoritelist.favoritelist.name}}</option>
+            <option {% if favoritelist.favoritelist==selected["favoritelist"] %}selected{% endif %} value="{{ favoritelist.favoritelist.uuid }}" >{{favoritelist.name}}</option>
           {% endfor %}
         </select>
       </div>

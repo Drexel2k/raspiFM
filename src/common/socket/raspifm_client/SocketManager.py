@@ -5,7 +5,7 @@ from selectors import DefaultSelector
 from queue import Queue
 
 from common.socket.SocketTransferManager import SocketTransferManager
-from common import strings
+from common import socketstrings
 from common.socket.MessageResponse import MessageResponse
 
 class SocketManager():
@@ -27,8 +27,8 @@ class SocketManager():
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
-        client_socket.connect(strings.core_socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, strings.core_socketpath_string, read_queue)
+        client_socket.connect(socketstrings.core_socketpath_string)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
@@ -56,10 +56,10 @@ class SocketManager():
     #main thread
     def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:
         request_dict =  { 
-                            strings.header_string:{strings.messageid_string:self.__get_messageid()}, 
-                            strings.message_string:{ strings.message_string: query, strings.args_string:args}
+                            socketstrings.header_string:{socketstrings.messageid_string:self.__get_messageid()}, 
+                            socketstrings.message_string:{ socketstrings.message_string: query, socketstrings.args_string:args}
                         } 
-        request = MessageResponse(strings.core_socketpath_string, request_dict, is_query)
+        request = MessageResponse(socketstrings.core_socketpath_string, request_dict, is_query)
         self.__write_queue.put(request)
         if is_query:
             request.response_ready.wait()
@@ -67,7 +67,7 @@ class SocketManager():
             if not request.transfer_exception is None:
                 raise request.transfer_exception
             
-            return request.response[strings.response_string]
+            return request.response[socketstrings.response_string]
         else:
             request.message_sent.wait()
             if not request.transfer_exception is None:

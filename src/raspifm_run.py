@@ -1,7 +1,7 @@
 import subprocess
 from subprocess import Popen
 
-from common import strings
+from common import socketstrings
 
 log = False
 if log:
@@ -18,7 +18,7 @@ if log:
     #gunicorn socket
     gunicorn_out_log = open("/var/log/raspifm/gunicorn_out.log", "w")
     gunicorn_err_log = open("/var/log/raspifm/gunicorn_err.log", "w")
-    Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--name", "raspifm web", "--error-log", "/var/log/raspifm/gunicorn_error_internal.log", "--access-logfile", "/var/log/raspifm/gunicorn_access.log", "--log-level", "debug", "--timeout", "120", "--workers", "1", "--bind", strings.web_socketpath_string, "-m", "007", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=gunicorn_out_log, stderr=gunicorn_err_log)
+    Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--name", "raspifm web", "--error-log", "/var/log/raspifm/gunicorn_error_internal.log", "--access-logfile", "/var/log/raspifm/gunicorn_access.log", "--log-level", "debug", "--timeout", "120", "--workers", "1", "--bind", socketstrings.web_socketpath_string, "-m", "007", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=gunicorn_out_log, stderr=gunicorn_err_log)
     #touchui
     touchui_out_log = open("/var/log/raspifm/touchui_out.log", "w")
     touchui_err_log = open("/var/log/raspifm/touchui_err.log", "w")
@@ -29,6 +29,6 @@ else:
     #spotifyd
     Popen(["/usr/bin/spotifyd"], cwd="/usr/bin/local/raspifm")
     #gunicorn socket
-    Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--name", "raspifm web", "--timeout", "120", "--workers", "1", "--bind", strings.web_socketpath_string, "-m", "007", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--name", "raspifm web", "--timeout", "120", "--workers", "1", "--bind", socketstrings.web_socketpath_string, "-m", "007", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     #touchui
     Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "touchui_run"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

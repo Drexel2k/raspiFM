@@ -7,7 +7,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem, QLabel, QPushButton
 
-from common import strings
+from common import socketstrings
 from touchui.FavoritesWidget import FavoritesWidget
 from touchui.RadioWidget import RadioWidget
 from touchui.SpotifyWidget import SpotifyWidget
@@ -159,13 +159,13 @@ class MainWindow(QMainWindow):
         self.__init_controls()
 
     def __core_notification_available(self, notification:dict):
-        if notification[strings.message_string] == "radio_change":
+        if notification[socketstrings.message_string] == "radio_change":
             if isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget):
-                self.__mainwidget.layout().itemAt(1).widget().radio_update(notification[strings.args_string]["radio_currentplaying"])
+                self.__mainwidget.layout().itemAt(1).widget().radio_update(notification[socketstrings.args_string]["radio_currentplaying"])
         
-        if notification[strings.message_string] == "spotify_change":
+        if notification[socketstrings.message_string] == "spotify_change":
             #Spotify stopped playing
-            if notification[strings.args_string]["spotify_currently_playing"] is None:
+            if notification[socketstrings.args_string]["spotify_currently_playing"] is None:
                 self.__spotify_playing = False
                 self.__change_icons_spotify_stopped()
                 if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
@@ -177,7 +177,7 @@ class MainWindow(QMainWindow):
 
                 #If spotify widget is active simply update the information.
                 if isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
-                    self.__mainwidget.layout().itemAt(1).widget().spotify_update(notification[strings.args_string]["spotify_currently_playing"])
+                    self.__mainwidget.layout().itemAt(1).widget().spotify_update(notification[socketstrings.args_string]["spotify_currently_playing"])
                 else:
                     #If spotify playback was jsut startet switch to spotify widget. If Spotify was already playing
                     #the user switched manually to another widget before, so leave this widget as it is.
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
                         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
                         self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
                         self.__activebutton = self.__spotifybutton
-                        spotifywidget = SpotifyWidget(notification[strings.args_string]["spotify_currently_playing"])
+                        spotifywidget = SpotifyWidget(notification[socketstrings.args_string]["spotify_currently_playing"])
                         spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                         widgetitem = self.__mainwidget.layout().replaceWidget(self.__mainwidget.layout().itemAt(1).widget(), spotifywidget)
                         self.__closewidgetitem(widgetitem)                    

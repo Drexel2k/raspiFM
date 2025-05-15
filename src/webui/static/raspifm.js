@@ -151,7 +151,7 @@ function initFavListMgmt()
                     $('#tblfavoritelists tr:last .favlistmovedown').prop("disabled", false);
                     $('#tblfavoritelists tbody').append(`
                     <tr id="favlistrow-${data}">
-                        <td class="align-middle">{no name}</td>
+                        <td class="align-middle">List w/o name</td>
                         <td class="align-middle">
                             <button class="favlistmoveup btn btn-primary btn-sm mb-2" data-changetype="Up" data-favlistuuid="${data}">
                                 <img src="/static/arrow-up.svg" width="15em" height="15em" />
@@ -175,7 +175,7 @@ function initFavListMgmt()
                 },
                 error:function(xhr)
                 {
-                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    $('#errortoastContent').text(`Something2 went wrong, the server responded: ${xhr.responseText}.`);
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
                     errortoast.show();
                 }

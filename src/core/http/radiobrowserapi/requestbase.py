@@ -2,7 +2,7 @@ import socket
 from urllib import request
 import random
 from common import json
-from common import strings
+from common import socketstrings
 from common.json import UUIDEncoder
 
 version:str
@@ -31,7 +31,7 @@ def get_random_radiobrowser_base_url() -> str:
 def get_radiobrowser_post_request_data(endpoint:str, params:dict) -> bytes:
     paramsencoded = None
     if not params is None:
-        paramsencoded = json.serialize_to_string_or_bytes(params, encoding=strings.utf8_string, encoder=UUIDEncoder)
+        paramsencoded = json.serialize_to_string_or_bytes(params, encoding=socketstrings.utf8_string, encoder=UUIDEncoder)
 
     req = request.Request(get_random_radiobrowser_base_url() + endpoint, paramsencoded)
 

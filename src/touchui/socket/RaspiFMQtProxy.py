@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PyQt6.QtCore import pyqtSignal, pyqtSlot, QObject
 
-from common import strings
+from common import socketstrings
 from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
 from touchui.QObjectSingletonMeta import QObjectSingletonMeta
 
@@ -22,7 +22,7 @@ class RaspiFMQtProxy(QObject, metaclass=QObjectSingletonMeta):
     #but signals and slots are thread safe
     @pyqtSlot(dict)
     def __core_notification_available(self, notification:dict):
-        self.core_notification_available.emit(notification.message[strings.message_string])
+        self.core_notification_available.emit(notification.message[socketstrings.message_string])
     
     def spotify_isplaying(self) -> bool:
         return RaspiFMProxy().spotify_isplaying()

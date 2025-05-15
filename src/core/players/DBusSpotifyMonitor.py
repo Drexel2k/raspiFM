@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import deque
-import os
 from queue import Queue
 import socket
 from threading import Thread
@@ -105,6 +104,9 @@ class DBusSpotifyMonitor:
 
             if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
                 #spotify state changed
+                if not (dbusstrings.spotifydpropertyplaybackstatus in signal_message.body[1] or dbusstrings.spotifydpropertymetadata in signal_message.body[1]):
+                    continue
+
                 current_meta = self.__get_meta_from_change_properties(signal_message.body[1])
 
             if signal_message.header.fields[HeaderFields.path] == "/org/freedesktop/DBus":

@@ -5,7 +5,7 @@ from threading import Lock
 
 from common.socket.MessageResponse import MessageResponse
 from common import json
-from common import strings
+from common import socketstrings
 
 class SocketTransferManager:
     __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback"]
@@ -84,44 +84,44 @@ class SocketTransferManager:
     #reader thread
     def __process_header(self):
         if len(self.__receive_buffer) >= self.__current_message_header_length:
-            self.__current_message_header = json.deserialize_from_string_or_bytes(self.__receive_buffer[:self.__current_message_header_length], strings.utf8_string)
+            self.__current_message_header = json.deserialize_from_string_or_bytes(self.__receive_buffer[:self.__current_message_header_length], socketstrings.utf8_string)
             self.__receive_buffer = self.__receive_buffer[self.__current_message_header_length:]
             for requestheader in (
-                strings.contentencoding_string,
-                strings.contentlength_string
+                socketstrings.contentencoding_string,
+                socketstrings.contentlength_string
             ):
                 if requestheader not in self.__current_message_header:
                     raise ValueError(f"Missing required header '{requestheader}'.")
                 
-            if strings.messageid_string not in self.__current_message_header and strings.responseto_string not in self.__current_message_header:
+            if socketstrings.messageid_string not in self.__current_message_header and socketstrings.responseto_string not in self.__current_message_header:
                 raise ValueError(f"Missing required header 'messageid' or 'responseto'.")
 
     #reader thread
     def __process_message(self):
-        message_length = self.__current_message_header[strings.contentlength_string]
+        message_length = self.__current_message_header[socketstrings.contentlength_string]
         if not len(self.__receive_buffer) >= message_length:
             return
         data = self.__receive_buffer[:message_length]
         self.__receive_buffer = self.__receive_buffer[message_length:]
         header = self.__current_message_header
-        message = json.deserialize_from_string_or_bytes(data, strings.utf8_string)
+        message = json.deserialize_from_string_or_bytes(data, socketstrings.utf8_string)
         
         self.__current_message_header_length = 0
         self.__current_message_header = None
         
         message_response = None
-        if strings.messageid_string in header:
+        if socketstrings.messageid_string in header:
             message_response = MessageResponse(self.__socket_address, 
                                                     {
-                                                        strings.header_string: header,
-                                                        strings.message_string: message
+                                                        socketstrings.header_string: header,
+                                                        socketstrings.message_string: message
                                                     })
         else:
             with self.__requests_without_response_lock:
-                message_response = self.__requests_without_response.pop(header[strings.responseto_string])
+                message_response = self.__requests_without_response.pop(header[socketstrings.responseto_string])
                 message_response.response = {
-                                                strings.header_string: header,
-                                                strings.response_string: message
+                                                socketstrings.header_string: header,
+                                                socketstrings.response_string: message
                                             }
                 
                 message_response.response_ready.set()
@@ -135,29 +135,29 @@ class SocketTransferManager:
         content_bytes = b""
         header = {} 
         if message_response.response is None:
-            content_bytes = json.serialize_to_string_or_bytes(message_response.message[strings.message_string], strings.utf8_string)
+            content_bytes = json.serialize_to_string_or_bytes(message_response.message[socketstrings.message_string], socketstrings.utf8_string)
             header = {
-                        strings.messageid_string:message_response.message[strings.header_string][strings.messageid_string],
-                        strings.contentencoding_string: strings.utf8_string,
-                        strings.contentlength_string: len(content_bytes),
+                        socketstrings.messageid_string:message_response.message[socketstrings.header_string][socketstrings.messageid_string],
+                        socketstrings.contentencoding_string: socketstrings.utf8_string,
+                        socketstrings.contentlength_string: len(content_bytes),
                     }
 
-            message_response.message[strings.header_string] = header 
+            message_response.message[socketstrings.header_string] = header 
 
             if message_response.is_query:
                 with self.__requests_without_response_lock:
-                    self.__requests_without_response[message_response.message[strings.header_string][strings.messageid_string]] = message_response
+                    self.__requests_without_response[message_response.message[socketstrings.header_string][socketstrings.messageid_string]] = message_response
         else:
-            content_bytes = json.serialize_to_string_or_bytes(message_response.response, strings.utf8_string)
+            content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
             header = {
-                        strings.responseto_string:message_response.message[strings.header_string][strings.messageid_string],
-                        strings.contentencoding_string: strings.utf8_string,
-                        strings.contentlength_string: len(content_bytes),
+                        socketstrings.responseto_string:message_response.message[socketstrings.header_string][socketstrings.messageid_string],
+                        socketstrings.contentencoding_string: socketstrings.utf8_string,
+                        socketstrings.contentlength_string: len(content_bytes),
                     }
             
-            message_response.response[strings.header_string] = header
+            message_response.response[socketstrings.header_string] = header
             
-        header_bytes = json.serialize_to_string_or_bytes(header, strings.utf8_string)
+        header_bytes = json.serialize_to_string_or_bytes(header, socketstrings.utf8_string)
         message_header = struct.pack(">H", len(header_bytes))
         message_bytes = message_header + header_bytes + content_bytes
 

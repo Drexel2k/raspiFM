@@ -180,14 +180,14 @@ class RaspiFM:
         JsonSerializer().serialize_favorites(self.__favorites)
         return favoritelist
     
-    def favorites_deletelist(self, favlist__uuid:UUID) -> None:
-        favlist = self.__favorites.get_list(favlist__uuid)
+    def favorites_deletelist(self, favlist_uuid:UUID) -> None:
+        favlist = self.__favorites.get_list(favlist_uuid)
         station_uuids = []
         if not favlist is None:
             for stationentry in favlist.stations:
                 station_uuids.append(stationentry.radiostation.uuid)
 
-        self.__favorites.delete_favoritelist(favlist__uuid)
+        self.__favorites.delete_favoritelist(favlist_uuid)
         JsonSerializer().serialize_favorites(self.__favorites)
 
         for station_uuid in station_uuids:

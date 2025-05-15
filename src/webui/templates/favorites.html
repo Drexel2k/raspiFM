@@ -46,7 +46,7 @@ Favorites
           <tbody class="text-break table-group-divider">
             {% for favoritelistinternal in favoritelists %}
             <tr id="favlistrow-{{favoritelistinternal.favoritelist.uuid|string}}"{% if favoritelistinternal.favoritelist.uuid==favoritelist.uuid %} class="favlistselected table-bg-raspicolor"{% endif %}>
-              <td class="align-middle">{{favoritelistinternal.favoritelist["name"]}}</td>
+              <td class="align-middle">{{favoritelistinternal.name}}</td>
               <td class="align-middle">
                 <button class="favlistmoveup btn btn-primary btn-sm mb-2" data-changetype="Up" data-favlistuuid="{{favoritelistinternal.favoritelist.uuid|string}}"{% if loop.index0==0 %} disabled{% endif %}>
                   <img src="{{url_for("static", filename="arrow-up.svg")}}" width="15em" height="15em" />
