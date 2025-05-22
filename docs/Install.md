@@ -38,7 +38,7 @@ Do a `sudo apt update` first.
 ## Download the repository from github
 - 1. Create a new directory for the repository: `mkdir ~/raspifm_repo` and switch to the directory: `cd ~/raspifm_repo`.
 - 2. Clone the repository: `git clone https://github.com/Drexel2k/raspiFM .`
-- 3. If you do not want to use the latest commit, but the latest release, look up the latest release tag: https://github.com/Drexel2k/raspiFM/releases or https://github.com/Drexel2k/raspiFM/tags and do: `git checkout tags/v1.0`
+- 3. If you do not want to use the latest commit, but the latest release, look up the latest release tag: https://github.com/Drexel2k/raspiFM/releases or https://github.com/Drexel2k/raspiFM/tags and do: `git checkout tags/v1.0` e.g.
 
 ## Setup Spotify Connect / spotifyd
 - 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
@@ -64,3 +64,16 @@ Do a `sudo apt update` first.
   - Copy the desktop file to the autostart directory: `cp ~/raspifm_repo/configs/raspifm.desktop ~/.config/autostart`
 
   Reboot.
+
+  ## Update raspiFM
+- 1. Update apt libraries, `sudo apt update`, `sudo apt full-upgrade`, this will update everything installed on the Raspberry via apt incl. the Raspberry firmware/OS.
+- 2. Update raspiFM:
+  - Remove existing files: `find ~/raspifm_repo/ -mindepth 1 -delete`, `find /usr/bin/local/raspifm/ -mindepth 1 -delete`
+  - Switch to repo directory `cd ~/raspifm_repo`, clone the repository `git clone https://github.com/Drexel2k/raspiFM .`. If you do not want to use the latest commit, but the latest release, look up the latest release tag: https://github.com/Drexel2k/raspiFM/releases or https://github.com/Drexel2k/raspiFM/tags and do: `git checkout tags/v1.0` e.g.
+  - Copy the raspiFM files to the directory: `cp -r ~/raspifm_repo/src/. /usr/bin/local/raspifm`
+  - Setup python environment/dependencies:
+    - `python3 -m venv /usr/bin/local/raspifm/.venv`
+    - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install -r ~/raspifm_repo/piprequirements.txt`
+    - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.8.1-cp39-abi3-manylinux_2_28_aarch64.whl`
+  - Copy/overwrite spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
+  - If there are config changes, also refresh the config files: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`, `sudo cp ~/raspifm_repo/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`, `sudo cp ~/raspifm_repo/configs/raspifm.nginx /etc/nginx/sites-available/raspifm`, `cp ~/raspifm_repo/configs/raspifm.desktop ~/.config/autostart`
