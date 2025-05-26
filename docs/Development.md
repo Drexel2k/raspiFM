@@ -23,9 +23,10 @@ Do a `sudo apt update` first.
   - a) `sudo apt install python3-pyqt6`
   - b) Further steps follow on stepp 12
   - c) Install further libs needed on Ubuntu `sudo apt install mesa-common-dev`
-    - On Ubuntu install Qt with the desired version with the Qt Online Installer (https://www.qt.io/download-qt-installer-oss), currently tested and used in the delivered libs is v6.8.3 (LTS). - On Raspberry Pi newer Qt versions from the Online installer doesn't work, because they were built on Ubuntu with a newer glibc version as on Raspberry Pi OS. So we have also to build Qt from the source, here with version 6.8.3 (LTS) and wayland support only e.g.:
+    - On Ubuntu install Qt with the desired version with the Qt Online Installer (https://www.qt.io/download-qt-installer-oss), currently tested and used in the delivered libs is v6.8.3 (LTS).
+    - On Raspberry Pi newer Qt versions from the Online installer doesn't work, because they were built on Ubuntu with a newer glibc version as on Raspberry Pi OS. So we have also to build Qt from the source, here with version 6.8.3 (LTS) and wayland support only e.g.:
       - Install dependencies (not tested if really all are needed/are not available/installed with other previous packages) `sudo apt install cmake libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev libgles2-mesa-dev libgbm-dev libdrm-dev libvulkan-dev vulkan-tools` 
-      -Install wayland libs `sudo apt install libwayland-dev libwayland-egl1-mesa libwayland-server0`
+      - Install wayland libs `sudo apt install libwayland-dev libwayland-egl1-mesa libwayland-server0`
       - Download and extract https://download.qt.io/official_releases/qt/6.8/6.8.3/submodules/qtbase-everywhere-src-6.8.3.tar.xz, `tar -xf qtbase-everywhere-src-6.8.3.tar.xz`
       - Switch to the directory where the file is extracted, make a directory for the build inside, switch into the build directory `cd /path/to/qtbase-extract`, `mkdir ./build`, `cd ./build`
       - Build: `cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/raspifm/Qt/6.8.3-aarch64 -DQT_FEATURE_opengles2=ON -DQT_FEATURE_opengles3=ON -DQT_FEATURE_kms=ON -DQT_AVOID_CMAKE_ARCHIVING_API=ON ..`, DCMAKE_INSTALL_PREFIX parameter is where the build is installed in the next step, then `cmake --build . --parallel 4`

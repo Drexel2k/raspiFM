@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from queue import Queue
 from threading import Thread
+import traceback
 from uuid import UUID
 
-from common import socketstrings
+from common import socketstrings, utils
 from common.socket.MessageResponse import MessageResponse
 from core.RaspiFM import RaspiFM
 from core.RaspiFMMessage import RaspiFMMessage
@@ -15,9 +16,10 @@ from core.players.SpotifyInfo import SpotifyInfo
 from core.socket.SocketManager import SocketManager
 
 class RaspiFMMessageManager:
-    __slots__ = ["__clients_with_spotify_update_subscriptions"]
+    __slots__ = ["__clients_with_spotify_update_subscriptions", "__socket_manager"]
     __instance:RaspiFMMessageManager = None
     __clients_with_spotify_update_subscriptions:list
+    __socket_manager:SocketManager
 
     def __new__(cls):
         if cls.__instance is None:
@@ -26,88 +28,116 @@ class RaspiFMMessageManager:
         return cls.__instance
     
     def __init(self):
+        self.__socket_manager = None
         self.__clients_with_spotify_update_subscriptions = []
 
     def handle_messages(self, raspifm:RaspiFM, raspifm_call_queue:Queue) -> None:
-        write_queue = Queue()
-        socket_manager = SocketManager(raspifm_call_queue, write_queue, self.socket_closed)
-        server_socket_read_thread = Thread(target=socket_manager.read)
-        server_socket_read_thread.start()
+        try:
+            write_queue = Queue()
+            self.__socket_manager = SocketManager(raspifm_call_queue, raspifm_call_queue, write_queue, self.socket_closed)
+            server_socket_read_thread = Thread(target=self.__socket_manager.read)
+            server_socket_read_thread.start()
 
-        socket_write_thread = Thread(target=socket_manager.write)
-        socket_write_thread.start()
+            socket_write_thread = Thread(target=self.__socket_manager.write)
+            socket_write_thread.start()
 
-        run = True
-        while run:
-            raspifm_call = raspifm_call_queue.get()
-            if isinstance(raspifm_call, MessageResponse):
-                #the server expects only queries and no reponses
-                #in the read queue as it doesn't send any queries
-                #which expect a response.
-                if raspifm_call.response is None:
-                    if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "players_status_subscribe":
-                        self.__clients_with_spotify_update_subscriptions.append(raspifm_call.socket_address)
-                        continue
+            run = True
+            while run:
+                raspifm_call = raspifm_call_queue.get()
+                if isinstance(raspifm_call, MessageResponse):
+                    #the server expects only queries and no reponses
+                    #in the read queue as it doesn't send any queries
+                    #which expect a response.
+                    if raspifm_call.response is None:
+                        #special calls which are not addressed to raspiFM core
+                        if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] in ["players_status_subscribe",
+                                                                                                                "raspifm_shutdown"]:
+                            if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "players_status_subscribe":
+                                self.__clients_with_spotify_update_subscriptions.append(raspifm_call.socket_address)
 
-                    func = getattr(raspifm, raspifm_call.message[socketstrings.message_string][socketstrings.message_string])
-
-                    #queries which don't send responses
-                    if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] in ["radio_play",
-                                                                                                "radio_set_currentstation",
-                                                                                                "radio_stop",
-                                                                                                "radio_setvolume",
-                                                                                                "settings_set_touch_startwith",
-                                                                                                "spotify_set_isplaying",
-                                                                                                "raspifm_shutdown",
-                                                                                                "spotify_stop",
-                                                                                                "favorites_add_stationtolist",
-                                                                                                "favorites_remove_stationfromlist",
-                                                                                                "favorites_changelistproperty",
-                                                                                                "favorites_deletelist",
-                                                                                                "favorites_movelist",
-                                                                                                "favorites_move_station_in_list",
-                                                                                                "settings_changeproperty"]:
-
-                        if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "raspifm_shutdown":
-                            run = False
-                            VlcRadioMonitor().stop_meta_getter()
-                            DBusSpotifyMonitor().shutdown()
-                            socket_manager.shutdown()
+                            if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "raspifm_shutdown":
+                                run = False
+                                self.__shutdown_all()
                         else:
-                            if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
-                                func()
+                            func = getattr(raspifm, raspifm_call.message[socketstrings.message_string][socketstrings.message_string])
+
+                            #queries which don't send responses
+                            if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] in ["radio_play",
+                                                                                                        "radio_set_currentstation",
+                                                                                                        "radio_stop",
+                                                                                                        "radio_setvolume",
+                                                                                                        "settings_set_touch_startwith",
+                                                                                                        "spotify_set_isplaying",
+                                                                                                        "raspifm_shutdown",
+                                                                                                        "spotify_stop",
+                                                                                                        "favorites_add_stationtolist",
+                                                                                                        "favorites_remove_stationfromlist",
+                                                                                                        "favorites_changelistproperty",
+                                                                                                        "favorites_deletelist",
+                                                                                                        "favorites_movelist",
+                                                                                                        "favorites_move_station_in_list",
+                                                                                                        "settings_changeproperty"]:
+
+                                if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
+                                    func()
+                                else:
+                                    func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
+
+                            #queries which send responses
                             else:
-                                func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
+                                result_object = None
 
-                    #queries which send responses
-                    else:
-                        result_object = None
-                        if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
-                            result_object = func()
-                        else:
-                            result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
+                                if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
+                                    result_object = func()
+                                else:
+                                    result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
 
-                        raspifm_call.response = {socketstrings.result_string:None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
+                                raspifm_call.response = {socketstrings.result_string:None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
 
-                        write_queue.put(raspifm_call)
-                    
-            #not every client needs radio players updates,
-            #e.g. the web client which is only for favorites management doesn't nee these updates.
-            if  isinstance(raspifm_call, RaspiFMMessage):
-                if raspifm_call.message[socketstrings.message_string] == "spotify_change":
-                    func = getattr(raspifm, raspifm_call.message[socketstrings.message_string])
-                    if raspifm_call.message[socketstrings.args_string]["spotify_currently_playing"] is None:
-                        func(None)
-                    else:
-                        func(SpotifyInfo(**raspifm_call.message[socketstrings.args_string]["spotify_currently_playing"]))
-
-                for client_socket_address in self.__clients_with_spotify_update_subscriptions:
-                    if raspifm_call.message[socketstrings.message_string] == "radio_change":
-                        socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[socketstrings.message_string], raspifm_call.message[socketstrings.args_string])
+                                write_queue.put(raspifm_call)
+                        
+                if  isinstance(raspifm_call, RaspiFMMessage):
                     if raspifm_call.message[socketstrings.message_string] == "spotify_change":
-                        spotify_currently_playing = RaspiFM().spotify_currently_playing()
-                        socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[socketstrings.message_string], {"spotify_currently_playing": None if spotify_currently_playing is None else spotify_currently_playing.to_dict()})
+                        func = getattr(raspifm, raspifm_call.message[socketstrings.message_string])
+                        #actually, only the isplaying information must be saved here, as the only location where
+                        #currentlyplaying info is needed is a few lines later: spotify_currently_playing = RaspiFM().spotify_currently_playing()
+                        #todo: maybe change it in the future
+                        if raspifm_call.message[socketstrings.args_string]["spotify_currently_playing"] is None:
+                            func(None)
+                        else:
+                            func(SpotifyInfo(**raspifm_call.message[socketstrings.args_string]["spotify_currently_playing"]))
 
+                        #not every client needs radio players updates,
+                        #e.g. the web client which is only for favorites management doesn't nee these updates.
+                        for client_socket_address in self.__clients_with_spotify_update_subscriptions:
+                            spotify_currently_playing = RaspiFM().spotify_currently_playing()
+                            self.__socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[socketstrings.message_string], {"spotify_currently_playing": None if spotify_currently_playing is None else spotify_currently_playing.to_dict()})
+
+                    if raspifm_call.message[socketstrings.message_string] == "radio_change":
+                        #not every client needs radio players updates,
+                        #e.g. the web client which is only for favorites management doesn't nee these updates.
+                        for client_socket_address in self.__clients_with_spotify_update_subscriptions:
+                            self.__socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[socketstrings.message_string], raspifm_call.message[socketstrings.args_string])
+
+                    if raspifm_call.message[socketstrings.message_string] == "shutdown":
+                        run = False
+                        self.__shutdown_all(raspifm_call.message[socketstrings.args_string]["reason"])
+
+
+        except:
+            self.__shutdown_all(traceback.format_exc())
+
+    def __shutdown_all(self, reason:str) -> None:
+        try:
+            VlcRadioMonitor().stop_meta_getter()
+            DBusSpotifyMonitor().shutdown()
+            self.__socket_manager.shutdown()
+
+            if not utils.str_isnullorwhitespace(reason):
+                print(reason)
+        except:
+            print(traceback.format_exc())
+        
     @staticmethod
     def deserialize_arguments(method_name:str, method_arguments:dict) -> dict:
         deserialized_arguments = {}

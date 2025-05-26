@@ -5,14 +5,16 @@ from socket import socket
 from selectors import DefaultSelector
 from queue import Queue
 from threading import Lock
+import traceback
 
 from common.socket.MessageResponse import MessageResponse
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import socketstrings
+from core.RaspiFMMessage import RaspiFMMessage
 
 class SocketManager:
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets", "__socket_closed_callback", "__messageid", "__run_selector", "__sockets_lock"]
+    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets", "__socket_closed_callback", "__messageid", "__run_selector", "__sockets_lock", "__message_queue"]
     __socket_selector:DefaultSelector
     __read_queue:Queue
     __write_queue:Queue
@@ -21,16 +23,18 @@ class SocketManager:
     __messageid:int
     __run_selector:bool
     __sockets_lock:Lock
+    __message_queue:Queue
 
-    def __init__(self, read_queue:Queue, response_queue:Queue, socket_closed_callback:callable=None):
+    def __init__(self, message_queue:Queue, read_queue:Queue, response_queue:Queue, socket_closed_callback:callable=None):
         self.__socket_selector = DefaultSelector()
-        self.__run_selector = True
         self.__read_queue = read_queue
         self.__write_queue = response_queue
         self.__client_sockets = {}
         self.__socket_closed_callback = socket_closed_callback
         self.__messageid = 0
+        self.__run_selector = True
         self.__sockets_lock = Lock()
+        self.__message_queue = message_queue
 
         raspifm_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         if os.path.exists(socketstrings.core_socketpath_string):
@@ -55,28 +59,42 @@ class SocketManager:
             self.__socket_selector.register(client_socket, selectors.EVENT_READ, socket_transfermanager)
 
     def read(self) -> None:
-        while self.__run_selector:
-            #No other possibility to get the selector out of the block, even TemporaryFile doesn't work
-            events = self.__socket_selector.select(1)
-            for event in events:
-                if event[0].data is None:
-                    self.__create_client_socket(event[0].fileobj)
-                else:
-                    socket_transfermanager = event[0].data
-                    socket_transfermanager.read()
+        try:
+            while self.__run_selector:
+                #No other possibility to get the selector out of the block, even TemporaryFile doesn't work
+                events = self.__socket_selector.select(1)
+                for event in events:
+                    if event[0].data is None:
+                        self.__create_client_socket(event[0].fileobj)
+                    else:
+                        socket_transfermanager = event[0].data
+                        socket_transfermanager.read()
+        except:
+            self.__run_selector = False
+            self.__message_queue.put(RaspiFMMessage({
+                                                        "message":"shutdown",
+                                                        "args":{
+                                                                "reason":traceback.format_exc()}}))
 
     #writer thread
     def write(self) -> None:
-        run = True
-        while run:
-            queue_item = self.__write_queue.get()
-            if isinstance(queue_item, str):
-                #Python 3.12 doesn't support Queue.shutdown yet()
-                if queue_item == "shutdown":
-                    run=False
-                    continue
+        try:
+            run = True
+            while run:
+                queue_item = self.__write_queue.get()
+                if isinstance(queue_item, str):
+                    #Python 3.12 doesn't support Queue.shutdown yet()
+                    if queue_item == "shutdown":
+                        run=False
+                        continue
 
-            self.__client_sockets[queue_item.socket_address].send(queue_item)
+                self.__client_sockets[queue_item.socket_address].send(queue_item)
+        except:
+            run=False
+            self.__message_queue.put(RaspiFMMessage({
+                                                        "message":"shutdown",
+                                                        "args":{
+                                                                "reason":traceback.format_exc()}}))
 
     #main thread
     def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> None:

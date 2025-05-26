@@ -4,6 +4,7 @@ from collections import deque
 from queue import Queue
 import socket
 from threading import Thread
+import traceback
 from jeepney import DBusAddress, new_method_call, MatchRule, message_bus, HeaderFields
 from jeepney.io.blocking import Proxy, DBusConnection
 from jeepney.io.common import FilterHandle
@@ -34,6 +35,8 @@ class DBusSpotifyMonitor:
     
     def __init(self, message_queue:Queue):
         self.__message_queue = message_queue
+        self.__dbus_spotify_filter = None
+
         self.__initializespotify()
 
     def monitor_dbus(self):
@@ -89,52 +92,61 @@ class DBusSpotifyMonitor:
             self.__spotify_service_presence_change()
 
     def __monitor_internal(self):
-        previous_meta = None
-        run = True
-        while run:
-            current_meta = None
-            signal_message = None
-            try:
-                signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
-            #only solution found to unblock the recv_until_filtered call
-            except ConnectionResetError as e:
-                if e.errno == 104:
-                    run = False
-                    continue
+        try:
+            previous_meta = None
+            run = True
+            while run:
+                current_meta = None
+                signal_message = None
+                try:
+                    signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
+                #only solution found to unblock the recv_until_filtered call
+                except ConnectionResetError as e:
+                    if e.errno == 104:
+                        run = False
+                        continue
 
-            if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
-                #spotify state changed
-                if not (dbusstrings.spotifydpropertyplaybackstatus in signal_message.body[1] or dbusstrings.spotifydpropertymetadata in signal_message.body[1]):
-                    continue
+                if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
+                    #spotify state changed
+                    if not (dbusstrings.spotifydpropertyplaybackstatus in signal_message.body[1] or dbusstrings.spotifydpropertymetadata in signal_message.body[1]):
+                        continue
 
-                current_meta = self.__get_meta_from_change_properties(signal_message.body[1])
+                    current_meta = self.__get_meta_from_change_properties(signal_message.body[1])
 
-            if signal_message.header.fields[HeaderFields.path] == "/org/freedesktop/DBus":
-                servicename = signal_message.body[0]
-                newowner = signal_message.body[1]
-                oldowner = signal_message.body[2]
+                if signal_message.header.fields[HeaderFields.path] == "/org/freedesktop/DBus":
+                    servicename = signal_message.body[0]
+                    newowner = signal_message.body[1]
+                    oldowner = signal_message.body[2]
 
-                if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
-                    #service new on the bus
-                    if utils.str_isnullorwhitespace(newowner):
-                        self.__spotify_dbusname = servicename
-                        self.__spotify_service_presence_change()
-                        current_meta = self.get_spotify_status()
-                    #service left bus
-                    if utils.str_isnullorwhitespace(oldowner):
-                        self.__spotify_dbusname = None
-                        self.__spotify_service_presence_change()
-                        current_meta = self.get_spotify_status()
-            
-            if current_meta != previous_meta:
-                previous_meta = current_meta
-                self.__message_queue.put(RaspiFMMessage({
-                                                            "message":"spotify_change",
-                                                            "args":{
-                                                                        "spotify_currently_playing":current_meta}}))
+                    if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
+                        #service new on the bus
+                        if utils.str_isnullorwhitespace(newowner):
+                            self.__spotify_dbusname = servicename
+                            self.__spotify_service_presence_change()
+                            current_meta = self.get_spotify_status()
+                        #service left bus
+                        if utils.str_isnullorwhitespace(oldowner):
+                            self.__spotify_dbusname = None
+                            self.__spotify_service_presence_change()
+                            current_meta = None
+                
+                if current_meta != previous_meta:
+                    previous_meta = current_meta
+                    self.__message_queue.put(RaspiFMMessage({
+                                                                "message":"spotify_change",
+                                                                "args":{
+                                                                            "spotify_currently_playing":current_meta}}))
+        except:
+            run = False
+            self.__message_queue.put(RaspiFMMessage({
+                                                        "message":"shutdown",
+                                                        "args":{
+                                                                "reason":traceback.format_exc()}}))
 
     def __spotify_service_presence_change(self) -> None:
-        if not self.__spotify_dbusname is None:
+        if self.__spotify_dbusname is None:
+            self.__dbus_spotify_filter.close()
+        else:
             dbus_spotify_address = DBusAddress(dbusstrings.spotifydpath, self.__spotify_dbusname, dbusstrings.dbuspropertiesinterface)
             dbus_spotify_changed_match_rule = MatchRule(
                     type="signal",
@@ -145,8 +157,6 @@ class DBusSpotifyMonitor:
                 
             self.__dbus_proxy.AddMatch(dbus_spotify_changed_match_rule)
             self.__dbus_spotify_filter = self.__dbus_connection.filter(dbus_spotify_changed_match_rule, queue=self.__dbus_queue)
-        else:
-            self.__dbus_spotify_filter.close()
 
     def __get_meta_from_change_properties(self, changeproperties:dict) -> dict:
         #if spotify is resumed after paused it sends only playing status

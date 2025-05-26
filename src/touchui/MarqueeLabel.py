@@ -14,9 +14,13 @@ class MarqueeLabel(QLabel):
     def __init__(self, parent=None):
         QLabel.__init__(self, parent)
         self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.__x = 0
+        self.__y = 0
         self.__timer = QTimer(self)
         self.__timer.timeout.connect(self.update)
         self.__speed = 1.5
+        self.__textLength = 0
+        self.__textHeight = 0
 
     def resizeEvent(self, event):
         self.__timer.stop()

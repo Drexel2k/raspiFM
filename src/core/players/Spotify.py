@@ -45,4 +45,5 @@ class Spotify:
         return cls.__instance
     
     def __init(self):
+        self.__spotifyinfo = None
         self.__state = PlayerState.Stopped
