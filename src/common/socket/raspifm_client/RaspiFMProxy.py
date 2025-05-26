@@ -47,7 +47,7 @@ class RaspiFMProxy():
             queue_item = self.__read_queue.get()
             if isinstance(queue_item, str):
                 #Python 3.12 doesn't support Queue.shutdown yet()
-                if queue_item == "shutdown":
+                if queue_item == socketstrings.shutdown_string:
                     run=False
                     continue
 
@@ -222,6 +222,6 @@ class RaspiFMProxy():
         self.__socket_manager.query_raspifm_core("settings_changeproperty", {"property":property, "value":value}, False)
 
     def raspifm_shutdown(self) -> None:
-        self.__socket_manager.query_raspifm_core("raspifm_shutdown", None, False)
+        self.__socket_manager.query_raspifm_core("raspifm_shutdown", {"reason": None}, False)
         self.__socket_manager.shutdown()
-        self.__read_queue.put("shutdown")
+        self.__read_queue.put(socketstrings.shutdown_string)

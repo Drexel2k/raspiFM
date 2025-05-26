@@ -6,6 +6,7 @@ from selectors import DefaultSelector
 from queue import Queue
 from threading import Lock
 import traceback
+from urllib.error import URLError
 
 from common.socket.MessageResponse import MessageResponse
 from common.socket.SocketTransferManager import SocketTransferManager
@@ -72,7 +73,7 @@ class SocketManager:
         except:
             self.__run_selector = False
             self.__message_queue.put(RaspiFMMessage({
-                                                        "message":"shutdown",
+                                                        "message":socketstrings.shutdown_string,
                                                         "args":{
                                                                 "reason":traceback.format_exc()}}))
 
@@ -84,25 +85,47 @@ class SocketManager:
                 queue_item = self.__write_queue.get()
                 if isinstance(queue_item, str):
                     #Python 3.12 doesn't support Queue.shutdown yet()
-                    if queue_item == "shutdown":
+                    if queue_item == socketstrings.shutdown_string:
                         run=False
                         continue
+                
+                additional_header = None
+                if queue_item.response is None and queue_item.response_exception is None:
+                    additional_header = {socketstrings.messageid_string: self.__get_messageid()}
+                else:
+                    if queue_item.response is None:
+                        if isinstance(queue_item.response_exception, URLError):
+                            additional_header = {
+                                socketstrings.service_status_string: {
+                                    socketstrings.code_string: 500,
+                                    socketstrings.message_string: "Internal Server Error",
+                                    socketstrings.additional_info_code_string: 100,
+                                    socketstrings.additional_info_message_string: "Radio browser api error"}}
+                        else:
+                            additional_header = {
+                                socketstrings.service_status_string: {
+                                    socketstrings.code_string: 500,
+                                    socketstrings.message_string: "Internal Server Error"}}
 
-                self.__client_sockets[queue_item.socket_address].send(queue_item)
+                    if queue_item.response_exception is None:
+                        additional_header = {
+                            socketstrings.service_status_string: {
+                                socketstrings.code_string: 200,
+                                socketstrings.message_string: "OK"}}
+
+                self.__client_sockets[queue_item.socket_address].send(queue_item, additional_header)
         except:
             run=False
             self.__message_queue.put(RaspiFMMessage({
-                                                        "message":"shutdown",
+                                                        "message":socketstrings.shutdown_string,
                                                         "args":{
                                                                 "reason":traceback.format_exc()}}))
 
     #main thread
     def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> None:
-        request_dict =  { 
-                            socketstrings.header_string:{socketstrings.messageid_string:self.__get_messageid()}, 
-                            socketstrings.message_string:{ socketstrings.message_string: query, socketstrings.args_string:args}
-                        } 
-        request = MessageResponse(client_socket_address, request_dict)
+        request = MessageResponse(client_socket_address, {
+            socketstrings.message_string:{ socketstrings.message_string: query, socketstrings.args_string: args}
+        })
         self.__write_queue.put(request)
         request.message_sent.wait()
         if not request.transfer_exception is None:
@@ -122,7 +145,7 @@ class SocketManager:
 
     def shutdown(self) -> None:
         self.__run_selector = False
-        self.__write_queue.put("shutdown")
+        self.__write_queue.put(socketstrings.shutdown_string)
 
         self.__run_selector = False
         

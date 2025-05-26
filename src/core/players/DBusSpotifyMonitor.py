@@ -10,7 +10,7 @@ from jeepney.io.blocking import Proxy, DBusConnection
 from jeepney.io.common import FilterHandle
 from jeepney.io.blocking import open_dbus_connection
 
-from common import utils
+from common import socketstrings, utils
 from core.players import dbusstrings
 from core.RaspiFMMessage import RaspiFMMessage
 
@@ -139,7 +139,7 @@ class DBusSpotifyMonitor:
         except:
             run = False
             self.__message_queue.put(RaspiFMMessage({
-                                                        "message":"shutdown",
+                                                        "message":socketstrings.shutdown_string,
                                                         "args":{
                                                                 "reason":traceback.format_exc()}}))
 

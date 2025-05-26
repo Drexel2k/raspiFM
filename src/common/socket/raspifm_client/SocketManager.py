@@ -47,38 +47,37 @@ class SocketManager():
             queue_item = self.__write_queue.get()
             if isinstance(queue_item, str):
                 #Python 3.12 doesn't support Queue.shutdown yet()
-                if queue_item == "shutdown":
+                if queue_item == socketstrings.shutdown_string:
                     run=False
                     continue
 
-            self.__socket_transfermanager.send(queue_item)
+            self.__socket_transfermanager.send(queue_item, {socketstrings.messageid_string:self.__get_messageid()})
 
     #main thread
-    def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:
-        request_dict =  { 
-                            socketstrings.header_string:{socketstrings.messageid_string:self.__get_messageid()}, 
-                            socketstrings.message_string:{ socketstrings.message_string: query, socketstrings.args_string:args}
-                        } 
-        request = MessageResponse(socketstrings.core_socketpath_string, request_dict, is_query)
+    def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:       
+        request = MessageResponse(socketstrings.core_socketpath_string, {
+            socketstrings.message_string: {socketstrings.message_string: query, socketstrings.args_string:args}
+        }, True)
         self.__write_queue.put(request)
-        if is_query:
-            request.response_ready.wait()
 
-            if not request.transfer_exception is None:
-                raise request.transfer_exception
-            
+        request.response_ready.wait()
+
+        if not request.transfer_exception is None:
+            raise request.transfer_exception
+        
+        request.response_ready.wait()        
+        if request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] != 200:
+            raise ValueError(f'Something went wrong in raspiFM core. Status code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}, status additional info code: {request.service_status[socketstrings.additional_info_code_string]}, status additional info message: {request.service_status[socketstrings.additional_info_message_string]}.')
+        
+        if is_query:
             return request.response[socketstrings.response_string]
-        else:
-            request.message_sent.wait()
-            if not request.transfer_exception is None:
-                raise request.transfer_exception
 
     def __get_messageid(self) -> int:
         self.__messageid = self.__messageid + 1
         return self.__messageid
     
     def shutdown(self) -> None:
-        self.__write_queue.put("shutdown")
+        self.__write_queue.put(socketstrings.shutdown_string)
         self.__run_selector = False
 
         self.__socket_selector.unregister(self.__socket_transfermanager.socket)

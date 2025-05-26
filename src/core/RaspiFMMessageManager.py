@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import traceback
 from queue import Queue
 from threading import Thread
-import traceback
 from uuid import UUID
+from urllib.error import URLError
 
 from common import socketstrings, utils
 from common.socket.MessageResponse import MessageResponse
@@ -54,47 +55,30 @@ class RaspiFMMessageManager:
                                                                                                                 "raspifm_shutdown"]:
                             if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "players_status_subscribe":
                                 self.__clients_with_spotify_update_subscriptions.append(raspifm_call.socket_address)
+                            
+                            raspifm_call.response = {socketstrings.result_string: None }
+                            write_queue.put(raspifm_call)
 
                             if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "raspifm_shutdown":
                                 run = False
-                                self.__shutdown_all()
+                                self.__shutdown_all("Shutdown by service request, probably touchUI shutdown.")
                         else:
                             func = getattr(raspifm, raspifm_call.message[socketstrings.message_string][socketstrings.message_string])
 
-                            #queries which don't send responses
-                            if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] in ["radio_play",
-                                                                                                        "radio_set_currentstation",
-                                                                                                        "radio_stop",
-                                                                                                        "radio_setvolume",
-                                                                                                        "settings_set_touch_startwith",
-                                                                                                        "spotify_set_isplaying",
-                                                                                                        "raspifm_shutdown",
-                                                                                                        "spotify_stop",
-                                                                                                        "favorites_add_stationtolist",
-                                                                                                        "favorites_remove_stationfromlist",
-                                                                                                        "favorites_changelistproperty",
-                                                                                                        "favorites_deletelist",
-                                                                                                        "favorites_movelist",
-                                                                                                        "favorites_move_station_in_list",
-                                                                                                        "settings_changeproperty"]:
+                            result_object = None
 
-                                if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
-                                    func()
-                                else:
-                                    func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
-
-                            #queries which send responses
-                            else:
-                                result_object = None
-
+                            try:
                                 if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
                                     result_object = func()
                                 else:
                                     result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
+                            except URLError as URLError_exception:
+                                raspifm_call.response_exception = URLError_exception
 
-                                raspifm_call.response = {socketstrings.result_string:None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
+                            if raspifm_call.response_exception is None:      
+                                raspifm_call.response = {socketstrings.result_string: None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
 
-                                write_queue.put(raspifm_call)
+                            write_queue.put(raspifm_call)
                         
                 if  isinstance(raspifm_call, RaspiFMMessage):
                     if raspifm_call.message[socketstrings.message_string] == "spotify_change":
@@ -119,7 +103,7 @@ class RaspiFMMessageManager:
                         for client_socket_address in self.__clients_with_spotify_update_subscriptions:
                             self.__socket_manager.send_message_to_client(client_socket_address, raspifm_call.message[socketstrings.message_string], raspifm_call.message[socketstrings.args_string])
 
-                    if raspifm_call.message[socketstrings.message_string] == "shutdown":
+                    if raspifm_call.message[socketstrings.message_string] == socketstrings.shutdown_string:
                         run = False
                         self.__shutdown_all(raspifm_call.message[socketstrings.args_string]["reason"])
 

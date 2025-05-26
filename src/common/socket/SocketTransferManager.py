@@ -131,30 +131,28 @@ class SocketTransferManager:
 
     #writer thread
     #messages must be JSON serializable, only Python basics types allowed
-    def send(self, message_response:MessageResponse):
+    def send(self, message_response:MessageResponse, additional_header:dict):
         content_bytes = b""
-        header = {} 
-        if message_response.response is None:
+        header = {}
+        if message_response.response is None and message_response.response_exception is None:
             content_bytes = json.serialize_to_string_or_bytes(message_response.message[socketstrings.message_string], socketstrings.utf8_string)
-            header = {
-                        socketstrings.messageid_string:message_response.message[socketstrings.header_string][socketstrings.messageid_string],
-                        socketstrings.contentencoding_string: socketstrings.utf8_string,
-                        socketstrings.contentlength_string: len(content_bytes),
-                    }
-
-            message_response.message[socketstrings.header_string] = header 
 
             if message_response.is_query:
                 with self.__requests_without_response_lock:
-                    self.__requests_without_response[message_response.message[socketstrings.header_string][socketstrings.messageid_string]] = message_response
+                    self.__requests_without_response[additional_header[socketstrings.messageid_string]] = message_response
         else:
-            content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
-            header = {
-                        socketstrings.responseto_string:message_response.message[socketstrings.header_string][socketstrings.messageid_string],
-                        socketstrings.contentencoding_string: socketstrings.utf8_string,
-                        socketstrings.contentlength_string: len(content_bytes),
-                    }
+            if message_response.response_exception is None:
+                content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
+                header[socketstrings.responseto_string] = message_response.message[socketstrings.header_string][socketstrings.messageid_string]
             
+        header[socketstrings.contentencoding_string] = socketstrings.utf8_string,
+        header[socketstrings.contentlength_string] = len(content_bytes)
+        
+        header.update(additional_header)
+
+        if message_response.response is None and message_response.response_exception is None:
+            message_response.message[socketstrings.header_string] = header
+        else:
             message_response.response[socketstrings.header_string] = header
             
         header_bytes = json.serialize_to_string_or_bytes(header, socketstrings.utf8_string)

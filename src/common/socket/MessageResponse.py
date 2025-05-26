@@ -1,7 +1,7 @@
 from threading import Event
 
 class MessageResponse:
-    __slots__ = ["__socket_address", "__message", "__response", "__is_query", "__response_ready", "__transfer_exception", "__message_sent"]
+    __slots__ = ["__socket_address", "__message", "__response", "__is_query", "__response_ready", "__transfer_exception", "__message_sent", "__response_exception"]
     __socket_address:str
     __message:dict
     __response:dict
@@ -9,6 +9,7 @@ class MessageResponse:
     __message_sent:Event
     __response_ready:Event
     __transfer_exception:Exception
+    __response_exception:Exception
 
     @property
     def socket_address(self) -> str:
@@ -39,6 +40,14 @@ class MessageResponse:
         self.__response = value
 
     @property
+    def response_exception(self) -> Exception:
+        return self.__response_exception
+    
+    @response_exception.setter
+    def response_exception(self, value) -> None:
+        self.__response_exception = value
+
+    @property
     def transfer_exception(self) -> Exception:
         return self.__transfer_exception
     
@@ -54,3 +63,4 @@ class MessageResponse:
         self.__message_sent = Event()
         self.__response_ready = Event()
         self.__transfer_exception = None
+        self.__response_exception = None

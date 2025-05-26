@@ -2,7 +2,6 @@ from uuid import UUID
 
 from core.http.radiobrowserapi import requestbase
 from core.http.radiobrowserapi.data.RadioStationApi import RadioStationApi
-from core.json.JsonDeserializer import JsonDeserializer
 from common import json
 
 def query_stations_advanced(name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> dict:
@@ -26,4 +25,7 @@ def query_station(stationuuid:UUID) -> RadioStationApi:
                                                        {"uuids":stationuuid}))[0])
 
 def send_stationclicked(stationuuid:UUID) -> None:
-    requestbase.radiobrowser_get_request("/json", {"url":str(stationuuid)})
+    try:
+        requestbase.radiobrowser_get_request("/json", {"url":str(stationuuid)})
+    except:
+        pass

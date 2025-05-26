@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
+import traceback
 from uuid import UUID
 from os import path
 
@@ -80,8 +81,13 @@ class RaspiFM:
         Spotify().currentlyplaying = spotify_info
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
-        return list(map(lambda radiostationdict: RadioStationApi(radiostationdict),
-                   stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)))
+        try:
+            stations_api = stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)
+        except:
+            print(traceback.format_exc())
+            return None
+
+        return list(map(lambda radiostationdict: RadioStationApi(radiostationdict), stations_api))
     
     def stations_getstation(self, station_uuid:UUID) -> RadioStation:
         return self.__radiostations.get_station(station_uuid)
@@ -109,7 +115,12 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if countrylist is None or countrylist.lastupdate + sevendays < datetime.now():
-            countrylistapi = listapi.query_countrylist()
+            try:
+                countrylistapi = listapi.query_countrylist()
+            except:
+                print(traceback.format_exc())
+                return countrylist
+            
             countrylist = CountryList.from_default({ countryinternal["name"] : countryinternal["iso_3166_1"] for countryinternal in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
 
@@ -120,7 +131,12 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if languagelist is None or languagelist.lastupdate + sevendays < datetime.now():
-            languagelistapi = listapi.query_languagelist()
+            try:
+                languagelistapi = listapi.query_languagelist()
+            except:
+                print(traceback.format_exc())
+                return languagelist
+            
             languagelist = LanguageList.from_default({ languageinternal["name"] : languageinternal["iso_639"] for languageinternal in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
 
@@ -131,7 +147,12 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if taglist is None or taglist.lastupdate + sevendays < datetime.now():
-            taglistapi = listapi.query_taglist()
+            try:
+                taglistapi = listapi.query_taglist()
+            except:
+                print(traceback.format_exc())
+                return taglist
+            
             taglist = TagList.from_default([ taginternal["name"] for taginternal in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
@@ -144,7 +165,11 @@ class RaspiFM:
         station = self.__radiostations.get_station(station_uuid)
 
         if station is None:
-            radiostationapi = stationapi.query_station(station_uuid)
+            try:
+                radiostationapi = stationapi.query_station(station_uuid)
+            except:
+                print(traceback.format_exc())
+                return
 
             station = RadioStation.from_default(radiostationapi.stationuuid,
                                    radiostationapi.name,

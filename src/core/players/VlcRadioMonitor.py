@@ -5,6 +5,7 @@ from queue import Queue
 from threading import Thread
 import traceback
 
+from common import socketstrings
 from core.RaspiFMMessage import RaspiFMMessage
 from core.players.Vlc import Vlc
 
@@ -63,7 +64,7 @@ class VlcRadioMonitor:
         except:
             self.__vlcgetmeta_enabled = False
             self.__message_queue.put(RaspiFMMessage({
-                                                        "message":"shutdown",
+                                                        "message":socketstrings.shutdown_string,
                                                         "args":{
                                                                 "reason":traceback.format_exc()}}))
     
