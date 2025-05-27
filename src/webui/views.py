@@ -1,5 +1,6 @@
 import traceback
 
+from common.Exceptions.InvalidOperationError import InvalidOperationError
 from webui.run import app
 from flask import Response, make_response, render_template, request
 
@@ -9,13 +10,14 @@ from common.json import UUIDEncoder
 from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
 from webui.ViewProxies.FavoriteListView import FavoriteListView
 from webui.ViewProxies.RadioStationView import RadioStationView
+from common.Exceptions.RadioBrowserApiError import RadioBrowserApiError
 
 @app.route("/")
 def home() -> str:
     try:
         return render_template("home.html")
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 @app.route("/favorites")
 def favorites() -> str:
@@ -27,10 +29,12 @@ def favorites() -> str:
         return render_template("favorites.html",
                                favoritelists=favoritelists,
                                favoritelist=RaspiFMProxy().favorites_getdefaultlist())
+    except (RadioBrowserApiError):
+        return render_template("radiobrowser_api_error.html", route="favorites")
     except (ConnectionRefusedError, FileNotFoundError):
         return render_template("raspifm_service_not_available.html", route="favorites") 
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 @app.route("/stationsearch")
 def stationsearch() -> str:
@@ -98,20 +102,24 @@ def stationsearch() -> str:
                                 selected=selected,
                                 pagelast=pagelast,
                                 pagenext=pagenext)
+#    except (RadioBrowserApiError):
+#        return render_template("radiobrowser_api_error.html", route="stationsearch", current_args=args)
     except (ConnectionRefusedError, FileNotFoundError):
-        return render_template("raspifm_service_not_available.html", route="stationsearch") 
+        return render_template("raspifm_service_not_available.html", route="stationsearch")
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
     
 @app.route("/taglist")
 def taglist() -> str:
     try:
         taglist = RaspiFMProxy().tags_get()
         return render_template("taglist.html", tags=taglist)
+    except (RadioBrowserApiError):
+        return render_template("radiobrowser_api_error.html", route="taglist")
     except (ConnectionRefusedError, FileNotFoundError):
         return render_template("raspifm_service_not_available.html", route="taglist") 
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
     
 @app.route("/settings")
 def settings() -> str:
@@ -128,7 +136,7 @@ def settings() -> str:
     except (ConnectionRefusedError, FileNotFoundError):
         return render_template("raspifm_service_not_available.html", route="settings") 
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #from here are ajax endpoints:
 #ajax
@@ -139,7 +147,7 @@ def gettags() -> str:
         taglist = RaspiFMProxy().tags_get(form["filter"])
         return render_template("gettags.html", tags=taglist)
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/changefavorite", methods=["POST"])
@@ -156,7 +164,7 @@ def changefavorite() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/getfavoritelist", methods=["POST"])
@@ -170,7 +178,7 @@ def getfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/addfavoritelist", methods=["POST"])
@@ -182,7 +190,7 @@ def addfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/changefavoritelist", methods=["POST"])
@@ -194,7 +202,7 @@ def changefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/deletefavoritelist", methods=["POST"])
@@ -206,7 +214,7 @@ def deletefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/getfavoritelistcontent", methods=["POST"])
@@ -217,7 +225,7 @@ def getfavoritelistcontent() -> str:
         return render_template("favoritelistcontent.html",
                                 favoritelist=favoritelist)
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
     
 #ajax
 @app.route("/movefavoritelist", methods=["POST"])
@@ -229,7 +237,7 @@ def movefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
 #ajax
 @app.route("/movestationinfavoritelist", methods=["POST"])
@@ -241,7 +249,7 @@ def movestationinfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
     
 #ajax
 @app.route("/changesettings", methods=["POST"])
@@ -253,16 +261,17 @@ def changesettings() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
-        return get_errorresponse(e)
+        return get_error_response(e)
 
-def get_errorresponse(e):
-    traceback.print_exc() 
-    if isinstance(e, Exception):
-        #if isinstance(e, InvalidOperationException):
-        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 1, "errorType": type(e).__name__, "error": e.args}, encoder=UUIDEncoder), 400)
-        #else:
-        #    response = make_response(json.serialize_dict({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 400)
+def get_error_response(e):
+    #errorNo is uses in JavaScript to show more helpful error messages
+    if isinstance(e, RadioBrowserApiError):
+        traceback.print_exc() 
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 2, "errorType": type(e).__name__, "error": e.additional_info_message}, encoder=UUIDEncoder), 500)
+    elif isinstance(e, InvalidOperationError):
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 1, "errorType": type(e).__name__, "error": e.additional_info_message}, encoder=UUIDEncoder), 422)
     else:
+        traceback.print_exc() 
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}, encoder=UUIDEncoder), 500)
 
     response.mimetype = "application/json"

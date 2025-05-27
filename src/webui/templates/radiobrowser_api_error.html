@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% set active_page = "home" %}
+
+{% block title %}
+raspiFM service not available!
+{% endblock %}
+{% block content %}
+<h1>Request error!</h1>
+<p>Error on requesting data from https://www.radio-browser.info/.
+{% if current_args is not none %}
+<p><a href="{{ url_for(route, **current_args) }}">Try again.</a></p>
+{% else %}
+<p><a href="{{ url_for(route) }}">Try again.</a></p>
+{% endif %}
+{% endblock %}

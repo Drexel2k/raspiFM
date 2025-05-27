@@ -62,7 +62,16 @@ function initStationSearch()
                 },
                 error:function(xhr)
                 {
-                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errorvar = JSON.parse(xhr.responseText);
+                    if (errorvar.errorNo === 2)
+                    {
+                        $('#errortoastContent').text('Error on requesting data from https://www.radio-browser.info/. Try again.'); 
+                    }
+                    else
+                    {
+                        $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    }
+
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
                     errortoast.show();
                 }
@@ -240,7 +249,7 @@ function initFavListMgmt()
                     let errorvar = JSON.parse(xhr.responseText);
                     if (errorvar.errorNo === 1)
                     {
-                        $('#errortoastContent').text(errorvar.error[0]); 
+                        $('#errortoastContent').text(errorvar.error); 
                     }
                     else
                     {
@@ -400,6 +409,7 @@ function initFavListMgmt()
     });
 
     registerFavLinksFavManagement();
+    registerFavListEditControls();
 }
 
 function registerFavListEditControls()
@@ -448,7 +458,7 @@ function registerFavListEditControls()
                     let errorvar = JSON.parse(xhr.responseText);
                     if (errorvar.errorNo === 1)
                     {
-                        $('#errortoastContent').text(errorvar.error[0]); 
+                        $('#errortoastContent').text(errorvar.error); 
                     }
                     else
                     {
@@ -491,7 +501,16 @@ function registerFavLinksStationSearch()
                 },
                 error:function(xhr)
                 {
-                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errorvar = JSON.parse(xhr.responseText);
+                    if (errorvar.errorNo === 2)
+                    {
+                        $('#errortoastContent').text('Error on requesting data from https://www.radio-browser.info/. Try again.'); 
+                    }
+                    else
+                    {
+                        $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    }
+
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
                     errortoast.show();
                 }
@@ -506,7 +525,6 @@ function registerFavLinksFavManagement()
     {
         let changetype = $(this).attr('data-changetype');
         let stationuuid = $(this).attr('data-stationuuid');
-        let tester = $('#tblfavoritelists .favlistselected').attr('id').substr(11);
         $.ajax(
             {   url:'changefavorite',
                 method:'POST',
@@ -572,7 +590,20 @@ function initSettingsMgmt()
                 },
                 error:function(xhr)
                 {
-                    $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    let errorvar = JSON.parse(xhr.responseText);
+                    if (errorvar.errorNo === 2)
+                    {
+                        $('#errortoastContent').text('Error on requesting data from https://www.radio-browser.info/. Try again.'); 
+                    }
+                    else if (errorvar.errorNo === 1)
+                    {
+                        $('#errortoastContent').text(errorvar.error);
+                    }
+                    else
+                    {
+                        $('#errortoastContent').text(`Something went wrong, the server responded: ${xhr.responseText}.`);
+                    }
+
                     let errortoast = bootstrap.Toast.getOrCreateInstance(document.getElementById('errortoast'));
                     errortoast.show();
                 }

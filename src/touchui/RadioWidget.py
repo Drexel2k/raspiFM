@@ -146,7 +146,10 @@ class RadioWidget(QWidget):
             #If station is still None, check for check if there is any station in favorites and
             #take the first:
             if station == None:
-                station = RaspiFMQtProxy().favorites_get_any_station()["radiostation"]
+                station = RaspiFMQtProxy().favorites_get_any_station()
+
+                if not station is None:
+                    station = station["radiostation"]
 
         return station
 

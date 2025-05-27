@@ -2,7 +2,7 @@ from __future__ import annotations
 from uuid import UUID, uuid4
 
 from core.business.Direction import Direction
-from core.business.Exceptions import InvalidOperationException
+from core.business.InvalidOperationError import InvalidOperationError
 from core.business.RadioStation import RadioStation
 from core.business.ViewProxies.RadioStationFavoriteEntry import RadioStationFavoriteEntry
 
@@ -104,7 +104,7 @@ class FavoriteList:
             currentindex = ordered_stations.index(radiostation)
 
             if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_stations) - 1 and direction == Direction.Down):
-                raise InvalidOperationException("Cannot move first station up oder last station down.")
+                raise InvalidOperationError(100, "Cannot move first station up oder last station down.")
 
             ordered_stations.pop(currentindex)
 

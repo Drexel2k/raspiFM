@@ -56,5 +56,5 @@ def radiobrowser_get_request(endpoint:str, params:dict):
         #data = response.read()
         response.close()
     except BaseException as e:
-        pass #if lick fails don't care.
+        pass #if click fails don't care.
 

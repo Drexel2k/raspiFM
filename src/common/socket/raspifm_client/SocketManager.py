@@ -7,6 +7,8 @@ from queue import Queue
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import socketstrings
 from common.socket.MessageResponse import MessageResponse
+from common.Exceptions.RadioBrowserApiError import RadioBrowserApiError
+from common.Exceptions.InvalidOperationError import InvalidOperationError
 
 class SocketManager():
     #No multi threading in selector mechanisms!
@@ -65,9 +67,32 @@ class SocketManager():
         if not request.transfer_exception is None:
             raise request.transfer_exception
         
-        request.response_ready.wait()        
+        request.response_ready.wait()
         if request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] != 200:
-            raise ValueError(f'Something went wrong in raspiFM core. Status code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}, status additional info code: {request.service_status[socketstrings.additional_info_code_string]}, status additional info message: {request.service_status[socketstrings.additional_info_message_string]}.')
+            if request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] == 500 and \
+                socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string] and \
+                    request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string] == 100:
+                raise RadioBrowserApiError(request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string])
+            elif request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] == 422 and \
+                socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string]:
+                raise InvalidOperationError(request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string],
+                                           request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string])
+            else:
+                error_info = f'Something went wrong in raspiFM core. Status code: \
+                    {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, \
+                        \status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}'
+                
+                if socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string]:
+                    error_info = error_info + f', status additional info code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string]}, \
+                        status additional info message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string]}'
+
+                error_info = error_info + "."
+                raise ValueError(error_info)
         
         if is_query:
             return request.response[socketstrings.response_string]

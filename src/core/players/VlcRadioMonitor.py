@@ -66,7 +66,9 @@ class VlcRadioMonitor:
             self.__message_queue.put(RaspiFMMessage({
                                                         "message":socketstrings.shutdown_string,
                                                         "args":{
-                                                                "reason":traceback.format_exc()}}))
+                                                                "reason":traceback.format_exc()
+                                                                }
+                                                        }))
     
     def stop_meta_getter(self) -> None:
         self.__vlcgetmeta_enabled = False

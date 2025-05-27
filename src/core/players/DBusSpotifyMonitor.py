@@ -135,13 +135,17 @@ class DBusSpotifyMonitor:
                     self.__message_queue.put(RaspiFMMessage({
                                                                 "message":"spotify_change",
                                                                 "args":{
-                                                                            "spotify_currently_playing":current_meta}}))
+                                                                            "spotify_currently_playing":current_meta
+                                                                        }
+                                                            }))
         except:
             run = False
             self.__message_queue.put(RaspiFMMessage({
                                                         "message":socketstrings.shutdown_string,
                                                         "args":{
-                                                                "reason":traceback.format_exc()}}))
+                                                                "reason":traceback.format_exc()
+                                                                }
+                                                    }))
 
     def __spotify_service_presence_change(self) -> None:
         if self.__spotify_dbusname is None:

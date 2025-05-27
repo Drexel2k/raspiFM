@@ -11,6 +11,7 @@ from common.socket.MessageResponse import MessageResponse
 from core.RaspiFM import RaspiFM
 from core.RaspiFMMessage import RaspiFMMessage
 from core.StartWith import StartWith
+from core.business.InvalidOperationError import InvalidOperationError
 from core.players.VlcRadioMonitor import VlcRadioMonitor
 from core.players.DBusSpotifyMonitor import DBusSpotifyMonitor
 from core.players.SpotifyInfo import SpotifyInfo
@@ -69,11 +70,15 @@ class RaspiFMMessageManager:
 
                             try:
                                 if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
-                                    result_object = func()
+                                    result_object = func()                                 
                                 else:
-                                    result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
-                            except URLError as URLError_exception:
+                                    result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))   
+                            except (URLError) as URLError_exception:
+                                traceback.print_exc()
                                 raspifm_call.response_exception = URLError_exception
+                            except (InvalidOperationError) as InvalidOperationError_exception:
+                                raspifm_call.response_exception = InvalidOperationError_exception
+
 
                             if raspifm_call.response_exception is None:      
                                 raspifm_call.response = {socketstrings.result_string: None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
@@ -106,8 +111,6 @@ class RaspiFMMessageManager:
                     if raspifm_call.message[socketstrings.message_string] == socketstrings.shutdown_string:
                         run = False
                         self.__shutdown_all(raspifm_call.message[socketstrings.args_string]["reason"])
-
-
         except:
             self.__shutdown_all(traceback.format_exc())
 
@@ -118,9 +121,9 @@ class RaspiFMMessageManager:
             self.__socket_manager.shutdown()
 
             if not utils.str_isnullorwhitespace(reason):
-                print(reason)
+                print(f'Shuttiong down core due to: {reason}')
         except:
-            print(traceback.format_exc())
+            traceback.print_exc()
         
     @staticmethod
     def deserialize_arguments(method_name:str, method_arguments:dict) -> dict:

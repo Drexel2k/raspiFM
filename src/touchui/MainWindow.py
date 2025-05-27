@@ -1,6 +1,7 @@
 import os
 import subprocess
 from subprocess import Popen
+import traceback
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         try:
             RaspiFMQtProxy()
         except (ConnectionRefusedError, FileNotFoundError):
+            traceback.print_exc()
             if not self.__raspifm_service_not_available_controls_set:
                 self.__raspifm_service_not_available_controls_set = True
                 info_layout_vertical = QVBoxLayout()

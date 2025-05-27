@@ -12,6 +12,7 @@ from common.socket.MessageResponse import MessageResponse
 from common.socket.SocketTransferManager import SocketTransferManager
 from common import socketstrings
 from core.RaspiFMMessage import RaspiFMMessage
+from core.business.InvalidOperationError import InvalidOperationError
 
 class SocketManager:
     #No multi threading in selector mechanisms!
@@ -75,7 +76,9 @@ class SocketManager:
             self.__message_queue.put(RaspiFMMessage({
                                                         "message":socketstrings.shutdown_string,
                                                         "args":{
-                                                                "reason":traceback.format_exc()}}))
+                                                                "reason":traceback.format_exc()
+                                                                }
+                                                    }))
 
     #writer thread
     def write(self) -> None:
@@ -93,7 +96,7 @@ class SocketManager:
                 if queue_item.response is None and queue_item.response_exception is None:
                     additional_header = {socketstrings.messageid_string: self.__get_messageid()}
                 else:
-                    if queue_item.response is None:
+                    if not queue_item.response_exception is None:
                         if isinstance(queue_item.response_exception, URLError):
                             additional_header = {
                                 socketstrings.service_status_string: {
@@ -101,13 +104,19 @@ class SocketManager:
                                     socketstrings.message_string: "Internal Server Error",
                                     socketstrings.additional_info_code_string: 100,
                                     socketstrings.additional_info_message_string: "Radio browser api error"}}
+                        elif isinstance(queue_item.response_exception, InvalidOperationError):
+                            additional_header = {
+                                socketstrings.service_status_string: {
+                                    socketstrings.code_string: 422,
+                                    socketstrings.message_string: "Unprocessable Entity",
+                                    socketstrings.additional_info_code_string: queue_item.response_exception.code,
+                                    socketstrings.additional_info_message_string: queue_item.response_exception.message}}
                         else:
                             additional_header = {
                                 socketstrings.service_status_string: {
                                     socketstrings.code_string: 500,
                                     socketstrings.message_string: "Internal Server Error"}}
-
-                    if queue_item.response_exception is None:
+                    else:
                         additional_header = {
                             socketstrings.service_status_string: {
                                 socketstrings.code_string: 200,
@@ -118,8 +127,10 @@ class SocketManager:
             run=False
             self.__message_queue.put(RaspiFMMessage({
                                                         "message":socketstrings.shutdown_string,
-                                                        "args":{
-                                                                "reason":traceback.format_exc()}}))
+                                                        "args": {
+                                                                    "reason":traceback.format_exc()
+                                                                }
+                                                    }))
 
     #main thread
     def send_message_to_client(self, client_socket_address:str, query:str, args:dict) -> None:

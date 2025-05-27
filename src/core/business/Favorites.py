@@ -3,7 +3,7 @@ from uuid import UUID
 
 from core.business.Direction import Direction
 from core.business.FavoriteList import FavoriteList
-from core.business.Exceptions import InvalidOperationException
+from core.business.InvalidOperationError import InvalidOperationError
 
 class Favorites:
     __slots__ = ["__favoritelists"]
@@ -47,7 +47,7 @@ class Favorites:
     
     def delete_favoritelist(self, listuuid:UUID) -> None:
         if len(self.__favoritelists) <= 1:
-            raise InvalidOperationException("Cannot remove last favorite list.")
+            raise InvalidOperationError(101, "Cannot remove last favorite list.")
 
         deletelist = self.get_list(listuuid)
         if not deletelist is None:
@@ -75,7 +75,7 @@ class Favorites:
             currentdefaultlist = self.get_default()
             if currentdefaultlist == changelist:
                 if len(self.__favoritelists) <= 1:
-                    raise InvalidOperationException("Cannot remove default state from last favorite list.")
+                    raise InvalidOperationError(102, "Cannot remove default state from last favorite list.")
                 
                 newdefaultlist = next(favlistinternal for favlistinternal in self.__favoritelists if favlistinternal != currentdefaultlist)
                 changelist.isdefault = False
@@ -88,7 +88,7 @@ class Favorites:
             currentindex = ordered_favoritelists.index(favoritelist)
 
             if (currentindex <= 0 and direction == Direction.Up) or (currentindex >= len(ordered_favoritelists) - 1 and direction == Direction.Down):
-                raise InvalidOperationException("Cannot move first favorite list up oder last favorite list down.")
+                raise InvalidOperationError(103, "Cannot move first favorite list up oder last favorite list down.")
 
             ordered_favoritelists.pop(currentindex)
 

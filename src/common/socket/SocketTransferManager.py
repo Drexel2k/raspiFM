@@ -101,10 +101,14 @@ class SocketTransferManager:
         message_length = self.__current_message_header[socketstrings.contentlength_string]
         if not len(self.__receive_buffer) >= message_length:
             return
-        data = self.__receive_buffer[:message_length]
-        self.__receive_buffer = self.__receive_buffer[message_length:]
+
         header = self.__current_message_header
-        message = json.deserialize_from_string_or_bytes(data, socketstrings.utf8_string)
+
+        message = None
+        if message_length > 0:
+            data = self.__receive_buffer[:message_length]
+            self.__receive_buffer = self.__receive_buffer[message_length:]        
+            message = json.deserialize_from_string_or_bytes(data, socketstrings.utf8_string)
         
         self.__current_message_header_length = 0
         self.__current_message_header = None
@@ -113,16 +117,20 @@ class SocketTransferManager:
         if socketstrings.messageid_string in header:
             message_response = MessageResponse(self.__socket_address, 
                                                     {
-                                                        socketstrings.header_string: header,
-                                                        socketstrings.message_string: message
+                                                        socketstrings.header_string: header
                                                     })
+            
+            if not message is None:
+               message_response.message[socketstrings.message_string] = message  
         else:
             with self.__requests_without_response_lock:
                 message_response = self.__requests_without_response.pop(header[socketstrings.responseto_string])
                 message_response.response = {
-                                                socketstrings.header_string: header,
-                                                socketstrings.response_string: message
+                                                socketstrings.header_string: header
                                             }
+                
+                if not message is None:
+                    message_response.response[socketstrings.response_string] = message  
                 
                 message_response.response_ready.set()
                 
@@ -143,7 +151,11 @@ class SocketTransferManager:
         else:
             if message_response.response_exception is None:
                 content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
-                header[socketstrings.responseto_string] = message_response.message[socketstrings.header_string][socketstrings.messageid_string]
+            else:
+                #On caught exception no response is there, but we need a respoonse which just sends a header
+                message_response.response = {}
+                
+            header[socketstrings.responseto_string] = message_response.message[socketstrings.header_string][socketstrings.messageid_string]
             
         header[socketstrings.contentencoding_string] = socketstrings.utf8_string,
         header[socketstrings.contentlength_string] = len(content_bytes)

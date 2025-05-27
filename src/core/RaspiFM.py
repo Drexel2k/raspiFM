@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
-import traceback
 from uuid import UUID
 from os import path
 
 from core.StartWith import StartWith
+from core.business.InvalidOperationError import InvalidOperationError
 from core.json.JsonSerializer import JsonSerializer
 from core.json.JsonDeserializer import JsonDeserializer
 from core.Settings import Settings, UserSettings
@@ -81,12 +81,7 @@ class RaspiFM:
         Spotify().currentlyplaying = spotify_info
     
     def stationapis_get(self, name:str, country:str, language:str, tags:list, orderby:str, reverse:bool, page:int) -> list:
-        try:
-            stations_api = stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)
-        except:
-            print(traceback.format_exc())
-            return None
-
+        stations_api = stationapi.query_stations_advanced(name, country, language, tags, orderby, reverse, page)
         return list(map(lambda radiostationdict: RadioStationApi(radiostationdict), stations_api))
     
     def stations_getstation(self, station_uuid:UUID) -> RadioStation:
@@ -115,12 +110,7 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if countrylist is None or countrylist.lastupdate + sevendays < datetime.now():
-            try:
-                countrylistapi = listapi.query_countrylist()
-            except:
-                print(traceback.format_exc())
-                return countrylist
-            
+            countrylistapi = listapi.query_countrylist()
             countrylist = CountryList.from_default({ countryinternal["name"] : countryinternal["iso_3166_1"] for countryinternal in countrylistapi })
             JsonSerializer().serialize_countrylist(countrylist)
 
@@ -131,12 +121,7 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if languagelist is None or languagelist.lastupdate + sevendays < datetime.now():
-            try:
-                languagelistapi = listapi.query_languagelist()
-            except:
-                print(traceback.format_exc())
-                return languagelist
-            
+            languagelistapi = listapi.query_languagelist()  
             languagelist = LanguageList.from_default({ languageinternal["name"] : languageinternal["iso_639"] for languageinternal in languagelistapi })
             JsonSerializer().serialize_languagelist(languagelist)
 
@@ -147,12 +132,7 @@ class RaspiFM:
 
         sevendays = timedelta(days=7)
         if taglist is None or taglist.lastupdate + sevendays < datetime.now():
-            try:
-                taglistapi = listapi.query_taglist()
-            except:
-                print(traceback.format_exc())
-                return taglist
-            
+            taglistapi = listapi.query_taglist()  
             taglist = TagList.from_default([ taginternal["name"] for taginternal in taglistapi ])
             JsonSerializer().serialize_taglist(taglist)
 
@@ -165,12 +145,7 @@ class RaspiFM:
         station = self.__radiostations.get_station(station_uuid)
 
         if station is None:
-            try:
-                radiostationapi = stationapi.query_station(station_uuid)
-            except:
-                print(traceback.format_exc())
-                return
-
+            radiostationapi = stationapi.query_station(station_uuid)
             station = RadioStation.from_default(radiostationapi.stationuuid,
                                    radiostationapi.name,
                                    radiostationapi.url_resolved,
@@ -283,7 +258,7 @@ class RaspiFM:
             if value in languagelist.languagelist or value == "nofilter":
                 self.__settings.usersettings.web_defaultlanguage = value
         else: 
-            raise TypeError(f"Change of property \"{property}\" supported.")
+            raise InvalidOperationError(104, f"Change of property \"{property}\" supported.")
         
         JsonSerializer().serialize_usersettings(self.__settings.usersettings)
 
