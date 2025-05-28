@@ -2,13 +2,14 @@ import struct
 from socket import socket
 from queue import Queue
 from threading import Lock
+import time
 
 from common.socket.MessageResponse import MessageResponse
 from common import json
 from common import socketstrings
 
 class SocketTransferManager:
-    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback"]
+    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback", "__socket_timeout"]
     __socket:socket
     __socket_address:str
     __read_queue:Queue
@@ -17,6 +18,8 @@ class SocketTransferManager:
     __requests_without_response:dict
     __buffer_size:int
     __close_callback:callable
+    #todo: unify socket_timeouts which exist over several classes
+    __socket_timeout:float
 
     #message can span over several read calls, bytes are removed, once a full part 
     #(header length, header or request content) is read, therefore read parts
@@ -24,7 +27,7 @@ class SocketTransferManager:
     __current_message_header_length:int
     __current_message_header:dict
 
-    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback:callable=None):
+    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback:callable=None, socket_timeout:float = 5):
         self.__socket = socket
         self.__socket_address = socket_address
         self.__read_queue = request_queue
@@ -35,6 +38,7 @@ class SocketTransferManager:
         self.__current_message_header = None
         self.__buffer_size = buffer_size
         self.__close_callback = close_callback
+        self.__socket_timeout = socket_timeout
 
     @property
     def socket(self) -> socket:
@@ -172,17 +176,40 @@ class SocketTransferManager:
         message_bytes = message_header + header_bytes + content_bytes
 
         sent = 0
+        current_package = 0
+        previous_package = 0
+        sleep_counter = 0
+        sleep_counter_limit = self.__socket_timeout * 10
         try:
             while len(message_bytes) > 0:
                 buff = message_bytes[:self.__buffer_size]
-                sent = self.__socket.send(buff)
-                message_bytes= message_bytes[sent:]
-            
-            message_response.message_sent.set()
+                try:
+                    sent = self.__socket.send(buff)
+
+                    message_bytes= message_bytes[sent:]
+                    previous_package = current_package
+                    current_package = current_package + 1
+                #if socket buffer is full, BlockingIOError occurs, we have to wait a bit until the client has read data
+                except BlockingIOError as BlockingIOError_exception:
+                    if previous_package == current_package:
+                        sleep_counter = sleep_counter + 1
+                    else:
+                        sleep_counter = 0
+
+                    if sleep_counter > sleep_counter_limit:
+                        raise BlockingIOError_exception
+
+                    print("Waiting for Uinux socket...")
+                    time.sleep(0.1)
         except Exception as transfer_exception:
+            #if sending fails also no response can be expected, so therefore set sending and response,
+            #transfer_exception must be checked after waiting for either of message_send or response_ready
+            #calls waiting for response can also continue if sending failed
             message_response.transfer_exception = transfer_exception
-            if message_response.is_query:
-                message_response.response_ready.set()
+            message_response.response_ready.set()
+        finally:
+            message_response.message_sent.set()
+            
 
     #reader thread
     def close(self):

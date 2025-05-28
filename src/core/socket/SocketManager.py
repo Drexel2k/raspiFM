@@ -150,7 +150,7 @@ class SocketManager:
 
         #todo: maybe don't shutdown the whole process if data cannot be send to one client.
         if not request.message_sent.wait(self.__socket_timeout):
-            raise Exception("core send_message_to_client socket timeout")
+            raise Exception("raspifm core send_message_to_client socket timeout")
 
         if not request.transfer_exception is None:
             raise request.transfer_exception

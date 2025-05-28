@@ -27,7 +27,7 @@ class SocketManager():
         self.__run_selector = True
         self.__write_queue = response_queue
         self.__messageid = 0
-        self.__socket_timeout = 10
+        self.__socket_timeout = 5
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
@@ -62,10 +62,11 @@ class SocketManager():
         request = MessageResponse(socketstrings.core_socketpath_string, {
             socketstrings.message_string: {socketstrings.message_string: query, socketstrings.args_string:args}
         }, True)
+        
         self.__write_queue.put(request)
 
         if not request.response_ready.wait(self.__socket_timeout):
-            raise Exception("raspifm_client socket timeout")
+            raise Exception("raspifm client socket timeout")
 
         if not request.transfer_exception is None:
             raise request.transfer_exception

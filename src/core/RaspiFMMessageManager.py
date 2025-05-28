@@ -18,10 +18,11 @@ from core.players.SpotifyInfo import SpotifyInfo
 from core.socket.SocketManager import SocketManager
 
 class RaspiFMMessageManager:
-    __slots__ = ["__clients_with_spotify_update_subscriptions", "__socket_manager"]
+    __slots__ = ["__clients_with_spotify_update_subscriptions", "__socket_manager", "__socket_timeout"]
     __instance:RaspiFMMessageManager = None
     __clients_with_spotify_update_subscriptions:list
     __socket_manager:SocketManager
+    __socket_timeout:float
 
     def __new__(cls):
         if cls.__instance is None:
@@ -32,6 +33,7 @@ class RaspiFMMessageManager:
     def __init(self):
         self.__socket_manager = None
         self.__clients_with_spotify_update_subscriptions = []
+        self.__socket_timeout = 5
 
     def handle_messages(self, raspifm:RaspiFM, raspifm_call_queue:Queue) -> None:
         try:
@@ -56,9 +58,16 @@ class RaspiFMMessageManager:
                                                                                                                 "raspifm_shutdown"]:
                             if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "players_status_subscribe":
                                 self.__clients_with_spotify_update_subscriptions.append(raspifm_call.socket_address)
-                            
+
                             raspifm_call.response = {socketstrings.result_string: None }
                             write_queue.put(raspifm_call)
+
+                            #todo: unify waiting and exception checking which exists over several classes
+                            if not raspifm_call.message_sent.wait(self.__socket_timeout):
+                                raise Exception("raspifm core socket timeout")
+
+                            if not raspifm_call.transfer_exception is None:
+                                raise raspifm_call.transfer_exception
 
                             if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] == "raspifm_shutdown":
                                 run = False
@@ -83,6 +92,12 @@ class RaspiFMMessageManager:
                                 raspifm_call.response = {socketstrings.result_string: None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
 
                             write_queue.put(raspifm_call)
+
+                            if not raspifm_call.message_sent.wait(self.__socket_timeout):
+                                raise Exception("raspifm core socket timeout")
+
+                            if not raspifm_call.transfer_exception is None:
+                                raise raspifm_call.transfer_exception
                         
                 if  isinstance(raspifm_call, RaspiFMMessage):
                     if raspifm_call.message[socketstrings.message_string] == "spotify_change":
