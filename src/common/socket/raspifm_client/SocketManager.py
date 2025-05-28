@@ -12,13 +12,14 @@ from common.Exceptions.InvalidOperationError import InvalidOperationError
 
 class SocketManager():
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__write_queue", "__socket_transfermanager", "__messageid", "__run_selector"]
+    __slots__ = ["__socket_selector", "__write_queue", "__socket_transfermanager", "__messageid", "__run_selector", "__socket_timeout"]
     __socket_selector:DefaultSelector
 
     __write_queue:Queue
     __socket_transfermanager:SocketTransferManager
     __messageid:int
     __run_selector:bool
+    __socket_timeout:float
 
     def __init__(self, read_queue:Queue, response_queue:Queue):
         super().__init__()
@@ -26,6 +27,7 @@ class SocketManager():
         self.__run_selector = True
         self.__write_queue = response_queue
         self.__messageid = 0
+        self.__socket_timeout = 10
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
@@ -62,12 +64,12 @@ class SocketManager():
         }, True)
         self.__write_queue.put(request)
 
-        request.response_ready.wait()
+        if not request.response_ready.wait(self.__socket_timeout):
+            raise Exception("raspifm_client socket timeout")
 
         if not request.transfer_exception is None:
             raise request.transfer_exception
         
-        request.response_ready.wait()
         if request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] != 200:
             if request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] == 500 and \
                 socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string] and \
@@ -82,14 +84,18 @@ class SocketManager():
                                            request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string],
                                            request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string],
                                            request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string])
+            elif request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string] == 404 and \
+                socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string] and \
+                    request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string] == 100:
+                raise AttributeError(request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string])
             else:
-                error_info = f'Something went wrong in raspiFM core. Status code: \
-                    {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, \
-                        \status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}'
+                error_info = "Something went wrong in raspiFM core. Status code: "
+                error_info = error_info + f'{request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, '
+                error_info = error_info +  f'status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}'
                 
                 if socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string]:
-                    error_info = error_info + f', status additional info code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string]}, \
-                        status additional info message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string]}'
+                    error_info = error_info + f', status additional info code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string]}, '
+                    error_info = error_info + f'status additional info message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string]}'
 
                 error_info = error_info + "."
                 raise ValueError(error_info)

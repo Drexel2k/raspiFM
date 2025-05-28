@@ -1,4 +1,4 @@
-import traceback
+import os, signal, traceback
 
 from common.Exceptions.InvalidOperationError import InvalidOperationError
 from webui.run import app
@@ -6,7 +6,6 @@ from flask import Response, make_response, render_template, request
 
 from common import utils
 from common import json
-from common.json import UUIDEncoder
 from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
 from webui.ViewProxies.FavoriteListView import FavoriteListView
 from webui.ViewProxies.RadioStationView import RadioStationView
@@ -267,12 +266,16 @@ def get_error_response(e):
     #errorNo is uses in JavaScript to show more helpful error messages
     if isinstance(e, RadioBrowserApiError):
         traceback.print_exc() 
-        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 2, "errorType": type(e).__name__, "error": e.additional_info_message}, encoder=UUIDEncoder), 500)
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 2, "errorType": type(e).__name__, "error": e.additional_info_message}), 500)
     elif isinstance(e, InvalidOperationError):
-        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 1, "errorType": type(e).__name__, "error": e.additional_info_message}, encoder=UUIDEncoder), 422)
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 1, "errorType": type(e).__name__, "error": e.additional_info_message}), 422)
+    elif isinstance(e, AttributeError):
+        traceback.print_exc() 
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": str(e)}), 404)
     else:
         traceback.print_exc() 
-        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}, encoder=UUIDEncoder), 500)
-
+        response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
+        #restart gunicorn worker on unexpected exception, raspifm core socket won't recover once in broken pipe state e.g.
+        os.kill(os.getpid(),signal.SIGTERM)
     response.mimetype = "application/json"
     return response

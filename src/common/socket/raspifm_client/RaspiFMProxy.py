@@ -221,7 +221,13 @@ class RaspiFMProxy():
     def settings_changeproperty(self, property:str, value:str) -> None:
         self.__socket_manager.query_raspifm_core("settings_changeproperty", {"property":property, "value":value}, False)
 
-    def raspifm_shutdown(self) -> None:
-        self.__socket_manager.query_raspifm_core("raspifm_shutdown", {"reason": None}, False)
+    def raspifm_shutdown(self, shutdown_core:bool = True) -> None:
+        if shutdown_core:
+            try:
+                self.__socket_manager.query_raspifm_core("raspifm_shutdown", {"reason": None}, False)
+            except:
+                #if core shutdown not possible, continue exiting other processes.
+                pass
+            
         self.__socket_manager.shutdown()
         self.__read_queue.put(socketstrings.shutdown_string)

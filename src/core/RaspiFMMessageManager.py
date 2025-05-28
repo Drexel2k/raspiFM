@@ -64,21 +64,20 @@ class RaspiFMMessageManager:
                                 run = False
                                 self.__shutdown_all("Shutdown by service request, probably touchUI shutdown.")
                         else:
-                            func = getattr(raspifm, raspifm_call.message[socketstrings.message_string][socketstrings.message_string])
-
-                            result_object = None
-
                             try:
+                                func = getattr(raspifm, raspifm_call.message[socketstrings.message_string][socketstrings.message_string])
+
+                                result_object = None
+
                                 if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
                                     result_object = func()                                 
                                 else:
                                     result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))   
-                            except (URLError) as URLError_exception:
+                            except (URLError, AttributeError) as app_exception:
                                 traceback.print_exc()
-                                raspifm_call.response_exception = URLError_exception
-                            except (InvalidOperationError) as InvalidOperationError_exception:
+                                raspifm_call.response_exception = app_exception
+                            except InvalidOperationError as InvalidOperationError_exception:
                                 raspifm_call.response_exception = InvalidOperationError_exception
-
 
                             if raspifm_call.response_exception is None:      
                                 raspifm_call.response = {socketstrings.result_string: None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}

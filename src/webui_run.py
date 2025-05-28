@@ -1,5 +1,9 @@
 #gunicorn needs app object on this level
 from webui.run import app
+from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
+
+def worker_exit(server, worker):
+    RaspiFMProxy().raspifm_shutdown(False)
 
 #on development we use the flask development server, not executed with gunicorn
 if __name__ == '__main__':

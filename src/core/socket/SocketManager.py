@@ -16,7 +16,7 @@ from core.business.InvalidOperationError import InvalidOperationError
 
 class SocketManager:
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets", "__socket_closed_callback", "__messageid", "__run_selector", "__sockets_lock", "__message_queue"]
+    __slots__ = ["__socket_selector", "__read_queue", "__write_queue", "__client_sockets", "__socket_closed_callback", "__messageid", "__run_selector", "__sockets_lock", "__message_queue", "__socket_timeout"]
     __socket_selector:DefaultSelector
     __read_queue:Queue
     __write_queue:Queue
@@ -26,6 +26,7 @@ class SocketManager:
     __run_selector:bool
     __sockets_lock:Lock
     __message_queue:Queue
+    __socket_timeout:float
 
     def __init__(self, message_queue:Queue, read_queue:Queue, response_queue:Queue, socket_closed_callback:callable=None):
         self.__socket_selector = DefaultSelector()
@@ -37,6 +38,7 @@ class SocketManager:
         self.__run_selector = True
         self.__sockets_lock = Lock()
         self.__message_queue = message_queue
+        self.__socket_timeout = 5
 
         raspifm_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         if os.path.exists(socketstrings.core_socketpath_string):
@@ -111,6 +113,13 @@ class SocketManager:
                                     socketstrings.message_string: "Unprocessable Entity",
                                     socketstrings.additional_info_code_string: queue_item.response_exception.code,
                                     socketstrings.additional_info_message_string: queue_item.response_exception.message}}
+                        elif isinstance(queue_item.response_exception, AttributeError):
+                            additional_header = {
+                                socketstrings.service_status_string: {
+                                    socketstrings.code_string: 404,
+                                    socketstrings.message_string: "Not Found",
+                                    socketstrings.additional_info_code_string: 100,
+                                    socketstrings.additional_info_message_string: str(queue_item.response_exception)}}
                         else:
                             additional_header = {
                                 socketstrings.service_status_string: {
@@ -138,7 +147,11 @@ class SocketManager:
             socketstrings.message_string:{ socketstrings.message_string: query, socketstrings.args_string: args}
         })
         self.__write_queue.put(request)
-        request.message_sent.wait()
+
+        #todo: maybe don't shutdown the whole process if data cannot be send to one client.
+        if not request.message_sent.wait(self.__socket_timeout):
+            raise Exception("core send_message_to_client socket timeout")
+
         if not request.transfer_exception is None:
             raise request.transfer_exception
 
