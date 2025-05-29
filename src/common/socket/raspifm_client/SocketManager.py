@@ -27,12 +27,12 @@ class SocketManager():
         self.__run_selector = True
         self.__write_queue = response_queue
         self.__messageid = 0
-        self.__socket_timeout = 5
+        self.__socket_timeout = 10
         
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(socketstrings.core_socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue, socket_timeout=self.__socket_timeout)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
