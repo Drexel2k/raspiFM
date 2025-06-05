@@ -98,6 +98,7 @@ class DBusSpotifyMonitor:
             while run:
                 current_meta = None
                 signal_message = None
+                send_message = None
                 try:
                     signal_message = self.__dbus_connection.recv_until_filtered(self.__dbus_queue)
                 #only solution found to unblock the recv_until_filtered call
@@ -105,12 +106,15 @@ class DBusSpotifyMonitor:
                     if e.errno == 104:
                         run = False
                         continue
-
+                
+                send_message = False
                 if signal_message.header.fields[HeaderFields.path] == "/org/mpris/MediaPlayer2":
                     #spotify state changed
+                    
                     if not (dbusstrings.spotifydpropertyplaybackstatus in signal_message.body[1] or dbusstrings.spotifydpropertymetadata in signal_message.body[1]):
                         continue
-
+                    
+                    send_message = True
                     current_meta = self.__get_meta_from_change_properties(signal_message.body[1])
 
                 if signal_message.header.fields[HeaderFields.path] == "/org/freedesktop/DBus":
@@ -120,6 +124,7 @@ class DBusSpotifyMonitor:
 
                     if servicename.startswith("org.mpris.MediaPlayer2.spotifyd.instance"):
                         #service new on the bus
+                        send_message = True
                         if utils.str_isnullorwhitespace(newowner):
                             self.__spotify_dbusname = servicename
                             self.__spotify_service_presence_change()
@@ -130,14 +135,15 @@ class DBusSpotifyMonitor:
                             self.__spotify_service_presence_change()
                             current_meta = None
                 
-                if current_meta != previous_meta:
-                    previous_meta = current_meta
-                    self.__message_queue.put(RaspiFMMessage({
-                                                                "message":"spotify_change",
-                                                                "args":{
-                                                                            "spotify_currently_playing":current_meta
-                                                                        }
-                                                            }))
+                if send_message:
+                    if current_meta != previous_meta:
+                        previous_meta = current_meta
+                        self.__message_queue.put(RaspiFMMessage({
+                                                                    "message":"spotify_change",
+                                                                    "args":{
+                                                                                "spotify_currently_playing":current_meta
+                                                                            }
+                                                                }))
         except:
             run = False
             self.__message_queue.put(RaspiFMMessage({
