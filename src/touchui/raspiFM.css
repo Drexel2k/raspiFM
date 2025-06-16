@@ -3,22 +3,6 @@
     font-size: 30px;
 }}
 
-/* Make volume slider on radio widget bigger */
-QSlider {{
-    height: 40px;
-    }}
-QSlider::groove:horizontal {{
-    height: 5px;
-/* Border-radius must be set here, otherwise handle sizes don't work
-   The setting makes no difference in other visual appearance. */
-    border-radius: 0px;
-    }}
-QSlider::handle:horizontal {{
-    height: 40px;
-    width: 40px;
-    margin: -15px 0px;
-    }}
-
 /* No background for focus on button, focus is lost from main side menu
    when pushing a button on a content widget, stop radio e.g. 
    So background is manually set to stay on the active main menu button  */

@@ -135,7 +135,7 @@ class RaspiFMMessageManager:
             self.__socket_manager.shutdown()
 
             if not utils.str_isnullorwhitespace(reason):
-                print(f'Shuttiong down core due to: {reason}')
+                print(f'Shutting down core due to: {reason}')
         except:
             traceback.print_exc()
         

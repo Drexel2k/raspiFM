@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("raspiFM touch")
         scroll = QScrollArea()
+        scroll.setStyleSheet("QScrollBar:vertical { width: 15px; } QScrollBar:horizontal { height: 15px; }")
         
         self.__mainwidget = QWidget()
         self.__mainwidget.setLayout(QHBoxLayout())

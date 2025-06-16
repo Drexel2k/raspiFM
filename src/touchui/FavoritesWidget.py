@@ -30,6 +30,7 @@ class FavoritesWidget(QWidget):
         scrollarea = QScrollArea()
         scrollarea.setWidgetResizable(True)
         scrollarea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scrollarea.setStyleSheet("QScrollBar:vertical { width: 15px; }")
         scrollarea.setWidget(scrollwidget)
 
         self.__cbo_favoritelists = QComboBox()
@@ -63,7 +64,8 @@ class FavoritesWidget(QWidget):
             station = station["radiostation"]
             button = PushButtonData(station)
             button.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            button.setMaximumWidth(self.width() - 45)
+            #also set in resizeEvent
+            button.setMaximumWidth(self.width() - 52)
             button.setFixedHeight(50)
             button.setStyleSheet("QPushButton { text-align:left; }")
 
@@ -100,5 +102,6 @@ class FavoritesWidget(QWidget):
             c = self.__scrolllayout.count()
             while itemindex < self.__scrolllayout.count() - 1: #spacer at end
                 layoutitem = self.__scrolllayout.itemAt(itemindex)
-                layoutitem.widget().setMaximumWidth(self.width() - 45)
+                #also set in __update_favoritesbuttons
+                layoutitem.widget().setMaximumWidth(self.width() - 52)
                 itemindex +=1

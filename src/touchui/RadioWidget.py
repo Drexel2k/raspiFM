@@ -121,7 +121,12 @@ class RadioWidget(QWidget):
             layout.addWidget(self.__btn_playcontrol, alignment = Qt.AlignmentFlag.AlignHCenter)
 
             volslider = QSlider(Qt.Orientation.Horizontal)
-            volslider.sliderMoved.connect(self.__volslider_moved)
+            #Make volume slider on radio widget bigger
+            #Border-radius must be set here, otherwise handle sizes don't work
+            #The setting makes no difference in other visual appearance.
+            volslider.setStyleSheet("QSlider {height: 40px;} QSlider::groove:horizontal {height: 15px; border-radius: 0px;} QSlider::handle:horizontal {height: 40px; width: 40px; margin: -15px 0px;}")
+            volslider.setTracking(False)
+            volslider.valueChanged.connect(self.__volslider_value_changed)
             volslider.setValue(RaspiFMQtProxy().radio_getvolume())
             layout.addWidget(volslider)
 
@@ -166,10 +171,10 @@ class RadioWidget(QWidget):
         else:
             self.beforeplaystarting.emit()
             RaspiFMQtProxy().radio_play()
-            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg"))
-
-    def __volslider_moved(self, value:int) -> None:
-       RaspiFMQtProxy().radio_setvolume(value)
+            self.__btn_playcontrol.setIcon(QIcon("touchui/images/stop-fill-rpi.svg")) 
+    
+    def __volslider_value_changed(self, value:int) -> None:
+        RaspiFMQtProxy().radio_setvolume(value)
 
     def radio_update(self, info:str):
         self.__lbl_nowplaying.setText(info)
