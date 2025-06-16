@@ -124,7 +124,7 @@ class RadioWidget(QWidget):
             #Make volume slider on radio widget bigger
             #Border-radius must be set here, otherwise handle sizes don't work
             #The setting makes no difference in other visual appearance.
-            volslider.setStyleSheet("QSlider {height: 40px;} QSlider::groove:horizontal {height: 15px; border-radius: 0px;} QSlider::handle:horizontal {height: 40px; width: 40px; margin: -15px 0px;}")
+            volslider.setStyleSheet("QSlider {height: 40px;} QSlider::groove:horizontal {height: 25px; border-radius: 0px;} QSlider::handle:horizontal {height: 40px; width: 40px; margin: -15px 0px;}")
             volslider.setTracking(False)
             volslider.valueChanged.connect(self.__volslider_value_changed)
             volslider.setValue(RaspiFMQtProxy().radio_getvolume())
