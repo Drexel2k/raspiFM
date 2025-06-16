@@ -51,11 +51,11 @@ class FavoriteList:
     def from_default(cls, name:str=None, displayorder:int=0) -> FavoriteList:
         obj = cls()
 
-        obj.__setattr__(f"_FavoriteList__uuid", uuid4())
-        obj.__setattr__(f"_FavoriteList__name", name)
-        obj.__setattr__(f"_FavoriteList__isdefault", False)
-        obj.__setattr__(f"_FavoriteList__stations", [])
-        obj.__setattr__(f"_FavoriteList__displayorder", displayorder)
+        obj.__setattr__("_FavoriteList__uuid", uuid4())
+        obj.__setattr__("_FavoriteList__name", name)
+        obj.__setattr__("_FavoriteList__isdefault", False)
+        obj.__setattr__("_FavoriteList__stations", [])
+        obj.__setattr__("_FavoriteList__displayorder", displayorder)
 
         return obj
 

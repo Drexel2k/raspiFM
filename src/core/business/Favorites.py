@@ -20,7 +20,7 @@ class Favorites:
 
         favlist = FavoriteList.from_default("Default")
         favlist.isdefault = True
-        obj.__setattr__(f"_Favorites__favoritelists", [favlist])
+        obj.__setattr__("_Favorites__favoritelists", [favlist])
 
         return obj
 

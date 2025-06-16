@@ -66,17 +66,17 @@ class RadioStation:
         
         obj = cls()
 
-        obj.__setattr__(f"_RadioStation__uuid", UUID(uuid))
-        obj.__setattr__(f"_RadioStation__name", name)
-        obj.__setattr__(f"_RadioStation__url", url)
-        obj.__setattr__(f"_RadioStation__countrycode", countrycode)
-        obj.__setattr__(f"_RadioStation__languagecodes", languagecodes)
-        obj.__setattr__(f"_RadioStation__homepage", homepage)
-        obj.__setattr__(f"_RadioStation__faviconb64", faviconb64)
-        obj.__setattr__(f"_RadioStation__faviconextension", faviconextension)
-        obj.__setattr__(f"_RadioStation__codec", codec)
-        obj.__setattr__(f"_RadioStation__bitrate", bitrate)
-        obj.__setattr__(f"_RadioStation__tags", tags)
+        obj.__setattr__("_RadioStation__uuid", UUID(uuid))
+        obj.__setattr__("_RadioStation__name", name)
+        obj.__setattr__("_RadioStation__url", url)
+        obj.__setattr__("_RadioStation__countrycode", countrycode)
+        obj.__setattr__("_RadioStation__languagecodes", languagecodes)
+        obj.__setattr__("_RadioStation__homepage", homepage)
+        obj.__setattr__("_RadioStation__faviconb64", faviconb64)
+        obj.__setattr__("_RadioStation__faviconextension", faviconextension)
+        obj.__setattr__("_RadioStation__codec", codec)
+        obj.__setattr__("_RadioStation__bitrate", bitrate)
+        obj.__setattr__("_RadioStation__tags", tags)
 
         return obj
 

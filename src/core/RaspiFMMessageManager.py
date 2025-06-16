@@ -105,7 +105,7 @@ class RaspiFMMessageManager:
                                 if self.__logger.level <= logging.DEBUG:
                                     self.__logger.debug(f"Response: {raspifm_call.response}, exception: {raspifm_call.response_exception}")
                                 else:
-                                    self.__logger.info(f"Response t: {raspifm_call.message[socketstrings.message_string][socketstrings.message_string]} ready, exception: {raspifm_call.response_exception}")
+                                    self.__logger.info(f"Response to: {raspifm_call.message[socketstrings.message_string][socketstrings.message_string]} ready, exception: {raspifm_call.response_exception}")
 
                             write_queue.put(raspifm_call)
 
@@ -156,7 +156,7 @@ class RaspiFMMessageManager:
         except:
             if not utils.str_isnullorwhitespace(reason):
                 if not self.__logger is None:
-                    self.__logger.error(f"Core shutdown error: {traceback.print_exc()}")
+                    self.__logger.error(f"Core shutdown error: {traceback.format_exc()}")
         
     @staticmethod
     def deserialize_arguments(method_name:str, method_arguments:dict) -> dict:

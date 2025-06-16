@@ -21,10 +21,10 @@ class TagList:
         
         obj = cls()
 
-        obj.__setattr__(f"_TagList__lastupdate", datetime.now())
+        obj.__setattr__("_TagList__lastupdate", datetime.now())
         tagsinternal = list(tags)
         tagsinternal.sort()
-        obj.__setattr__(f"_TagList__taglist", tagsinternal)
+        obj.__setattr__("_TagList__taglist", tagsinternal)
 
         return obj
 

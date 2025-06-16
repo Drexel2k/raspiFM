@@ -101,7 +101,7 @@ class SocketTransferManager:
                     raise ValueError(f"Missing required header '{requestheader}'.")
                 
             if socketstrings.messageid_string not in self.__current_message_header and socketstrings.responseto_string not in self.__current_message_header:
-                raise ValueError(f"Missing required header 'messageid' or 'responseto'.")
+                raise ValueError("Missing required header 'messageid' or 'responseto'.")
 
     #reader thread
     def __process_message(self):
