@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from logging import Logger
+import logging
 import traceback
 from queue import Queue
 from threading import Thread
 from uuid import UUID
 from urllib.error import URLError
 
-from common import socketstrings, utils
+from common import log, socketstrings, utils
 from common.socket.MessageResponse import MessageResponse
 from core.RaspiFM import RaspiFM
 from core.RaspiFMMessage import RaspiFMMessage
@@ -18,11 +20,12 @@ from core.players.SpotifyInfo import SpotifyInfo
 from core.socket.SocketManager import SocketManager
 
 class RaspiFMMessageManager:
-    __slots__ = ["__clients_with_spotify_update_subscriptions", "__socket_manager", "__socket_timeout"]
+    __slots__ = ["__clients_with_spotify_update_subscriptions", "__socket_manager", "__socket_timeout", "__logger"]
     __instance:RaspiFMMessageManager = None
     __clients_with_spotify_update_subscriptions:list
     __socket_manager:SocketManager
     __socket_timeout:float
+    __logger:Logger
 
     def __new__(cls):
         if cls.__instance is None:
@@ -31,6 +34,7 @@ class RaspiFMMessageManager:
         return cls.__instance
     
     def __init(self):
+        self.__logger = logging.getLogger(log.core_logger_name)
         self.__socket_manager = None
         self.__clients_with_spotify_update_subscriptions = []
         self.__socket_timeout = 5
@@ -38,7 +42,7 @@ class RaspiFMMessageManager:
     def handle_messages(self, raspifm:RaspiFM, raspifm_call_queue:Queue) -> None:
         try:
             write_queue = Queue()
-            self.__socket_manager = SocketManager(raspifm_call_queue, raspifm_call_queue, write_queue, self.socket_closed)
+            self.__socket_manager = SocketManager(raspifm_call_queue, write_queue, self.socket_closed, logger=self.__logger)
             server_socket_read_thread = Thread(target=self.__socket_manager.read)
             server_socket_read_thread.start()
 
@@ -52,6 +56,9 @@ class RaspiFMMessageManager:
                     #the server expects only queries and no reponses
                     #in the read queue as it doesn't send any queries
                     #which expect a response.
+                    if not self.__logger is None:
+                        self.__logger.info(f"Received message: {raspifm_call.message[socketstrings.message_string][socketstrings.message_string]}")
+
                     if raspifm_call.response is None:
                         #special calls which are not addressed to raspiFM core
                         if raspifm_call.message[socketstrings.message_string][socketstrings.message_string] in ["players_status_subscribe",
@@ -81,15 +88,24 @@ class RaspiFMMessageManager:
                                 if raspifm_call.message[socketstrings.message_string][socketstrings.args_string] is None:
                                     result_object = func()                                 
                                 else:
-                                    result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))   
+                                    result_object = func(**RaspiFMMessageManager.deserialize_arguments(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], raspifm_call.message[socketstrings.message_string][socketstrings.args_string]))
+
                             except (URLError, AttributeError) as app_exception:
-                                traceback.print_exc()
+                                if not self.__logger is None:
+                                    self.__logger.error(traceback.print_exc())
+
                                 raspifm_call.response_exception = app_exception
                             except InvalidOperationError as InvalidOperationError_exception:
                                 raspifm_call.response_exception = InvalidOperationError_exception
 
                             if raspifm_call.response_exception is None:      
                                 raspifm_call.response = {socketstrings.result_string: None if result_object is None else RaspiFMMessageManager.serialize_result_object(raspifm_call.message[socketstrings.message_string][socketstrings.message_string], result_object)}
+
+                            if not self.__logger is None:
+                                if self.__logger.level <= logging.DEBUG:
+                                    self.__logger.debug(f"Response: {raspifm_call.response}, exception: {raspifm_call.response_exception}")
+                                else:
+                                    self.__logger.info(f"Response t: {raspifm_call.message[socketstrings.message_string][socketstrings.message_string]} ready, exception: {raspifm_call.response_exception}")
 
                             write_queue.put(raspifm_call)
 
@@ -135,9 +151,12 @@ class RaspiFMMessageManager:
             self.__socket_manager.shutdown()
 
             if not utils.str_isnullorwhitespace(reason):
-                print(f'Shutting down core due to: {reason}')
+                if not self.__logger is None:
+                    self.__logger.info(f"Shutting down core due to: {reason}")
         except:
-            traceback.print_exc()
+            if not utils.str_isnullorwhitespace(reason):
+                if not self.__logger is None:
+                    self.__logger.error(f"Core shutdown error: {traceback.print_exc()}")
         
     @staticmethod
     def deserialize_arguments(method_name:str, method_arguments:dict) -> dict:
@@ -186,7 +205,8 @@ class RaspiFMMessageManager:
             serialized_result_object = str(result_object)
         elif method_name == "favorites_getlists":
             serialized_result_object = [favorite_list.to_dict() for favorite_list in result_object]
-        elif method_name == "settings_touch_startwith":
+        elif method_name in ["settings_touch_startwith",
+                                "settings_all_loglevel"]:
             serialized_result_object = result_object.value
         elif method_name == "countries_get":
             serialized_result_object = result_object.countrylist

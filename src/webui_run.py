@@ -1,6 +1,10 @@
+import logging
+
 #gunicorn needs app object on this level
 from webui.run import app
 from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
+
+logger = logging.getLogger(__name__)
 
 def worker_exit(server, worker):
     RaspiFMProxy().raspifm_shutdown(False)
