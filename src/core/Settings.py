@@ -72,13 +72,13 @@ class UserSettings:
     def from_default(cls) -> UserSettings:    
         obj = cls()
 
-        obj.__setattr__(f"_UserSettings__touch_runontouch", True)
-        obj.__setattr__(f"_UserSettings__web_defaultlanguage", "german")
-        obj.__setattr__(f"_UserSettings__web_defaultcountry", "DE")
-        obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)
-        obj.__setattr__(f"_UserSettings__touch_laststation", None)
-        obj.__setattr__(f"_UserSettings__touch_volume", 50)
-        obj.__setattr__(f"_UserSettings__all_loglevel", LogLevel.Debug)
+        obj.__setattr__("_UserSettings__touch_runontouch", True)
+        obj.__setattr__("_UserSettings__web_defaultlanguage", "german")
+        obj.__setattr__("_UserSettings__web_defaultcountry", "DE")
+        obj.__setattr__("_UserSettings__touch_startwith", StartWith.LastStation)
+        obj.__setattr__("_UserSettings__touch_laststation", None)
+        obj.__setattr__("_UserSettings__touch_volume", 50)
+        obj.__setattr__("_UserSettings__all_loglevel", LogLevel.Debug)
 
         return obj
 

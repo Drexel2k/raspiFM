@@ -16,7 +16,7 @@ class RadioStations:
     def from_default(cls) -> RadioStations:        
         obj = cls()
 
-        obj.__setattr__(f"_RadioStations__stationlist", [])
+        obj.__setattr__("_RadioStations__stationlist", [])
 
         return obj
 

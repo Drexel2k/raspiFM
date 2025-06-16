@@ -3,12 +3,12 @@ import os
 import subprocess
 from subprocess import Popen
 
-log = False
+log = True
 if log:
     #sudo mkdir /var/log/raspifm
     #sudo chown raspifm:raspifm /var/log/raspifm
     now = datetime.datetime.now()
-    started_string = f"[{now.strftime("%Y-%m-%d %H:%M:%S.%f")}] RaspiFM started.\n"
+    started_string = f"[{now.strftime('%Y-%m-%d %H:%M:%S.%f')}] RaspiFM started.\n"
     #core
     log_env = os.environ.copy()
     log_env["PYTHONUNBUFFERED"] = "1"

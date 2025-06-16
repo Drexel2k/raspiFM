@@ -35,7 +35,7 @@ class FavoritesWidget(QWidget):
 
         self.__cbo_favoritelists = QComboBox()
         self.__cbo_favoritelists.setFixedHeight(50)
-        self.__cbo_favoritelists.setStyleSheet(f"QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}")
+        self.__cbo_favoritelists.setStyleSheet(f"QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ['QTMATERIAL_PRIMARYCOLOR']}; }}")
 
         for list in sorted(RaspiFMQtProxy().favorites_getlists(), key=lambda favlistinternal: favlistinternal["displayorder"]):
             name = list["name"] if not utils.str_isnullorwhitespace(list["name"]) else "List w/o name"
@@ -71,7 +71,7 @@ class FavoritesWidget(QWidget):
 
             qx = QPixmap()
             if not station["faviconb64"] is None:
-                qx.loadFromData(base64.b64decode(station["faviconb64"]), f"{station["faviconextension"]}")
+                qx.loadFromData(base64.b64decode(station["faviconb64"]), station["faviconextension"])
             else:
                 renderer =  QSvgRenderer("touchui/images/broadcast-pin-rpi.svg")
                 image = QImage(61, 42, QImage.Format.Format_ARGB32)
@@ -85,7 +85,7 @@ class FavoritesWidget(QWidget):
             button.setIconSize(QSize(61, 42))
             button.setIcon(favIcon)
 
-            button.setText(f" {station["name"]}")
+            button.setText(f" {station['name']}")
             button.clicked.connect(self.__buttonclicked)
             self.__scrolllayout.insertWidget(self.__scrolllayout.count() - 1, button)
 
@@ -104,4 +104,4 @@ class FavoritesWidget(QWidget):
                 layoutitem = self.__scrolllayout.itemAt(itemindex)
                 #also set in __update_favoritesbuttons
                 layoutitem.widget().setMaximumWidth(self.width() - 52)
-                itemindex +=1
+                itemindex += 1

@@ -23,8 +23,8 @@ class LanguageList:
         
         obj = cls()
 
-        obj.__setattr__(f"_LanguageList__lastupdate", datetime.now())
-        obj.__setattr__(f"_LanguageList__languagelist", languagelist)
+        obj.__setattr__("_LanguageList__lastupdate", datetime.now())
+        obj.__setattr__("_LanguageList__languagelist", languagelist)
 
         return obj
 

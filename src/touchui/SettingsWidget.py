@@ -36,7 +36,7 @@ class SettingsWidget(QWidget):
         
         self.__cbo_startwith = QComboBox()
         self.__cbo_startwith.setFixedHeight(50)
-        self.__cbo_startwith.setStyleSheet(f"QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ["QTMATERIAL_PRIMARYCOLOR"]}; }}")
+        self.__cbo_startwith.setStyleSheet(f"QComboBox {{ color:white; }} QComboBox:focus {{ color:{os.environ['QTMATERIAL_PRIMARYCOLOR']}; }}")
         self.__cbo_startwith.addItem("Last Radiostation", 1) #StartWith.LastStation
         self.__cbo_startwith.addItem("Default Favorite List", 2) #StartWith.DefaultList
 
