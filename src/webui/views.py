@@ -1,21 +1,32 @@
+import logging
 import os, signal, traceback
 
 from common.Exceptions.InvalidOperationError import InvalidOperationError
 from webui.run import app
 from flask import Response, make_response, render_template, request
 
-from common import utils
+from common import log, utils
 from common import json
 from common.socket.raspifm_client.RaspiFMProxy import RaspiFMProxy
 from webui.ViewProxies.FavoriteListView import FavoriteListView
 from webui.ViewProxies.RadioStationView import RadioStationView
 from common.Exceptions.RadioBrowserApiError import RadioBrowserApiError
 
+logger = logging.getLogger(log.web_logger_name)
+
+log_level = RaspiFMProxy().settings_all_loglevel()
+if log_level < 100:
+    log_level = log_level * 10
+    logger.setLevel(log_level)
+else:
+    logger.disabled = True
+
 @app.route("/")
 def home() -> str:
     try:
         return render_template("home.html")
     except BaseException as e:
+        logger.exception("Error in /: ")
         return get_error_response(e)
 
 @app.route("/favorites")
@@ -29,10 +40,13 @@ def favorites() -> str:
                                favoritelists=favoritelists,
                                favoritelist=RaspiFMProxy().favorites_getdefaultlist())
     except (RadioBrowserApiError):
+        logger.warning("RadioBrowser api error in /favorites")
         return render_template("radiobrowser_api_error.html", route="favorites")
     except (ConnectionRefusedError, FileNotFoundError):
+        logger.warning("RaspiFM Core not available in /favorites")
         return render_template("raspifm_service_not_available.html", route="favorites") 
     except BaseException as e:
+        logger.exception("Error in /favorites: ")
         return get_error_response(e)
 
 @app.route("/stationsearch")
@@ -101,11 +115,14 @@ def stationsearch() -> str:
                                 selected=selected,
                                 pagelast=pagelast,
                                 pagenext=pagenext)
-#    except (RadioBrowserApiError):
-#        return render_template("radiobrowser_api_error.html", route="stationsearch", current_args=args)
+    except (RadioBrowserApiError):
+        logger.warning("RadioBrowser api error in /stationsearch")
+        return render_template("radiobrowser_api_error.html", route="stationsearch", current_args=args)
     except (ConnectionRefusedError, FileNotFoundError):
+        logger.warning("RaspiFM Core not available in /stationsearch")
         return render_template("raspifm_service_not_available.html", route="stationsearch")
     except BaseException as e:
+        logger.exception("Error in /stationsearch: ")
         return get_error_response(e)
     
 @app.route("/taglist")
@@ -114,10 +131,13 @@ def taglist() -> str:
         taglist = RaspiFMProxy().tags_get()
         return render_template("taglist.html", tags=taglist)
     except (RadioBrowserApiError):
+        logger.warning("RadioBrowser api error in /taglist")
         return render_template("radiobrowser_api_error.html", route="taglist")
     except (ConnectionRefusedError, FileNotFoundError):
+        logger.warning("RaspiFM Core not available in /taglist")
         return render_template("raspifm_service_not_available.html", route="taglist") 
     except BaseException as e:
+        logger.exception("Error in /taglist: ")
         return get_error_response(e)
     
 @app.route("/settings")
@@ -133,8 +153,10 @@ def settings() -> str:
                                 languages=languages,
                                 selected=selected)
     except (ConnectionRefusedError, FileNotFoundError):
+        logger.warning("RaspiFM Core not available in /settings")
         return render_template("raspifm_service_not_available.html", route="settings") 
     except BaseException as e:
+        logger.exception("Error in /settings: ")
         return get_error_response(e)
 
 #from here are ajax endpoints:
@@ -146,6 +168,7 @@ def gettags() -> str:
         taglist = RaspiFMProxy().tags_get(form["filter"])
         return render_template("gettags.html", tags=taglist)
     except BaseException as e:
+        logger.exception("Error in /gettags: ")
         return get_error_response(e)
 
 #ajax
@@ -163,6 +186,7 @@ def changefavorite() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /changefavorite: ")
         return get_error_response(e)
 
 #ajax
@@ -177,6 +201,7 @@ def getfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /getfavoritelist: ")
         return get_error_response(e)
 
 #ajax
@@ -189,6 +214,7 @@ def addfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /addfavoritelist: ")
         return get_error_response(e)
 
 #ajax
@@ -201,6 +227,7 @@ def changefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /changefavoritelist: ")
         return get_error_response(e)
 
 #ajax
@@ -213,6 +240,7 @@ def deletefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /deletefavoritelist: ")
         return get_error_response(e)
 
 #ajax
@@ -224,6 +252,7 @@ def getfavoritelistcontent() -> str:
         return render_template("favoritelistcontent.html",
                                 favoritelist=favoritelist)
     except BaseException as e:
+        logger.exception("Error in /getfavoritelistcontent: ")
         return get_error_response(e)
     
 #ajax
@@ -236,6 +265,7 @@ def movefavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /movefavoritelist: ")
         return get_error_response(e)
 
 #ajax
@@ -248,6 +278,7 @@ def movestationinfavoritelist() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /movestationinfavoritelist: ")
         return get_error_response(e)
     
 #ajax
@@ -260,20 +291,18 @@ def changesettings() -> Response:
         response.mimetype = "application/json"
         return response
     except BaseException as e:
+        logger.exception("Error in /changesettings: ")
         return get_error_response(e)
 
 def get_error_response(e):
     #errorNo is uses in JavaScript to show more helpful error messages
     if isinstance(e, RadioBrowserApiError):
-        traceback.print_exc() 
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 2, "errorType": type(e).__name__, "error": e.additional_info_message}), 500)
     elif isinstance(e, InvalidOperationError):
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 1, "errorType": type(e).__name__, "error": e.additional_info_message}), 422)
     elif isinstance(e, AttributeError):
-        traceback.print_exc() 
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": str(e)}), 404)
     else:
-        traceback.print_exc() 
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
         #restart gunicorn worker on unexpected exception, raspifm core socket won't recover once in broken pipe state e.g.
         os.kill(os.getpid(),signal.SIGTERM)

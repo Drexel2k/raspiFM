@@ -1,3 +1,4 @@
+from logging import Logger
 import struct
 from socket import socket
 from queue import Queue
@@ -9,7 +10,7 @@ from common import json
 from common import socketstrings
 
 class SocketTransferManager:
-    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback", "__socket_timeout"]
+    __slots__ = ["__socket", "__socket_address", "__read_queue", "__receive_buffer", "__current_message_header", "__current_message_header_length", "__requests_without_response", "__requests_without_response_lock", "__buffer_size", "__close_callback", "__socket_timeout", "__logger"]
     __socket:socket
     __socket_address:str
     __read_queue:Queue
@@ -20,6 +21,7 @@ class SocketTransferManager:
     __close_callback:callable
     #todo: unify socket_timeouts which exist over several classes
     __socket_timeout:float
+    __logger:Logger
 
     #message can span over several read calls, bytes are removed, once a full part 
     #(header length, header or request content) is read, therefore read parts
@@ -27,10 +29,10 @@ class SocketTransferManager:
     __current_message_header_length:int
     __current_message_header:dict
 
-    def __init__(self, socket:socket, buffer_size:int, socket_address:str, request_queue:Queue, close_callback:callable=None, socket_timeout:float = 5):
+    def __init__(self, socket:socket, buffer_size:int, socket_address:str, read_queue:Queue, close_callback:callable=None, socket_timeout:float = 5, logger:Logger = None):
         self.__socket = socket
         self.__socket_address = socket_address
-        self.__read_queue = request_queue
+        self.__read_queue = read_queue
         self.__receive_buffer = b""
         self.__requests_without_response_lock = Lock()
         self.__requests_without_response = {}
@@ -39,6 +41,7 @@ class SocketTransferManager:
         self.__buffer_size = buffer_size
         self.__close_callback = close_callback
         self.__socket_timeout = socket_timeout
+        self.__logger = logger
 
     @property
     def socket(self) -> socket:
@@ -144,43 +147,44 @@ class SocketTransferManager:
     #writer thread
     #messages must be JSON serializable, only Python basics types allowed
     def send(self, message_response:MessageResponse, additional_header:dict):
-        content_bytes = b""
-        header = {}
-        if message_response.response is None and message_response.response_exception is None:
-            content_bytes = json.serialize_to_string_or_bytes(message_response.message[socketstrings.message_string], socketstrings.utf8_string)
-
-            if message_response.is_query:
-                with self.__requests_without_response_lock:
-                    self.__requests_without_response[additional_header[socketstrings.messageid_string]] = message_response
-        else:
-            if message_response.response_exception is None:
-                content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
-            else:
-                #On caught exception no response is there, but we need a respoonse which just sends a header
-                message_response.response = {}
-                
-            header[socketstrings.responseto_string] = message_response.message[socketstrings.header_string][socketstrings.messageid_string]
-            
-        header[socketstrings.contentencoding_string] = socketstrings.utf8_string,
-        header[socketstrings.contentlength_string] = len(content_bytes)
-        
-        header.update(additional_header)
-
-        if message_response.response is None and message_response.response_exception is None:
-            message_response.message[socketstrings.header_string] = header
-        else:
-            message_response.response[socketstrings.header_string] = header
-            
-        header_bytes = json.serialize_to_string_or_bytes(header, socketstrings.utf8_string)
-        message_header = struct.pack(">H", len(header_bytes))
-        message_bytes = message_header + header_bytes + content_bytes
-
-        sent = 0
-        current_package = 0
-        previous_package = 0
-        sleep_counter = 0
-        sleep_counter_limit = self.__socket_timeout * 10
         try:
+            content_bytes = b""
+            header = {}
+            if message_response.response is None and message_response.response_exception is None:
+                content_bytes = json.serialize_to_string_or_bytes(message_response.message[socketstrings.message_string], socketstrings.utf8_string)
+
+                if message_response.is_query:
+                    with self.__requests_without_response_lock:
+                        self.__requests_without_response[additional_header[socketstrings.messageid_string]] = message_response
+            else:
+                if message_response.response_exception is None:
+                    content_bytes = json.serialize_to_string_or_bytes(message_response.response, socketstrings.utf8_string)
+                else:
+                    #On caught exception no response is there, but we need a respoonse which just sends a header
+                    message_response.response = {}
+                    
+                header[socketstrings.responseto_string] = message_response.message[socketstrings.header_string][socketstrings.messageid_string]
+                
+            header[socketstrings.contentencoding_string] = socketstrings.utf8_string,
+            header[socketstrings.contentlength_string] = len(content_bytes)
+            
+            header.update(additional_header)
+
+            if message_response.response is None and message_response.response_exception is None:
+                message_response.message[socketstrings.header_string] = header
+            else:
+                message_response.response[socketstrings.header_string] = header
+                
+            header_bytes = json.serialize_to_string_or_bytes(header, socketstrings.utf8_string)
+            message_header = struct.pack(">H", len(header_bytes))
+            message_bytes = message_header + header_bytes + content_bytes
+
+            sent = 0
+            current_package = 0
+            previous_package = 0
+            sleep_counter = 0
+            sleep_counter_limit = self.__socket_timeout * 10
+
             while len(message_bytes) > 0:
                 buff = message_bytes[:self.__buffer_size]
                 try:
@@ -199,7 +203,9 @@ class SocketTransferManager:
                     if sleep_counter > sleep_counter_limit:
                         raise BlockingIOError_exception
 
-                    print("Waiting for Uinux socket...")
+                    if not self.__logger is None:
+                        self.__logger.info("Waiting for Uinux socket...")
+                        
                     time.sleep(0.1)
         except Exception as transfer_exception:
             #if sending fails also no response can be expected, so therefore set sending and response,

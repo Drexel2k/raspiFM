@@ -102,8 +102,8 @@ class RaspiFMProxy():
     def radio_set_currentstation(self, station_uuid:str) -> None:
         self.__socket_manager.query_raspifm_core("radio_set_currentstation", {"station_uuid":station_uuid}, False)
     
-    def settings_runontouch(self) -> bool:
-        result = self.__socket_manager.query_raspifm_core("settings_runontouch", None, True)
+    def settings_touch_runontouch(self) -> bool:
+        result = self.__socket_manager.query_raspifm_core("settings_touch_runontouch", None, True)
         result = result[socketstrings.result_string]
         return result
     
@@ -169,6 +169,11 @@ class RaspiFMProxy():
     
     def settings_web_defaultlanguage(self) -> str:
         result = self.__socket_manager.query_raspifm_core("settings_web_defaultlanguage", None, True)
+        result = result[socketstrings.result_string]
+        return result
+
+    def settings_all_loglevel(self) -> int:
+        result = self.__socket_manager.query_raspifm_core("settings_all_loglevel", None, True)
         result = result[socketstrings.result_string]
         return result
     

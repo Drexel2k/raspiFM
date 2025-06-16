@@ -1,14 +1,16 @@
+
 import os
 import subprocess
 from subprocess import Popen
-import traceback
+import logging
+from logging import Logger
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QVBoxLayout,QHBoxLayout, QWidget, QMainWindow, QSizePolicy, QScrollArea, QWidgetItem, QLabel, QPushButton
 
-from common import socketstrings
+from common import log, socketstrings
 from touchui.FavoritesWidget import FavoritesWidget
 from touchui.RadioWidget import RadioWidget
 from touchui.SpotifyWidget import SpotifyWidget
@@ -17,7 +19,7 @@ from touchui.PushButtonMain import PushButtonMain
 from touchui.socket.RaspiFMQtProxy import RaspiFMQtProxy
 
 class MainWindow(QMainWindow):
-    __slots__ = ["__mainwidget", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor", "__spotify_playing", "__raspifm_service_not_available_controls_set"]
+    __slots__ = ["__mainwidget", "__radiobutton", "__favoritesbutton", "__spotifybutton", "__settingsbutton", "__activebutton", "__activebackgroundcolor", "__spotify_playing", "__raspifm_service_not_available_controls_set", "__logger"]
     __mainwidget:QWidget
     __radiobutton:QPushButton
     __favoritesbutton:QPushButton
@@ -27,9 +29,11 @@ class MainWindow(QMainWindow):
     __activebackgroundcolor:str
     __spotify_playing:bool
     __raspifm_service_not_available_controls_set:bool
+    __logger:Logger
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.__logger = logging.getLogger(log.touch_logger_name)
         #print("Qt: v", QtCore.QT_VERSION_STR, "\tPyQt: v", QtCore.PYQT_VERSION_STR)
 
         #otherwise resize event which accesses __mainwidget will fail
@@ -63,7 +67,7 @@ class MainWindow(QMainWindow):
         try:
             RaspiFMQtProxy()
         except (ConnectionRefusedError, FileNotFoundError):
-            traceback.print_exc()
+            self.__logger.warning("RaspiFM Core not reachable.")
             if not self.__raspifm_service_not_available_controls_set:
                 self.__raspifm_service_not_available_controls_set = True
                 info_layout_vertical = QVBoxLayout()
@@ -82,7 +86,14 @@ class MainWindow(QMainWindow):
 
             return
         
-        if RaspiFMQtProxy().settings_runontouch():
+        log_level = RaspiFMQtProxy().settings_all_loglevel()
+        if log_level < 100:
+            log_level = log_level * 10
+            self.__logger.setLevel(log_level)
+        else:
+            self.__logger.disabled = True
+        
+        if RaspiFMQtProxy().settings_touch_runontouch():
             self.showFullScreen()
             self.setCursor(Qt.CursorShape.BlankCursor)  
         
@@ -132,7 +143,7 @@ class MainWindow(QMainWindow):
         if RaspiFMQtProxy().spotify_isplaying():
             self.__spotify_playing = True
             self.__change_icons_spotify_playing()
-            self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+            self.__spotifybutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
             self.__activebutton = self.__spotifybutton
 
             self.__mainwidget.layout().addWidget(SpotifyWidget(RaspiFMQtProxy().spotify_currently_playing()), stretch=4)            
@@ -152,7 +163,7 @@ class MainWindow(QMainWindow):
                 self.__radiobutton.setIcon(QIcon("touchui/images/broadcast-pin-rpi.svg"))
 
             self.__spotifybutton.setIcon(QIcon("touchui/images/spotify-rpi.svg"))
-            self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+            self.__radiobutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
 
             self.__mainwidget.layout().addWidget(radiowidget, stretch=4) 
         
@@ -186,7 +197,7 @@ class MainWindow(QMainWindow):
                     #the user switched manually to another widget before, so leave this widget as it is.
                     if not spotify_wasplaying:
                         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-                        self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+                        self.__spotifybutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
                         self.__activebutton = self.__spotifybutton
                         spotifywidget = SpotifyWidget(notification[socketstrings.args_string]["spotify_currently_playing"])
                         spotifywidget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -200,7 +211,7 @@ class MainWindow(QMainWindow):
 
     def __radioclicked(self) -> None:
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-        self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__radiobutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
         self.__activebutton = self.__radiobutton
         if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), RadioWidget):
             radiowidget = RadioWidget()
@@ -216,7 +227,7 @@ class MainWindow(QMainWindow):
     def __favoritelicked(self) -> None:
         self.__radio_starts_playing()
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-        self.__radiobutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__radiobutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
         self.__activebutton = self.__radiobutton
 
         radiowidget = RadioWidget()
@@ -231,7 +242,7 @@ class MainWindow(QMainWindow):
 
     def __favoritesclicked(self) -> None:
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-        self.__favoritesbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__favoritesbutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor}; }}")
         self.__activebutton = self.__favoritesbutton
         if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), FavoritesWidget):
             favoriteswdidget = FavoritesWidget()
@@ -242,7 +253,7 @@ class MainWindow(QMainWindow):
 
     def __spotifyclicked(self) -> None:
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-        self.__spotifybutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__spotifybutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor };}}")
         self.__activebutton = self.__spotifybutton
         if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SpotifyWidget):
             spotifywdidget = SpotifyWidget(RaspiFMQtProxy().spotify_currently_playing())
@@ -252,7 +263,7 @@ class MainWindow(QMainWindow):
 
     def __settingsclicked(self) -> None:
         self.__activebutton.setStyleSheet("QPushButton { background-color: transparent; }")
-        self.__settingsbutton.setStyleSheet(f'QPushButton {{ background-color: { self.__activebackgroundcolor }; }}')
+        self.__settingsbutton.setStyleSheet(f"QPushButton {{ background-color: {self.__activebackgroundcolor };}}")
         self.__activebutton = self.__settingsbutton
         if not isinstance(self.__mainwidget.layout().itemAt(1).widget(), SettingsWidget):
             settingswdiget = SettingsWidget()

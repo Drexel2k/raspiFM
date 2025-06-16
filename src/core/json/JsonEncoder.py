@@ -98,7 +98,8 @@ class UserSettingsEncoder(json.JSONEncoder):
                     "touch_runontouch":obj.touch_runontouch,
                     "touch_startwith":obj.touch_startwith.name,
                     "touch_laststation":str(obj.touch_laststation) if obj.touch_laststation else None,
-                    "touch_volume":obj.touch_volume}
+                    "touch_volume":obj.touch_volume,
+                    "all_loglevel":obj.all_loglevel.name}
     
         return json.JSONEncoder.default(self, obj)
     

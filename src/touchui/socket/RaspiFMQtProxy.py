@@ -54,8 +54,11 @@ class RaspiFMQtProxy(QObject, metaclass=QObjectSingletonMeta):
     def radio_set_currentstation(self, station_uuid:str) -> None:
         RaspiFMProxy().radio_set_currentstation(station_uuid)
     
-    def settings_runontouch(self) -> bool:
-        return RaspiFMProxy().settings_runontouch()
+    def settings_touch_runontouch(self) -> bool:
+        return RaspiFMProxy().settings_touch_runontouch()
+    
+    def settings_all_loglevel(self) -> str:
+        return RaspiFMProxy().settings_all_loglevel()
     
     def radio_getmeta(self) -> str:
         return RaspiFMProxy().radio_getmeta()

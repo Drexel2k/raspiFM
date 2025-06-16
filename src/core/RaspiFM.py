@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
+import logging
 from pathlib import Path
 from uuid import UUID
 from os import path
 
+from core.LogLevel import LogLevel
 from core.StartWith import StartWith
 from core.business.InvalidOperationError import InvalidOperationError
 from core.json.JsonSerializer import JsonSerializer
@@ -29,7 +31,7 @@ from core.players.VlcRadioMonitor import VlcRadioMonitor
 from core.players.Spotify import Spotify
 from core.players.SpotifyInfo import SpotifyInfo
 from core.players.Vlc import Vlc
-from common import utils
+from common import log, utils
 
 #todo: maybe split public core interface in several proxy classes
 class RaspiFM:
@@ -75,6 +77,15 @@ class RaspiFM:
 
         usersettings = JsonDeserializer().get_usersettings()
         self.__settings.usersettings = usersettings if usersettings else UserSettings.from_default()
+
+        log_level = self.__settings.usersettings.all_loglevel.value
+        logger = logging.getLogger(log.core_logger_name)
+        if log_level < 100:
+            log_level = log_level * 10
+
+            logger.setLevel(log_level)
+        else:
+            logger.disabled = True
 
         Vlc().volume = self.__settings.usersettings.touch_volume
 
@@ -227,7 +238,7 @@ class RaspiFM:
         
         JsonSerializer().serialize_favorites(self.__favorites)
 
-    def settings_runontouch(self) -> bool:
+    def settings_touch_runontouch(self) -> bool:
         return self.__settings.usersettings.touch_runontouch
     
     def settings_web_defaultlanguage(self) -> str:
@@ -245,6 +256,9 @@ class RaspiFM:
 
     def settings_touch_laststation(self) -> UUID:
         return self.__settings.usersettings.touch_laststation
+    
+    def settings_all_loglevel(self) -> LogLevel:
+        return self.__settings.usersettings.all_loglevel
     
     def settings_changeproperty(self, property:str, value:str) -> None:
         if property == "country":
@@ -278,7 +292,7 @@ class RaspiFM:
         else:
             station = Vlc().currentstation
 
-        if RaspiFM().settings_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
+        if RaspiFM().settings_touch_runontouch(): #otherwise we are on dev most propably so we don't send a click on every play
             stationapi.send_stationclicked(station.uuid)
 
     def radio_stop(self) -> None:

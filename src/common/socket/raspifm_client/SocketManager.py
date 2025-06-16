@@ -1,3 +1,4 @@
+from logging import Logger
 import selectors
 import socket as modsocket
 from socket import socket
@@ -21,7 +22,7 @@ class SocketManager():
     __run_selector:bool
     __socket_timeout:float
 
-    def __init__(self, read_queue:Queue, response_queue:Queue):
+    def __init__(self, read_queue:Queue, response_queue:Queue, logger:Logger = None):
         super().__init__()
         self.__socket_selector = DefaultSelector()
         self.__run_selector = True
@@ -32,7 +33,7 @@ class SocketManager():
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(socketstrings.core_socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue, socket_timeout=self.__socket_timeout)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue, socket_timeout=self.__socket_timeout, logger=logger)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
@@ -91,12 +92,12 @@ class SocketManager():
                 raise AttributeError(request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string])
             else:
                 error_info = "Something went wrong in raspiFM core. Status code: "
-                error_info = error_info + f'{request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, '
-                error_info = error_info +  f'status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}'
+                error_info = error_info + f"{request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.code_string]}, "
+                error_info = error_info +  f"status message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.message_string]}"
                 
                 if socketstrings.additional_info_code_string in request.response[socketstrings.header_string][socketstrings.service_status_string]:
-                    error_info = error_info + f', status additional info code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string]}, '
-                    error_info = error_info + f'status additional info message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string]}'
+                    error_info = error_info + f", status additional info code: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_code_string]}, "
+                    error_info = error_info + f"status additional info message: {request.response[socketstrings.header_string][socketstrings.service_status_string][socketstrings.additional_info_message_string]}"
 
                 error_info = error_info + "."
                 raise ValueError(error_info)

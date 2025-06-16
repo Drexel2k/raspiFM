@@ -2,10 +2,11 @@ from __future__ import annotations
 import os
 from uuid import UUID
 
+from core.LogLevel import LogLevel
 from core.StartWith import StartWith
 
 class UserSettings:
-    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation", "__touch_volume"]
+    __slots__ = ["__touch_runontouch", "__web_defaultlanguage", "__web_defaultcountry", "__touch_startwith", "__touch_laststation", "__touch_volume", "__all_loglevel"]
 
     __touch_runontouch:bool
     __web_defaultlanguage:str
@@ -13,6 +14,7 @@ class UserSettings:
     __touch_startwith:StartWith
     __touch_laststation:UUID
     __touch_volume:int
+    __all_loglevel:LogLevel
 
     @property
     def touch_runontouch(self) -> bool:
@@ -58,6 +60,14 @@ class UserSettings:
     def touch_volume(self, value: int) -> None:
         self.__touch_volume = value
 
+    @property
+    def all_loglevel(self) -> LogLevel:
+        return self.__all_loglevel
+    
+    @all_loglevel.setter
+    def all_loglevel(self, value: LogLevel) -> None:
+        self.__all_loglevel = value
+
     @classmethod
     def from_default(cls) -> UserSettings:    
         obj = cls()
@@ -68,6 +78,7 @@ class UserSettings:
         obj.__setattr__(f"_UserSettings__touch_startwith", StartWith.LastStation)
         obj.__setattr__(f"_UserSettings__touch_laststation", None)
         obj.__setattr__(f"_UserSettings__touch_volume", 50)
+        obj.__setattr__(f"_UserSettings__all_loglevel", LogLevel.Debug)
 
         return obj
 

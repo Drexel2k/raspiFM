@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from uuid import UUID
 
+from core.LogLevel import LogLevel
 from core.Settings import UserSettings
 from core.business.CountryList import CountryList
 from core.business.FavoriteList import FavoriteList
@@ -111,6 +112,7 @@ class UserSettingsDecoder(json.JSONDecoder):
         if "__type__" in obj and obj["__type__"] == "UserSettings":
             obj["touch_startwith"] =  StartWith[obj["touch_startwith"]]
             obj["touch_laststation"] = UUID(obj["touch_laststation"]) if obj["touch_laststation"] else None
+            obj["all_loglevel"] = LogLevel[obj["all_loglevel"]]
             return UserSettings.deserialize(obj)
         
         return obj
