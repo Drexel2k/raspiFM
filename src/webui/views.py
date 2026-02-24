@@ -13,8 +13,11 @@ from webui.ViewProxies.RadioStationView import RadioStationView
 from common.Exceptions.RadioBrowserApiError import RadioBrowserApiError
 
 logger = logging.getLogger(log.web_logger_name)
+logger.setLevel(logging.DEBUG)
+RaspiFMProxy(logger)
 
 log_level = RaspiFMProxy().settings_all_loglevel()
+
 if log_level < 100:
     log_level = log_level * 10
     logger.setLevel(log_level)

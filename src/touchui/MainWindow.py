@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
     def __init_controls(self) -> None:
         try:
-            RaspiFMQtProxy()
+            RaspiFMQtProxy(self.__logger)
         except (ConnectionRefusedError, FileNotFoundError):
             self.__logger.warning("RaspiFM Core not reachable.")
             if not self.__raspifm_service_not_available_controls_set:

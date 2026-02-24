@@ -29,7 +29,7 @@ class SocketTransferManager:
     __current_message_header_length:int
     __current_message_header:dict
 
-    def __init__(self, socket:socket, buffer_size:int, socket_address:str, read_queue:Queue, close_callback:callable=None, socket_timeout:float = 5, logger:Logger = None):
+    def __init__(self, socket:socket, buffer_size:int, socket_address:str, read_queue:Queue, logger:Logger, close_callback:callable=None, socket_timeout:float = 5):
         self.__socket = socket
         self.__socket_address = socket_address
         self.__read_queue = read_queue
@@ -147,6 +147,7 @@ class SocketTransferManager:
     #writer thread
     #messages must be JSON serializable, only Python basics types allowed
     def send(self, message_response:MessageResponse, additional_header:dict):
+        self.__logger.info("Sending message")
         try:
             content_bytes = b""
             header = {}
@@ -178,6 +179,7 @@ class SocketTransferManager:
             header_bytes = json.serialize_to_string_or_bytes(header, socketstrings.utf8_string)
             message_header = struct.pack(">H", len(header_bytes))
             message_bytes = message_header + header_bytes + content_bytes
+            bytes_to_send = len(message_bytes)
 
             sent = 0
             current_package = 0
@@ -185,12 +187,15 @@ class SocketTransferManager:
             sleep_counter = 0
             sleep_counter_limit = self.__socket_timeout * 10
 
-            while len(message_bytes) > 0:
+            self.__logger.info(f"Initial bytes to send {bytes_to_send}")
+            while bytes_to_send > 0:
+                self.__logger.debug(f"Bytes to send {bytes_to_send}")
                 buff = message_bytes[:self.__buffer_size]
                 try:
                     sent = self.__socket.send(buff)
 
                     message_bytes= message_bytes[sent:]
+                    bytes_to_send=len(message_bytes)
                     previous_package = current_package
                     current_package = current_package + 1
                 #if socket buffer is full, BlockingIOError occurs, we have to wait a bit until the client has read data
@@ -203,17 +208,18 @@ class SocketTransferManager:
                     if sleep_counter > sleep_counter_limit:
                         raise BlockingIOError_exception
 
-                    if not self.__logger is None:
-                        self.__logger.info("Waiting for Uinux socket...")
+                    self.__logger.info("Waiting for Uinux socket...")
                         
                     time.sleep(0.1)
         except Exception as transfer_exception:
             #if sending fails also no response can be expected, so therefore set sending and response,
             #transfer_exception must be checked after waiting for either of message_send or response_ready
             #calls waiting for response can also continue if sending failed
+            self.__logger.info(f"Transfer_exception on sending")
             message_response.transfer_exception = transfer_exception
             message_response.response_ready.set()
         finally:
+            self.__logger.info(f"Message send end")
             message_response.message_sent.set()
             
 

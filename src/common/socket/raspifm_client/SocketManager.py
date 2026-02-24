@@ -13,7 +13,7 @@ from common.Exceptions.InvalidOperationError import InvalidOperationError
 
 class SocketManager():
     #No multi threading in selector mechanisms!
-    __slots__ = ["__socket_selector", "__write_queue", "__socket_transfermanager", "__messageid", "__run_selector", "__socket_timeout"]
+    __slots__ = ["__socket_selector", "__write_queue", "__socket_transfermanager", "__messageid", "__run_selector", "__socket_timeout", "__logger"]
     __socket_selector:DefaultSelector
 
     __write_queue:Queue
@@ -21,9 +21,11 @@ class SocketManager():
     __messageid:int
     __run_selector:bool
     __socket_timeout:float
+    __logger:Logger
 
-    def __init__(self, read_queue:Queue, response_queue:Queue, logger:Logger = None):
+    def __init__(self, read_queue:Queue, response_queue:Queue, logger:Logger):
         super().__init__()
+        self.__logger = logger
         self.__socket_selector = DefaultSelector()
         self.__run_selector = True
         self.__write_queue = response_queue
@@ -33,7 +35,7 @@ class SocketManager():
         client_socket = socket(modsocket.AF_UNIX, modsocket.SOCK_STREAM)
         client_socket.setblocking(False)
         client_socket.connect(socketstrings.core_socketpath_string)
-        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue, socket_timeout=self.__socket_timeout, logger=logger)
+        self.__socket_transfermanager = SocketTransferManager(client_socket, 4096, socketstrings.core_socketpath_string, read_queue, self.__logger,socket_timeout=self.__socket_timeout)
         self.__socket_selector.register(client_socket, selectors.EVENT_READ, data=self.__socket_transfermanager)
 
     #reader thread
@@ -50,6 +52,7 @@ class SocketManager():
         run = True
         while run:
             queue_item = self.__write_queue.get()
+            self.__logger.info(f"Sending message from queue {queue_item.message[socketstrings.message_string][socketstrings.message_string]}")
             if isinstance(queue_item, str):
                 #Python 3.12 doesn't support Queue.shutdown yet()
                 if queue_item == socketstrings.shutdown_string:
@@ -59,13 +62,13 @@ class SocketManager():
             self.__socket_transfermanager.send(queue_item, {socketstrings.messageid_string:self.__get_messageid()})
 
     #main thread
-    def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:       
+    def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:        
         request = MessageResponse(socketstrings.core_socketpath_string, {
             socketstrings.message_string: {socketstrings.message_string: query, socketstrings.args_string:args}
         }, True)
         
+        self.__logger.info(f"Queueing raspifm_core message {query}")
         self.__write_queue.put(request)
-
         if not request.response_ready.wait(self.__socket_timeout):
             raise Exception("raspifm client socket timeout")
 

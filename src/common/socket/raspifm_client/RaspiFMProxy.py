@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from logging import Logger
 from queue import Queue
 from threading import Thread
 
@@ -7,7 +8,7 @@ from common import socketstrings
 from common.socket.raspifm_client.SocketManager import SocketManager
 
 class RaspiFMProxy():
-    __slots__ = ["__socket_manager", "__read_queue", "__read_queue_callback", "__socket_read_thread", "__socket_write_thread"]
+    __slots__ = ["__socket_manager", "__read_queue", "__read_queue_callback", "__socket_read_thread", "__socket_write_thread", "__logger"]
     __instance:RaspiFMProxy = None
 
     __socket_read_thread:Thread
@@ -16,21 +17,26 @@ class RaspiFMProxy():
     __read_queue:Queue
     __socket_manager:SocketManager
     __read_queue_callback:callable
+    __logger:Logger
 
-    def __new__(cls, read_queue_callback:callable = None):
+    def __new__(cls, logger:Logger = None, read_queue_callback:callable = None):
         if cls.__instance is None:
             #instance initialization may fail, if raspifm service is not available.
             #therefore set instance only once we have a working instance
+            if logger is None:
+                raise ValueError("Logger must be set.")
+
             instance_internal =  super(RaspiFMProxy, cls).__new__(cls)
-            instance_internal.__init(read_queue_callback)
+            instance_internal.__init(read_queue_callback, logger)
             if not instance_internal is None:
                 cls.__instance = instance_internal
         return cls.__instance
     
-    def __init(self, read_queue_callback:callable):
+    def __init(self, read_queue_callback:callable, logger:Logger):
+        self.__logger = logger
         self.__read_queue = Queue()
         write_queue = Queue()
-        self.__socket_manager = SocketManager(self.__read_queue, write_queue)
+        self.__socket_manager = SocketManager(self.__read_queue, write_queue, self.__logger)
         self.__socket_read_thread = Thread(target=self.__socket_manager.read)
         self.__socket_read_thread.start()
         self.__socket_write_thread = Thread(target=self.__socket_manager.write)

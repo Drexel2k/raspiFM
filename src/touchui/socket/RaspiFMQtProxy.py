@@ -1,4 +1,5 @@
 from __future__ import annotations
+from logging import Logger
 
 from PyQt6.QtCore import pyqtSignal, pyqtSlot, QObject
 
@@ -9,14 +10,17 @@ from touchui.QObjectSingletonMeta import QObjectSingletonMeta
 #Proxy for the proxy, to enable the pyqtSignal to send messages to the ui proactively
 #when the server sends messages without a prior request
 class RaspiFMQtProxy(QObject, metaclass=QObjectSingletonMeta):
-    __slots__ = []  
+    __slots__ = ["__logger", "__logger"]
+
+    __logger:Logger
 
     core_notification_available = pyqtSignal(dict)
 
-    def __init__(self):
+    def __init__(self, logger:Logger):
         # Always call the parent class's __init__ first
         super().__init__()
-        RaspiFMProxy(self.__core_notification_available)
+        self.__logger=logger
+        RaspiFMProxy(self.__logger, self.__core_notification_available)
 
     #callback method for the RaspiFMProxy which calls from another thread,
     #but signals and slots are thread safe
