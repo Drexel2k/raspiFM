@@ -21,11 +21,11 @@ if log:
     spotifyd_log.write(started_string)
     spotifyd_process = Popen(["/usr/bin/spotifyd"], cwd="/usr/bin/local/raspifm", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=log_env)
     ts_spotifyd_process = Popen(["ts", "[%Y-%m-%d %H:%M:%.S]"], stdin=spotifyd_process.stdout, stdout=spotifyd_log, stderr=subprocess.STDOUT, text=True, env=log_env)
-    #gunicorn socket
-    gunicorn_log = open("/var/log/raspifm/gunicorn.log", "a")
-    gunicorn_log.write(started_string)
-    gunicorn_process = Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--config", "webui/gunicorn.log.conf.py", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=log_env)
-    ts_gunicorn_process = Popen(["ts", "[%Y-%m-%d %H:%M:%.S]"], stdin=gunicorn_process.stdout, stdout=gunicorn_log, stderr=subprocess.STDOUT, text=True, env=log_env)
+    #uwsgi socket
+    uwsgi_log = open("/var/log/raspifm/uwsgi.log", "a")
+    uwsgi_log.write(started_string)
+    uwsgi_process = Popen(["/usr/bin/local/raspifm/.venv/bin/uwsgi", "--ini", "webui/uwsgi.ini"], cwd="/usr/bin/local/raspifm", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=log_env)
+    ts_uwsgi_process = Popen(["ts", "[%Y-%m-%d %H:%M:%.S]"], stdin=uwsgi_process.stdout, stdout=uwsgi_log, stderr=subprocess.STDOUT, text=True, env=log_env)
     #touchui
     touchui_log = open("/var/log/raspifm/touchui.log", "a")
     touchui_log.write(started_string)
@@ -36,7 +36,7 @@ else:
     Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "core_run"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     #spotifyd
     Popen(["/usr/bin/spotifyd"], cwd="/usr/bin/local/raspifm")
-    #gunicorn socket
-    Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "gunicorn", "--config", "webui/gunicorn.conf.py", "webui_run:app"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #uwsgi socket
+    Popen(["/usr/bin/local/raspifm/.venv/bin/uwsgi", "--ini", "webui/uwsgi.ini"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     #touchui
     Popen(["/usr/bin/local/raspifm/.venv/bin/python3", "-m", "touchui_run"], cwd="/usr/bin/local/raspifm", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

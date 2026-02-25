@@ -23,12 +23,12 @@ class SocketManager():
     __socket_timeout:float
     __logger:Logger
 
-    def __init__(self, read_queue:Queue, response_queue:Queue, logger:Logger):
+    def __init__(self, read_queue:Queue, logger:Logger):
         super().__init__()
         self.__logger = logger
         self.__socket_selector = DefaultSelector()
         self.__run_selector = True
-        self.__write_queue = response_queue
+        self.__write_queue = Queue()
         self.__messageid = 0
         self.__socket_timeout = 10
         

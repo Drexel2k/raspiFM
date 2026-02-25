@@ -35,8 +35,7 @@ class RaspiFMProxy():
     def __init(self, read_queue_callback:callable, logger:Logger):
         self.__logger = logger
         self.__read_queue = Queue()
-        write_queue = Queue()
-        self.__socket_manager = SocketManager(self.__read_queue, write_queue, self.__logger)
+        self.__socket_manager = SocketManager(self.__read_queue, self.__logger)
         self.__socket_read_thread = Thread(target=self.__socket_manager.read)
         self.__socket_read_thread.start()
         self.__socket_write_thread = Thread(target=self.__socket_manager.write)
