@@ -318,7 +318,7 @@ class MainWindow(QMainWindow):
             RaspiFMQtProxy().raspifm_shutdown()
 
         ps_process = Popen(["ps", "-aux"], stdout=subprocess.PIPE, text=True)
-        prgrep_process = Popen(["grep", "-i", "gunicorn: master"], stdin=ps_process.stdout, stdout=subprocess.PIPE, text=True)
+        prgrep_process = Popen(["grep", "-i", "uwsgi"], stdin=ps_process.stdout, stdout=subprocess.PIPE, text=True)
         processes_matched = prgrep_process.communicate()[0]
         process_matched_info = None
 

@@ -1,9 +1,12 @@
 import logging
-import os, signal, traceback
+import os, signal
 
 from common.Exceptions.InvalidOperationError import InvalidOperationError
 from webui.run import app
 from flask import Response, make_response, render_template, request
+
+#works only if started by uwsgi, comment during dev:
+import uwsgi
 
 from common import log, utils
 from common import json
@@ -16,6 +19,7 @@ logger = logging.getLogger(log.web_logger_name)
 logger.setLevel(logging.DEBUG)
 RaspiFMProxy(logger)
 
+logger.info("Getting log level from core")
 log_level = RaspiFMProxy().settings_all_loglevel()
 
 if log_level < 100:
@@ -27,6 +31,7 @@ else:
 @app.route("/")
 def home() -> str:
     try:
+        RaspiFMProxy().raspifm_shutdown(False)
         return render_template("home.html")
     except BaseException as e:
         logger.exception("Error in /: ")
@@ -307,7 +312,15 @@ def get_error_response(e):
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": str(e)}), 404)
     else:
         response = make_response(json.serialize_to_string_or_bytes({"errorNo": 0, "errorType": type(e).__name__, "error": e.args}), 500)
-        #restart gunicorn worker on unexpected exception, raspifm core socket won't recover once in broken pipe state e.g.
-        os.kill(os.getpid(),signal.SIGTERM)
+        #restart worker on unexpected exception, raspifm core socket won't recover once in broken pipe state e.g.
+        logger.info("Killing myself due to unexpected exception.")
+        os.kill(os.getpid(), signal.SIGTERM)
     response.mimetype = "application/json"
     return response
+
+#works only if started by uwsgi, delete during dev:
+def uwsgiexitcallback():
+    logger.info("Shutting down due to uwsgi signal")
+    RaspiFMProxy().raspifm_shutdown(False)
+
+uwsgi.atexit = uwsgiexitcallback

@@ -52,14 +52,14 @@ class SocketManager():
         run = True
         while run:
             queue_item = self.__write_queue.get()
-            self.__logger.info(f"Sending message from queue {queue_item.message[socketstrings.message_string][socketstrings.message_string]}")
             if isinstance(queue_item, str):
                 #Python 3.12 doesn't support Queue.shutdown yet()
                 if queue_item == socketstrings.shutdown_string:
                     run=False
                     continue
-
-            self.__socket_transfermanager.send(queue_item, {socketstrings.messageid_string:self.__get_messageid()})
+            else:
+                self.__logger.info(f"Sending message from queue {queue_item.message[socketstrings.message_string][socketstrings.message_string]}")
+                self.__socket_transfermanager.send(queue_item, {socketstrings.messageid_string:self.__get_messageid()})
 
     #main thread
     def query_raspifm_core(self, query:str, args:dict, is_query:bool) -> dict:        
