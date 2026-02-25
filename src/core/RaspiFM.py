@@ -53,7 +53,7 @@ class RaspiFM:
         return cls.__instance
     
     def __init(self, spotify_info:SpotifyInfo):
-        self.__version = "1.1.0"
+        self.__version = "1.0.2"
         requestbase.version = self.__version
 
         self.__settings = Settings()

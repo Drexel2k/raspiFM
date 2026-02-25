@@ -56,6 +56,7 @@ class SocketManager():
                 #Python 3.12 doesn't support Queue.shutdown yet()
                 if queue_item == socketstrings.shutdown_string:
                     run=False
+                    self.__logger.info("Shutting down writer thread")
                     continue
             else:
                 self.__logger.info(f"Sending message from queue {queue_item.message[socketstrings.message_string][socketstrings.message_string]}")

@@ -31,7 +31,6 @@ else:
 @app.route("/")
 def home() -> str:
     try:
-        RaspiFMProxy().raspifm_shutdown(False)
         return render_template("home.html")
     except BaseException as e:
         logger.exception("Error in /: ")
