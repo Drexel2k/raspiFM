@@ -41,7 +41,7 @@ Do a `sudo apt update` first.
 - 3. If you do not want to use the latest commit, but the latest release, look up the latest release tag: https://github.com/Drexel2k/raspiFM/releases or https://github.com/Drexel2k/raspiFM/tags and do: `git checkout tags/v1.0` e.g.
 
 ## Setup Spotify Connect / spotifyd
-- 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
+- 1. Copy spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.2-dbus-pulse_aarch64 /usr/bin/spotifyd`
 - 2. Copy the spotifyd config file from [configs](/configs/spotifyd.conf) to /etc: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`
 - 5. Allow the spotifyd to register services on the system DBus: Copy the file from [configs](/configs/spotifyd-dbus.conf) to /usr/share/dbus-1/system.d: `sudo cp ~/raspifm_repo/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`
 - 6. Reboot
@@ -75,5 +75,5 @@ Do a `sudo apt update` first.
     - `python3 -m venv /usr/bin/local/raspifm/.venv`
     - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install -r ~/raspifm_repo/piprequirements.txt`
     - `/usr/bin/local/raspifm/.venv/bin/python3 -m pip install ~/raspifm_repo/libs/PyQt6-6.8.1-cp39-abi3-manylinux_2_28_aarch64.whl`
-  - Copy/overwrite spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.1-dbus-pulse_aarch64 /usr/bin/spotifyd`
+  - Copy/overwrite spotifyd binary to /usr/bin: `sudo cp ~/raspifm_repo/libs/spotifyd-0.4.2-dbus-pulse_aarch64 /usr/bin/spotifyd`
   - If there are config changes, also refresh the config files: `sudo cp ~/raspifm_repo/configs/spotifyd.conf /etc`, `sudo cp ~/raspifm_repo/configs/spotifyd-dbus.conf /usr/share/dbus-1/system.d`, `sudo cp ~/raspifm_repo/configs/raspifm.nginx /etc/nginx/sites-available/raspifm`, `cp ~/raspifm_repo/configs/raspifm.desktop ~/.config/autostart`

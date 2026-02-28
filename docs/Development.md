@@ -69,11 +69,11 @@ To build a 64 bit spotifyd binary:
 - 5. Create a new directory for the repository: `mkdir ~/spotifyd_repo` and switch to the directory: `cd ~/spotifyd_repo`.
 - 6. Clone the repository: `git clone https://github.com/Spotifyd/spotifyd.git .`
 - 7. Install required packages: `sudo apt install libasound2-dev libdbus-1-dev`, on other Linux distributions than Raspberry, e.g. Ubuntu you may need to install further packages to compile spotifyd, `sudo apt install build-essential pkg-config`, some of these packages may also already be installed during IDE setup.
-- 8. If you do not want to compile the latest commit, but the latest release, look up the latest release tag: https://github.com/Spotifyd/spotifyd/releases or https://github.com/Spotifyd/spotifyd/tags and do: `git checkout tags/v0.4.1` e.g.
+- 8. If you do not want to compile the latest commit, but the latest release, look up the latest release tag: https://github.com/Spotifyd/spotifyd/releases or https://github.com/Spotifyd/spotifyd/tags and do: `git checkout tags/v0.4.2` e.g.
 - 9. Build spotifyd with DBus support: `cargo build --release --locked --features dbus_mpris,pulseaudio_backend`, this takes some minutes
 
 Install spotifiyd and set up the daemon:
-- 10. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spoetifyd /usr/bin` or use the file from libs(spotifyd-0.3.5-dbus-pulse_aarch64): 
+- 10. Copy the compiled file to /usr/bin: `sudo cp ./target/release/spoetifyd /usr/bin` or use the file from libs(spotifyd-0.4.2-dbus-pulse_aarch64): 
   - x64: `sudo cp ~/raspifm_repo/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
   -   - Care! Current spotifyd stable release hase some issues due to Spotify backend changes. Use the latest build instead: `sudo cp ~/raspifm_repo/libs/spotifyd-commit-e280d84124d854af3c2f9509ba496b1c2ba6a1ae-librespot-0.4.2-dbus-pulse_aarch64 /usr/bin/spotifyd`
   - arm64: `sudo cp ~/raspifm_repo/libs/spotifyd-0.3.5-dbus-pulse_aarch64 /usr/bin/spotifyd`
